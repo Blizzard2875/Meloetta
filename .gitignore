@@ -114,4 +114,4 @@ dmypy.json
 .pyre/
 
 # Dev env 
-.vscode/*
+.vscode

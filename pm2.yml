@@ -1,0 +1,4 @@
+apps:
+  script: '/bin/bash'
+  name: 'Meloetta'
+  args: ['-c', 'pipenv run start']
