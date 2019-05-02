@@ -1,0 +1,10 @@
+!Config
+  APP_NAME: "meloetta"
+
+  PREFIXES: 
+    - !ENV "PREFIX"
+
+  TOKEN: !ENV "TOKEN"
+
+  COGS:
+    "bot.cogs.core.git": ~
