@@ -1,5 +1,6 @@
 !Config
   APP_NAME: "meloetta"
+  DESCRIPTION: "Music bot for the /r/Pokemon Discord server."
 
   PREFIXES: 
     - !ENV "PREFIX"
@@ -8,3 +9,11 @@
 
   COGS:
     "bot.cogs.core.git": ~
+
+    "bot.cogs.player": !Config
+      INSTANCES:
+        
+        - !Config # - /r/Pokémon Mods
+          VOICE_CHANNEL: !Channel 146626123990564864 288198102387523584
+          LOG_CHANNEL: !Channel 146626123990564864 288669917153329162
+          

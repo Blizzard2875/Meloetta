@@ -119,6 +119,9 @@ class Config(yaml.YAMLObject):
         value = object.__getattribute__(self, name)
         return _evaluate_lambda(value)
 
+    def __repr__(self):
+        return f"<Config {' '.join(f'{key}={repr(value)}' for key, value in self.__dict__.items())}>"
+
 
 CONSTRUCTORS = [
 

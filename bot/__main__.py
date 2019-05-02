@@ -17,8 +17,11 @@ from bot.config import CONFIG, init_config
 
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or(*CONFIG.PREFIXES),
+    case_insensitive=True,
+    help_command=None,  # TODO: Custom Help command
+    description=CONFIG.DESCRIPTION,
+    max_messages=100,
     fetch_offline_members=False,
-
     activity=discord.Activity(
         name="Nothing", type=discord.ActivityType.playing
     )
