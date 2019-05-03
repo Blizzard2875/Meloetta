@@ -11,9 +11,12 @@
     "bot.cogs.core.git": ~
 
     "bot.cogs.player": !Config
+
+      DEFAULT_VOLUME: 0.1
+
       INSTANCES:
-        
+
         - !Config # - /r/Pokémon Mods
-          VOICE_CHANNEL: !Channel 146626123990564864 288198102387523584
-          LOG_CHANNEL: !Channel 146626123990564864 288669917153329162
-          
+          voice_channel: !Channel 146626123990564864 288198102387523584
+          log_channel: !Channel 146626123990564864 288669917153329162
+          run_forever: true
