@@ -16,7 +16,8 @@
 
       INSTANCES:
 
-        - !Config # - /r/Pokémon Mods
-          voice_channel: !Channel 146626123990564864 288198102387523584
-          log_channel: !Channel 146626123990564864 288669917153329162
-          run_forever: true
+        - !Config # - Test Server
+          voice_channel: !Channel 229563119582576641 288670665731735553
+          log_channel: !Channel 229563119582576641 291528730881556490
+
+        
