@@ -8,7 +8,7 @@ from bot.config import CONFIG as BOT_CONFIG
 
 from .queue import Queue, Radio
 
-COG_CONFIG = BOT_CONFIG.initial_cogs[__name__[:__name__.rindex(".")]]
+COG_CONFIG = BOT_CONFIG.COGS[__name__[:__name__.rindex(".")]]
 
 
 class Session:
@@ -85,7 +85,7 @@ class Session:
         self.current_track.volume = self.volume
 
         if self.log_channel is not None:
-            await self.log_channel.send(self.current_track.playing_embed())
+            await self.current_track.send_playing_embed(self.log_channel)
 
         self.voice.play(self.current_track, after=self.toggle_next)
 
@@ -101,6 +101,6 @@ class Session:
         while self.is_playing:
             self.play_next_song.clear()
             await self.play_next_track()
-            self.play_next_song.wait()
+            await self.play_next_song.wait()
 
         await self.voice.disconnect()

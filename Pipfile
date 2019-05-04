@@ -8,9 +8,11 @@ pylint = "*"
 autopep8 = "*"
 
 [packages]
-discord-py = "*"
 pyyaml = "*"
-uvloop = {version = "*", os_name = "== 'posix'"}
+uvloop = {version = "*",os_name = "== 'posix'"}
+discord-py = {extras = ["voice"],version = "*"}
+mutagen = "*"
+youtube-dl = "*"
 
 [requires]
 python_version = "3.7"

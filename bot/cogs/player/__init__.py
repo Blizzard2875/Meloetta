@@ -33,7 +33,7 @@ class Player(commands.Cog):
     @commands.command(name="request")
     @commands.check(user_is_in_voice_channel)
     async def request(self, ctx: commands.Context, *, request: YouTubeTrack):
-        """Adds a 
+        """Adds a YouTube video to the requests
 
         request: YouTube search query.
         """
@@ -43,7 +43,7 @@ class Player(commands.Cog):
         if session is None:
             session = Session(self.bot, ctx.author.voice.channel)
 
-        await ctx.send(embed=request.request_embed(ctx.author))
+        await request.send_request_embed(ctx, ctx.author)
         session.queue.add_request(request, ctx.author)
 
     @commands.command(name="skip")
@@ -54,7 +54,7 @@ class Player(commands.Cog):
 
         """
         session = self._get_session(ctx.guild)
-        await session.voice.player.stop()
+        session.voice.stop()
 
     @commands.command(name="playing", aliases=["now"])
     @commands.check(session_is_running)
@@ -63,7 +63,7 @@ class Player(commands.Cog):
 
         """
         session = self._get_session(ctx.guild)
-        await ctx.send(embed=session.current_track.playing_embed())
+        await session.current_track.send_playing_embed(ctx)
 
     @commands.command(name="queue", aliases=["upcoming"])
     @commands.check(session_is_running)
@@ -78,8 +78,8 @@ class Player(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
-            self._sessions[instance.voice_channel.guild] = Session(
-                **instance.__dict__)
+            self._sessions[instance.voice_channel.guild] = Session(self.bot, run_forever=True,
+                                                                   **instance.__dict__)
 
 
 def setup(bot: commands.Bot):

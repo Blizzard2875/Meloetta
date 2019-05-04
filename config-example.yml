@@ -12,12 +12,13 @@
 
     "bot.cogs.player": !Config
 
+      DEFAULT_ALBUM_ARTWORK: "res/unknown.png"
       DEFAULT_VOLUME: 0.1
+      DEFAULT_PLAYLIST_DIRECTORY: "res/mp3/"
 
       INSTANCES:
 
         - !Config # - Test Server
-          voice_channel: !Channel 229563119582576641 288670665731735553
-          log_channel: !Channel 229563119582576641 291528730881556490
+          voice_channel: !Channel 551765961070608384 551765961070608388
+          log_channel: !Channel 551765961070608384 551766646692380692
 
-        

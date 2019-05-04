@@ -116,3 +116,6 @@ dmypy.json
 # Dev env 
 .vscode
 config.yml
+
+# Audio Files
+*.mp3

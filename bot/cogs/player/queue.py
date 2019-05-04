@@ -6,13 +6,15 @@ import discord
 
 from .track import Track, MP3Track
 
+from bot.config import CONFIG as BOT_CONFIG
+
+COG_CONFIG = BOT_CONFIG.COGS[__name__[:__name__.rindex(".")]]
+
 
 class Queue:
 
     def __init__(self, config=None):
         self.config = config or dict()
-        self.playlist_directory = None
-
         self._requests = list()
 
     @property
@@ -37,5 +39,11 @@ class Queue:
 
 class Radio(Queue):
 
+    def __init__(self, config=None):
+        super().__init__(config)
+
+        self.playlist_directory = self.config.get(
+            'playlist_directory') or COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY
+
     def next_track(self) -> Track:
-        return super.next_track() or MP3Track(choice(glob(self.playlist_directory + "*.mp3")))
+        return super().next_track() or MP3Track(choice(glob(self.playlist_directory + "/*.mp3")))
