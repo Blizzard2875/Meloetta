@@ -135,7 +135,7 @@ class MP3Track(Track):
 
     @property
     def status_information(self) -> str:
-        return f"{self._title} from {self._artist}"
+        return f"{self._title} from {self._album}"
 
     @property
     def playing_message(self) -> Dict:
