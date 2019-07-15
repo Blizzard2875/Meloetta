@@ -1,8 +1,12 @@
 import asyncio
+import inspect
 import os
+import re
 
 import discord
 from discord.ext import commands
+
+from bot.config import CONFIG
 
 
 class Git(commands.Cog):
@@ -13,7 +17,7 @@ class Git(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         """You must be the bot owner to use this command."""
-        return self.bot.is_owner(ctx.author)
+        return ctx.bot.is_owner(ctx.author)
 
     @commands.command(name="load", hidden=True)
     async def load(self, ctx: commands.Context, cog: str):
@@ -42,12 +46,7 @@ class Git(commands.Cog):
         """Reloads a cog."""
         cog = f"bot.cogs.{cog}"
 
-        try:
-            self.bot.reload_extension(cog)
-        except commands.ExtensionNotLoaded:
-            return await ctx.invoke(self.load, cog=cog)
-
-
+        self.bot.reload_extension(cog)
         await ctx.send(embed=discord.Embed(
             title=f"Succesfully reloaded extension: {cog}",
             colour=0xf44336
@@ -56,7 +55,19 @@ class Git(commands.Cog):
     @commands.command(name="pull", hidden=True)
     async def pull(self, ctx: commands.Context):
         """Pulls the most recent version of the repository."""
-        resp = os.popen("git pull").read()
+
+        p = await asyncio.create_subprocess_exec(
+            'git', 'pull',
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.PIPE
+        )
+        stdout, stderr = await p.communicate()
+
+        err = stderr.decode()
+        if not err.startswith("From"):
+            raise commands.CommandError(f"Failed to pull!\n\n{err}")
+
+        resp = stdout.decode()
 
         if len(resp) > 1024:
             resp = resp[:1020] + '...'
@@ -80,6 +91,13 @@ class Git(commands.Cog):
         """Restarts the bot."""
         if arg == "pull":
             await ctx.invoke(self.pull)
+
+        embed = discord.Embed(
+            title="Restarting...",
+            colour=discord.Colour.red(),
+        )
+        await ctx.send(embed=embed)
+
         await self.bot.logout()
 
 
