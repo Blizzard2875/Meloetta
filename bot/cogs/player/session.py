@@ -90,6 +90,11 @@ class Session:
         self.current_track = self.queue.next_track()
         self.current_track.volume = self.volume
 
+        if self.voice_channel.guild == COG_CONFIG.PLAYING_STATUS_GUILD:
+            await self.bot.change_presence(activity=discord.Activity(
+                name=self.current_track.information, type=discord.ActivityType.playing
+            ))
+
         if self.log_channel is not None:
             await self.log_channel.send(**self.current_track.playing_message)
 

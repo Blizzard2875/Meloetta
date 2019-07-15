@@ -17,6 +17,8 @@
       DEFAULT_VOLUME: 0.1
       DEFAULT_PLAYLIST_DIRECTORY: "res/mp3/"
 
+      PLAYING_STATUS_GUILD: !Guild 111504456838819840
+
       INSTANCES:
 
         - !Config # - /R/Pokemon Discord
