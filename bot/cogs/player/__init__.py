@@ -14,7 +14,7 @@ async def session_is_running(ctx: commands.Context) -> bool:
 
 
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
-    return ctx.author.voice is not None
+    return isinstance(ctx.author, discord.Member) and ctx.author.voice is not None
 
 
 async def user_is_listening(ctx: commands.Context) -> bool:
