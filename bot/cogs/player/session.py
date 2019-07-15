@@ -115,6 +115,7 @@ class Session:
         while self.is_playing:
             self.play_next_song.clear()
             await self.play_next_track()
+            self.check_listeners()
             await self.play_next_song.wait()
 
         await self.voice.disconnect()
