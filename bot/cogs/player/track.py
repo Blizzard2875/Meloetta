@@ -104,6 +104,7 @@ class Track(discord.PCMVolumeTransformer):
             raise commands.BadArgument(
                 "You did not choose a search result in time.")
 
+        await search_message.delete()
         return int(reaction.emoji[0]) - 1
 
 

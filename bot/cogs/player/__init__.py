@@ -10,19 +10,23 @@ COG_CONFIG = BOT_CONFIG.COGS[__name__]
 
 
 async def session_is_running(ctx: commands.Context) -> bool:
+    """A player is not running on this server."""
     return ctx.cog._get_session(ctx.guild) is not None
 
 
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
+    """You are currently not in a voice channel."""
     return isinstance(ctx.author, discord.Member) and ctx.author.voice is not None
 
 
 async def user_is_listening(ctx: commands.Context) -> bool:
+    """You are currently not listening to the bot."""
     session = ctx.cog._get_session(ctx.guild)
     return session is not None and ctx.author in session.listeners
 
 
 async def user_has_required_permissions(ctx: commands.Context) -> bool:
+    """You do not have the required role to perform this action."""
     session = ctx.cog._get_session(ctx.guild)
     return session is None or session.user_has_permission(ctx.author)
 
@@ -90,7 +94,7 @@ class Player(commands.Cog):
 
         """
         session = self._get_session(ctx.guild)
-        await ctx.send(**session.current_track.playing_embed)
+        await ctx.send(**session.current_track.playing_message)
 
     @commands.command(name="queue", aliases=["upcoming"])
     @commands.check(session_is_running)
