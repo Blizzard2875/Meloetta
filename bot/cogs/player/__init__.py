@@ -85,7 +85,15 @@ class Player(commands.Cog):
 
         session.skip_requests.append(ctx.author)
 
-        session.voice.stop()
+        skips_needed = len(session.listeners) // 2 + 1
+        if len(session.skip_requests) >= skips_needed:
+            session.voice.stop()
+        else:
+            await ctx.send(embed=discord.Embed(
+                colour=discord.Colour.dark_green(),
+                title="Skip video",
+                description=f"You currently need **{skips_needed - len(skip_requests)}** more votes to skip this track."
+            ))
 
     @commands.command(name="playing", aliases=["now"])
     @commands.check(session_is_running)
