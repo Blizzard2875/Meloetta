@@ -102,7 +102,7 @@ class Session:
 
     def check_listeners(self):
         """Checks if there is anyone listening and pauses / resumes accordingly."""
-        if self.listeners:
+        if list(self.listeners):
             if self.voice.is_paused():
                 self.voice.resume()
         elif self.voice.is_playing():

@@ -8,6 +8,7 @@
   TOKEN: !ENV "TOKEN"
 
   COGS:
+    "bot.cogs.core.admin": ~
     "bot.cogs.core.git": ~
 
     "bot.cogs.player": !Config
