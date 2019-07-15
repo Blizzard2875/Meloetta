@@ -66,6 +66,12 @@ class Session:
             if not member.bot and not (member.voice.deaf or member.voice.self_deaf):
                 yield member
 
+    def user_has_permission(self, user: discord.Member) -> bool:
+        """Checks if a user has permission to interact with this session."""
+        if self.config.get("requires_role") is not None:
+            return self.config.get("requires_role") in user.roles
+        return True
+
     def change_volume(self, volume: float):
         """Changes this session's volume"""
         self.volume = volume
@@ -85,7 +91,7 @@ class Session:
         self.current_track.volume = self.volume
 
         if self.log_channel is not None:
-            await self.current_track.send_playing_embed(self.log_channel)
+            await self.log_channel.send(**self.current_track.playing_message)
 
         self.voice.play(self.current_track, after=self.toggle_next)
 
@@ -93,6 +99,14 @@ class Session:
         """Stops this session."""
         self.is_playing = False
         self.voice.stop()
+
+    def check_listeners(self):
+        """Checks if there is anyone listening and pauses / resumes accordingly."""
+        if self.listeners:
+            if self.voice.is_paused():
+                self.voice.resume()
+        elif self.voice.is_playing():
+            self.voice.pause()
 
     async def session_task(self):
 

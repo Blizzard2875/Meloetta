@@ -15,18 +15,13 @@ class Queue:
 
     def __init__(self, config=None):
         self.config = config or dict()
-        self._requests = list()
-
-    @property
-    def requests(self) -> Generator[Tuple[Track, discord.User], None, None]:
-        for request in self._requests:
-            yield request
+        self.requests = list()
 
     def next_track(self) -> Track:
-        if self._requests:
-            return self._requests.pop(0)[0]
+        if self.requests:
+            return self.requests.pop(0)
 
-    def add_request(self, track: Track, user: discord.User):
+    def add_request(self, track: Track):
         """Adds a track to the list of requests.
 
         Args:
@@ -34,7 +29,7 @@ class Queue:
             user (discord.User): The user who requested the track.
 
         """
-        self._requests.append((track, user))
+        self.requests.append(track)
 
 
 class Radio(Queue):

@@ -1,4 +1,5 @@
 import asyncio
+import datetime
 import logging
 import traceback
 
@@ -14,6 +15,7 @@ else:
 
 from bot.config import CONFIG, init_config
 
+_start_time = datetime.datetime.utcnow()
 
 bot = commands.Bot(
     command_prefix=commands.when_mentioned_or(*CONFIG.PREFIXES),
@@ -44,6 +46,7 @@ bot.log.info("Instance starting...")
 async def on_ready():
     bot.log.info(f"Succesfully logged in as {bot.user}...")
     bot.log.info(f"\tGuilds: {len(bot.guilds)}")
+    bot.log.info(f"\tTook: {datetime.datetime.utcnow() - _start_time}")
 
 
 if __name__ == "__main__":

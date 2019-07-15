@@ -4,7 +4,7 @@ from discord.ext import commands
 from bot.config import CONFIG as BOT_CONFIG
 
 from .session import Session
-from .track import YouTubeTrack
+from .track import MP3Track, YouTubeTrack
 
 COG_CONFIG = BOT_CONFIG.COGS[__name__]
 
@@ -21,6 +21,11 @@ async def user_is_listening(ctx: commands.Context) -> bool:
     return ctx.author in ctx.cog._get_session(ctx.guild).listeners
 
 
+async def user_has_required_permissions(ctx: commands.Context) -> bool:
+    session = ctx.cog._get_session(ctx.guild)
+    return session is None or session.user_has_permission(ctx.author)
+
+
 class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -30,10 +35,11 @@ class Player(commands.Cog):
     def _get_session(self, guild: discord.Guild) -> Session:
         return self._sessions.get(guild)
 
-    @commands.command(name="request")
+    @commands.group(name="request", invoke_without_subcommand=True)
     @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     async def request(self, ctx: commands.Context, *, request: YouTubeTrack):
-        """Adds a YouTube video to the requests
+        """Adds a YouTube video to the requests queue.
 
         request: YouTube search query.
         """
@@ -43,17 +49,37 @@ class Player(commands.Cog):
         if session is None:
             session = Session(self.bot, ctx.author.voice.channel)
 
-        await request.send_request_embed(ctx, ctx.author)
-        session.queue.add_request(request, ctx.author)
+        await ctx.send(**request.request_message)
+        session.queue.add_request(request)
+
+    @request.command(name="mp3")
+    async def request_mp3(self, ctx: commands.Context, *, request: MP3Track):
+        """Adds a local MP3 file to the requests queue.
+
+        request: Local track search query.
+        """
+        await self.request(ctx, request=request)
+
+    @request.command(name="youtube")
+    async def request_youtube(self, ctx: commands.Context, *, request: YouTubeTrack):
+        """Adds a YouTube video to the requests queue.
+
+        request: YouTube search query.
+        """
+        await self.request(ctx, request=request)
 
     @commands.command(name="skip")
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     async def skip(self, ctx: commands.Context):
-        """Skips a track
-
-        """
+        """Skips the currently playing track."""
         session = self._get_session(ctx.guild)
+
+        if ctx.author in session.skip_requests:
+            raise commands.CommandError("You have already requested to skip.")
+
+        session.skip_requests.append(ctx.author)
+
         session.voice.stop()
 
     @commands.command(name="playing", aliases=["now"])
@@ -63,23 +89,45 @@ class Player(commands.Cog):
 
         """
         session = self._get_session(ctx.guild)
-        await session.current_track.send_playing_embed(ctx)
+        await ctx.send(**session.current_track.playing_embed)
 
     @commands.command(name="queue", aliases=["upcoming"])
     @commands.check(session_is_running)
     async def queue(self, ctx: commands.Context):
-        pass
 
-    @commands.command(name="next")
-    @commands.check(session_is_running)
-    async def next(self, ctx: commands.Context):
-        pass
+        session = self._get_session(ctx.guild)
+
+        embed = discord.Embed(
+            colour=discord.Colour.dark_green(),
+            title="Upcoming requests"
+        )
+
+        for index, track in enumerate(session.queue.requests[:10], 1):
+            embed.add_field(
+                name=f"{index} - Requested by {track.requester}",
+                value=track.information
+            )
+
+        if not embed.fields:
+            embed.description = "There are currently no requests"
+
+        await ctx.send(embed=embed)
 
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
-            self._sessions[instance.voice_channel.guild] = Session(self.bot, run_forever=True,
-                                                                   **instance.__dict__)
+            self._sessions[instance.voice_channel.guild] = Session(
+                self.bot, run_forever=True, **instance.__dict__)
+
+    @commands.Cog.listener()
+    async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
+        session = self._get_session(member.guild)
+        if session is not None:
+            if after is None and member in session.skip_requests:
+                session.skip_requests.remove(member)
+
+            if session.voice is not None:
+                session.check_listeners()
 
 
 def setup(bot: commands.Bot):
