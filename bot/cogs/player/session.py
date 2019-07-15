@@ -78,7 +78,7 @@ class Session:
         self.current_track.volume = self.volume
 
     def toggle_next(self, error=None):
-        """"""
+        """Sets the next track to start playing"""
         if error:
             pass
         self.skip_requests.clear()
@@ -90,9 +90,9 @@ class Session:
         self.current_track = self.queue.next_track()
         self.current_track.volume = self.volume
 
-        if self.voice_channel.guild == COG_CONFIG.PLAYING_STATUS_GUILD:
+        if self.voice_channel.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
             await self.bot.change_presence(activity=discord.Activity(
-                name=self.current_track.information, type=discord.ActivityType.playing
+                name=self.current_track.status_information, type=discord.ActivityType.playing
             ))
 
         if self.log_channel is not None:

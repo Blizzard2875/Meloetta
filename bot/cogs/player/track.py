@@ -46,6 +46,14 @@ class Track(discord.PCMVolumeTransformer):
         return self._track_type
 
     @property
+    def status_information(self) -> str:
+        """Provides basic information on a track for use in the discord status section
+
+        An example of this would be the title and atrist.
+        """
+        return self._track_type
+
+    @property
     def playing_message(self) -> Dict:
         """A discord embed with more detailed information to be displayed when a track is playing."""
         return {
@@ -126,6 +134,10 @@ class MP3Track(Track):
         return f'**{self._title}** by {self._artist}**'
 
     @property
+    def status_information(self) -> str:
+        return f"{self._title} from {self._artist}"
+
+    @property
     def playing_message(self) -> Dict:
         return {
             'embed': discord.Embed(
@@ -175,6 +187,10 @@ class YouTubeTrack(Track):
     @property
     def information(self) -> str:
         return f'**[{self._title}]({self._url})** by **[{self._uploader}]({self._uploader_url})**'
+
+    @property
+    def status_information(self) -> str:
+        return f'{self._title} by {self._uploader}'
 
     @property
     def playing_message(self) -> Dict:
