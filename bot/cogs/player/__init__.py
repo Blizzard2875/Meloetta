@@ -1,3 +1,5 @@
+import datetime
+
 import discord
 from discord.ext import commands
 
@@ -92,7 +94,7 @@ class Player(commands.Cog):
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
                 title="Skip video",
-                description=f"You currently need **{skips_needed - len(skip_requests)}** more votes to skip this track."
+                description=f"You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track."
             ))
 
     @commands.command(name="playing", aliases=["now"])
@@ -102,7 +104,21 @@ class Player(commands.Cog):
 
         """
         session = self._get_session(ctx.guild)
-        await ctx.send(**session.current_track.playing_message)
+
+        play_time = round(session.voice._player.loops *
+                          session.voice._player.DELAY)
+        play_time_str = str(datetime.timedelta(seconds=play_time))
+        length_str = str(datetime.timedelta(
+            seconds=session.current_track.length))
+        
+        seek_length = 50
+        seek_distance = round(seek_length * play_time / session.current_track.length)
+
+        message = session.current_track.playing_message
+        message['embed'].add_field(
+            name=f'{play_time_str} / {length_str}', value=f"{'-' * seek_distance}|{'-' * (seek_length - seek_distance)}", inline=False)
+
+        await ctx.send(**message)
 
     @commands.command(name="queue", aliases=["upcoming"])
     @commands.check(session_is_running)
