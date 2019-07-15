@@ -18,7 +18,8 @@ async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
 
 
 async def user_is_listening(ctx: commands.Context) -> bool:
-    return ctx.author in ctx.cog._get_session(ctx.guild).listeners
+    session = ctx.cog._get_session(ctx.guild)
+    return session is not None and ctx.author in session.listeners
 
 
 async def user_has_required_permissions(ctx: commands.Context) -> bool:
