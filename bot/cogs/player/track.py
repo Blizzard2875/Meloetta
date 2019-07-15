@@ -140,6 +140,7 @@ class MP3Track(Track):
 
     @property
     def playing_message(self) -> Dict:
+        self._cover.seek(0)
         return {
             'embed': discord.Embed(
                 colour=discord.Colour.dark_green(),

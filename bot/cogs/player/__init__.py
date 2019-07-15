@@ -109,7 +109,7 @@ class Player(commands.Cog):
                           session.voice._player.DELAY)
         play_time_str = str(datetime.timedelta(seconds=play_time))
         length_str = str(datetime.timedelta(
-            seconds=session.current_track.length))
+            seconds=round(session.current_track.length)))
         
         seek_length = 50
         seek_distance = round(seek_length * play_time / session.current_track.length)
