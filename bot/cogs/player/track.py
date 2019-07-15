@@ -120,7 +120,7 @@ class MP3Track(Track):
 
         tags = MP3(source)
 
-        self._length = tags.info.length
+        self.length = tags.info.length
 
         for attribute, tag in (('_title', 'TIT2'), ('_artist', 'TPE1'), ('_album', 'TALB'), ('_date', 'TDRC'), ('_cover', 'APIC:'), ('_cover', 'APIC')):
             data = tags.get(tag)
@@ -172,7 +172,7 @@ class YouTubeTrack(Track):
             if 'entries' in info:
                 info = info['entries'][0]
 
-            self._length = info['duration']
+            self.length = info['duration']
 
             self._title = info['title']
             self._url = info['webpage_url']
