@@ -3,6 +3,8 @@ import datetime
 import functools
 import re
 
+from difflib import SequenceMatcher
+from glob import glob
 from io import BytesIO
 from typing import Dict, List, Tuple
 
@@ -108,6 +110,13 @@ class Track(discord.PCMVolumeTransformer):
         return int(reaction.emoji[0]) - 1
 
 
+tracks = {}
+for track in glob(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY + "/*.mp3"):
+    tags = MP3(track)
+    tracks[track] = re.sub(r"[^\w\s]", "", tags.get('TIT2')[0] + ' ' +
+                           tags.get('TALB')[0]).split(' ')
+
+
 class MP3Track(Track):
     _embed_colour = discord.Colour.dark_green()
     _track_type = 'MP3 file'
@@ -153,6 +162,25 @@ class MP3Track(Track):
             ),
             'file': discord.File(self._cover, 'cover.jpg')
         }
+
+    @classmethod
+    async def convert(cls, ctx: commands.Context, argument: str):
+
+        # Search through all tracks
+        scores = {t: 0 for t in tracks}
+        for word in re.sub(r"[^\w\s]", "", argument).split():
+            for track in tracks:
+                for _word in tracks[track]:
+                    scores[track] += SequenceMatcher(None, word, _word).ratio()
+        for track in tracks:
+            scores[track] /= len(tracks[track])
+        search_results = sorted(scores, key=scores.get, reverse=True)
+
+        # Raise error or pick search result
+        _tracks = [cls(track, requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
+        result = await cls.get_user_choice(ctx, argument, [(track._title, (track._album)) for track in _tracks])
+
+        return _tracks[result]
 
 
 class YouTubeTrack(Track):

@@ -6,7 +6,7 @@ from discord.ext import commands
 from bot.config import CONFIG as BOT_CONFIG
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack
+from .track import MP3Track, YouTubeTrack, Track
 
 COG_CONFIG = BOT_CONFIG.COGS[__name__]
 
@@ -42,7 +42,7 @@ class Player(commands.Cog):
     def _get_session(self, guild: discord.Guild) -> Session:
         return self._sessions.get(guild)
 
-    @commands.group(name="request", invoke_without_subcommand=True)
+    @commands.group(name="request", invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     async def request(self, ctx: commands.Context, *, request: YouTubeTrack):
@@ -50,11 +50,11 @@ class Player(commands.Cog):
 
         request: YouTube search query.
         """
-
         session = self._get_session(ctx.guild)
 
         if session is None:
-            session = self._sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel)
+            session = self._sessions[ctx.guild] = Session(
+                self.bot, self, ctx.author.voice.channel)
 
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
@@ -65,7 +65,7 @@ class Player(commands.Cog):
 
         request: Local track search query.
         """
-        await self.request(ctx, request=request)
+        await ctx.invoke(self.request, request=request)
 
     @request.command(name="youtube")
     async def request_youtube(self, ctx: commands.Context, *, request: YouTubeTrack):
@@ -73,7 +73,7 @@ class Player(commands.Cog):
 
         request: YouTube search query.
         """
-        await self.request(ctx, request=request)
+        await ctx.invoke(self.request, request=request)
 
     @commands.command(name="skip")
     @commands.check(session_is_running)
@@ -110,9 +110,10 @@ class Player(commands.Cog):
         play_time_str = str(datetime.timedelta(seconds=play_time))
         length_str = str(datetime.timedelta(
             seconds=round(session.current_track.length)))
-        
+
         seek_length = 50
-        seek_distance = round(seek_length * play_time / session.current_track.length)
+        seek_distance = round(seek_length * play_time /
+                              session.current_track.length)
 
         message = session.current_track.playing_message
         message['embed'].add_field(
