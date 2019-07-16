@@ -50,6 +50,11 @@ class Player(commands.Cog):
 
         request: YouTube search query.
         """
+        try:
+            await ctx.message.delete()
+        except discord.Forbidden:
+            pass
+
         session = self._get_session(ctx.guild)
 
         if session is None:

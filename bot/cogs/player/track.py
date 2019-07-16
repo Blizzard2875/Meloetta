@@ -101,7 +101,7 @@ class Track(discord.PCMVolumeTransformer):
             return reaction.message.id == search_message.id and user == ctx.author and reaction.emoji in (numeric_emoji(n) for n in range(1, 1+len(entries)))
 
         try:
-            reaction, _ = await ctx.bot.wait_for('reaction_add', check=check)
+            reaction, _ = await ctx.bot.wait_for('reaction_add', check=check, timeout=60)
         except asyncio.TimeoutError:
             raise commands.BadArgument(
                 "You did not choose a search result in time.")
