@@ -54,7 +54,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if session is None:
-            session = Session(self.bot, ctx.author.voice.channel)
+            session = self._sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel)
 
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
@@ -146,7 +146,7 @@ class Player(commands.Cog):
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
             self._sessions[instance.voice_channel.guild] = Session(
-                self.bot, run_forever=True, **instance.__dict__)
+                self.bot, self, run_forever=True, **instance.__dict__)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
