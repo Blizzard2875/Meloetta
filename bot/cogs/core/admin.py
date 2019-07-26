@@ -38,7 +38,7 @@ class Admin(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         """You must be the bot owner to use this command."""
-        return ctx.bot.is_owner(ctx.author)
+        return await ctx.bot.is_owner(ctx.author)
 
     @commands.command(name="eval", hidden=True)
     async def eval(self, ctx: commands.Context, *, code: CodeConverter = []):

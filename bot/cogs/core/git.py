@@ -17,7 +17,7 @@ class Git(commands.Cog):
 
     async def cog_check(self, ctx: commands.Context) -> bool:
         """You must be the bot owner to use this command."""
-        return ctx.bot.is_owner(ctx.author)
+        return await ctx.bot.is_owner(ctx.author)
 
     @commands.command(name="load", hidden=True)
     async def load(self, ctx: commands.Context, cog: str):
