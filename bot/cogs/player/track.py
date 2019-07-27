@@ -4,7 +4,7 @@ import functools
 import re
 
 from difflib import SequenceMatcher
-from glob import glob
+from pathlib import Path
 from io import BytesIO
 from typing import Dict, List, Tuple
 
@@ -111,7 +111,7 @@ class Track(discord.PCMVolumeTransformer):
 
 
 tracks = {}
-for track in glob(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY + "/*.mp3"):
+for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob("**/*.mp3"):
     tags = MP3(track)
     tracks[track] = re.sub(r"[^\w\s]", "", tags.get('TIT2')[0] + ' ' +
                            tags.get('TALB')[0]).split(' ')

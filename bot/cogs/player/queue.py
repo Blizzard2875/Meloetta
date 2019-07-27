@@ -1,4 +1,4 @@
-from glob import glob
+from pathlib import Path
 from random import choice
 from typing import Generator, Tuple
 
@@ -41,4 +41,4 @@ class Radio(Queue):
             'playlist_directory') or COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY
 
     def next_track(self) -> Track:
-        return super().next_track() or MP3Track(choice(glob(self.playlist_directory + "/*.mp3")))
+        return super().next_track() or MP3Track(choice(Path(self.playlist_directory).glob("**/*.mp3")))
