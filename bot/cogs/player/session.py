@@ -87,15 +87,14 @@ class Session:
         # self.repeat_requests.clear()
         self.bot.loop.call_soon_threadsafe(self.play_next_song.set)
 
-    async def play_next_track(self):
+    async def play_track(self):
         """Plays the next track in the queue."""
-        self.current_track = self.queue.next_track()
-        self.current_track.volume = self.volume
 
-        if self.voice_channel.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
-            await self.bot.change_presence(activity=discord.Activity(
-                name=self.current_track.status_information, type=discord.ActivityType.playing
-            ))
+        if COG_CONFIG.PLAYING_STATUS_GUILD is not None:
+            if self.voice_channel.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
+                await self.bot.change_presence(activity=discord.Activity(
+                    name=self.current_track.status_information, type=discord.ActivityType.playing
+                ))
 
         if self.log_channel is not None:
             await self.log_channel.send(**self.current_track.playing_message)
@@ -118,11 +117,23 @@ class Session:
     async def session_task(self):
 
         self.voice = await self.voice_channel.connect()
+        self.voice.session = self
 
         while self.is_playing:
             self.play_next_song.clear()
-            await self.play_next_track()
+
+            # if no more tracks in queue exit
+            self.current_track = self.queue.next_track()
+            if self.current_track is None:
+                self.stop()
+                break
+            
+            # Set volume and play new track
+            self.current_track.volume = self.volume
+            await self.play_track()
             self.check_listeners()
+
+            # Wait for track to finish before playing next track
             await self.play_next_song.wait()
 
         # Delete session and disconnect
