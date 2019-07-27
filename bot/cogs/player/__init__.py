@@ -92,7 +92,7 @@ class Player(commands.Cog):
 
         session.skip_requests.append(ctx.author)
 
-        skips_needed = len(session.listeners) // 2 + 1
+        skips_needed = len(list(session.listeners)) // 2 + 1
         if len(session.skip_requests) >= skips_needed:
             session.voice.stop()
         else:
