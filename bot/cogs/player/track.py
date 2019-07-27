@@ -141,7 +141,7 @@ class MP3Track(Track):
 
     @property
     def information(self) -> str:
-        return f'**{self._title}** by {self._artist}**'
+        return f'**{self._title}** by **{self._artist}**'
 
     @property
     def status_information(self) -> str:
