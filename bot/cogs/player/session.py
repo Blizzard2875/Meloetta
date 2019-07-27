@@ -64,7 +64,7 @@ class Session:
             `generator` of `discord.Member`: A generator concisting ow members listening to this session.
 
         """
-        for member in self.voice_channel.members:
+        for member in self.voice.channel.members:
             if not member.bot and not (member.voice.deaf or member.voice.self_deaf):
                 yield member
 
