@@ -83,7 +83,7 @@ class Player(commands.Cog):
     # War related code - Will be deleted
     @request.command(name='map', hidden=True)
     async def request_map(self, ctx: commands.Context):
-        request = MP3Track(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY + 'mystery_dungeon_time_darkness_sky/014 Treasure Town.mp3', requester=ctx.user)
+        request = MP3Track(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY + 'mystery_dungeon_time_darkness_sky/014 Treasure Town.mp3', requester=ctx.author)
         await ctx.invoke(self.request, request=request)
 
     @commands.command(name="skip")
