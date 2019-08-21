@@ -80,6 +80,11 @@ class Player(commands.Cog):
         """
         await ctx.invoke(self.request, request=request)
 
+    @request.command(name='map', hidden=True)
+    async def request_map(self, ctx: commands.Context):
+        request = MP3Track(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY + 'mystery_dungeon_time_darkness_sky/014 Treasure Town.mp3')
+        await ctx.invoke(self.request, request=request)
+
     @commands.command(name="skip")
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
