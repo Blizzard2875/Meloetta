@@ -1,4 +1,5 @@
 import asyncio
+import aiohttp
 import datetime
 import functools
 import re
@@ -187,6 +188,8 @@ class YouTubeTrack(Track):
     _embed_colour = discord.Colour.red()
     _track_type = 'YouTube video'
 
+    youtube_api_url = f"https://www.googleapis.com/{COG_CONFIG.YOUTUBE_API.SERVICE_NAME}/{COG_CONFIG.YOUTUBE_API.VERSION}"
+
     video_url_check = re.compile(
         r'(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})')
     ydl_options = {
@@ -252,9 +255,11 @@ class YouTubeTrack(Track):
                 return cls(argument, requester=ctx.author)
 
             # Otherwise search for video
-            with youtube_dl.YoutubeDL() as ydl:
-                search_results = (ydl.extract_info(
-                    f'ytsearch{COG_CONFIG.MAX_SEARCH_RESULTS}:{argument}', download=False, ie_key='YoutubeSearch'))['entries']
+            async with aiohttp.ClientSession() as session:
+                search_url = f'{cls.youtube_api_url}/search?q={argument}&part=snippet&maxResults={COG_CONFIG.MAX_SEARCH_RESULTS}&key={COG_CONFIG.YOUTUBE_API.KEY}&alt=json'
+
+                async with session.get(search_url) as response:
+                    search_results = (await response.json())['items']
 
             # Raise error or pick search result
             if len(search_results) == 0:
@@ -262,6 +267,6 @@ class YouTubeTrack(Track):
             elif len(search_results) == 1:
                 result = 0
             else:
-                result = await cls.get_user_choice(ctx, argument, [(entry['title'], entry['uploader']) for entry in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]])
+                result = await cls.get_user_choice(ctx, argument, [(entry['snippet']['title'], entry['snippet']['channelTitle']) for entry in search_results])
 
-            return cls(search_results[result]['webpage_url'], requester=ctx.author)
+            return cls(search_results[result]['id']['videoId'], requester=ctx.author)
