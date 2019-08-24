@@ -42,7 +42,7 @@ class Player(commands.Cog):
     def _get_session(self, guild: discord.Guild) -> Session:
         return self._sessions.get(guild)
 
-    @commands.group(name="request", invoke_without_command=True)
+    @commands.group(name="request", aliases=["play"], invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     async def request(self, ctx: commands.Context, *, request: YouTubeTrack):
