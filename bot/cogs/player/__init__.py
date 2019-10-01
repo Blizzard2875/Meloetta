@@ -3,12 +3,12 @@ import datetime
 import discord
 from discord.ext import commands
 
-from bot.config import CONFIG as BOT_CONFIG
+from bot.config import config as BOT_CONFIG
 
 from .session import Session
 from .track import MP3Track, YouTubeTrack, Track
 
-COG_CONFIG = BOT_CONFIG.COGS[__name__]
+COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
 
 async def session_is_running(ctx: commands.Context) -> bool:
@@ -108,27 +108,47 @@ class Player(commands.Cog):
                 description=f"You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track."
             ))
 
-    @commands.command(name="playing", aliases=["now"])
+    @commands.command(name='repeat')
     @commands.check(session_is_running)
-    async def playing(self, ctx: commands.Context):
-        """Returns information on the currently playing track
-
-        """
+    @commands.check(user_is_listening)
+    async def repeat(self, ctx: commands.Context):
+        """Repeats the currently playing track."""
         session = self._get_session(ctx.guild)
 
-        play_time = round(session.voice._player.loops *
-                          session.voice._player.DELAY)
+        if ctx.author in session.repeat_requests:
+            raise commands.CommandError(
+                'You have already requested to repeat.')
+
+        session.repeat_requests.append(ctx.author)
+
+        repeats_needed = len(list(session.listeners)) // 2 + 1
+        if len(session.repeat_requests) >= repeats_needed:
+            session.queue.add_request(session.current_track, at_start=True)
+        else:
+            await ctx.send(embed=discord.Embed(
+                colour=discord.Colour.dark_green(),
+                title='Repeat track',
+                description=f'You currently need **{repeats_needed - len(session.repeat_requests)}** more votes to repeat this track.'
+            ))
+
+    @commands.command(name='playing', aliases=['now'])
+    @commands.check(session_is_running)
+    async def playing(self, ctx: commands.Context):
+        """Retrieves information on the currently playing track."""
+        session = self._get_session(ctx.guild)
+
+        play_time = session.current_track.play_time
+        track_length = session.current_track.length
+
         play_time_str = str(datetime.timedelta(seconds=play_time))
-        length_str = str(datetime.timedelta(
-            seconds=round(session.current_track.length)))
+        length_str = str(datetime.timedelta(seconds=track_length))
 
         seek_length = 50
-        seek_distance = round(seek_length * play_time /
-                              session.current_track.length)
+        seek_distance = round(seek_length * play_time / track_length)
 
         message = session.current_track.playing_message
         message['embed'].add_field(
-            name=f'{play_time_str} / {length_str}', value=f"{'-' * seek_distance}|{'-' * (seek_length - seek_distance)}", inline=False)
+            name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
 
         await ctx.send(**message)
 

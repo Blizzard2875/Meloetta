@@ -1,17 +1,19 @@
 import os
-from dataclasses import dataclass, field
 from types import LambdaType
-from typing import Any, Dict, List, Mapping
 
-import discord
 import yaml
 
 _bot = None
 
 
+class HiddenRepr(str):
+    def __repr__(self):
+        return '<str with hidden value>'
+
+
 def _env_var_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tag for loading optional environment variables.
-    If the environment variable is set it returns its value. 
+    If the environment variable is set it returns its value.
     Otherwise returns `None`.
 
     Example usage:
@@ -24,12 +26,11 @@ def _env_var_constructor(loader: yaml.Loader, node: yaml.Node):
     else:
         raise TypeError('Expected a string')
 
-    return os.getenv(key)
+    return HiddenRepr(os.getenv(key))
 
 
 def _guild_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tak for loading `discord.Guild` objects.
-    
     Example usage:
         key: !Guild guild_id
     """
@@ -39,7 +40,6 @@ def _guild_constructor(loader: yaml.Loader, node: yaml.Node):
 
 def _channel_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tak for loading `discord.abc.GuildChannel` objects.
-    
     Example usage:
         key: !Channel guild_id channel_id
     """
@@ -48,9 +48,18 @@ def _channel_constructor(loader: yaml.Loader, node: yaml.Node):
     return lambda: _bot.get_guild(guild_id).get_channel(channel_id)
 
 
+def _message_constructor(loader: yaml.Loader, node: yaml.Node):
+    """Implements a custom YAML tak for loading `discord.Message` objects.
+    Example usage:
+        key: !channel guild_id channel_id message_id
+    """
+    guild_id, channel_id, message_id = [
+        int(x) for x in loader.constrcutc_scalar(node).split()]
+    return lambda: _bot.get_guild(guild_id).get_channel(channel_id).fetch_message(message_id)
+
+
 def _role_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tak for loading `discord.Role` objects.
-    
     Example usage:
         key: !Role guild_id role_id
     """
@@ -61,7 +70,6 @@ def _role_constructor(loader: yaml.Loader, node: yaml.Node):
 
 def _member_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tak for loading `discord.Member` objects.
-    
     Example usage:
         key: !Member guild_id user_id
     """
@@ -72,7 +80,6 @@ def _member_constructor(loader: yaml.Loader, node: yaml.Node):
 
 def _user_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tak for loading `discord.User` objects.
-    
     Example usage:
         key: !User user_id
     """
@@ -82,7 +89,6 @@ def _user_constructor(loader: yaml.Loader, node: yaml.Node):
 
 def _emoji_constructor(loader: yaml.Loader, node: yaml.Node):
     """Implements a custom YAML tak for loading `discord.Emoji` objects.
-    
     Example usage:
         key: !Emoji emoji_id
     """
@@ -123,12 +129,16 @@ class Config(yaml.YAMLObject):
         return f"<Config {' '.join(f'{key}={repr(value)}' for key, value in self.__dict__.items())}>"
 
 
+def load_config(filename: str) -> Config:
+    with open(filename, encoding="UTF-8") as f:
+        return yaml.load(f, Loader=yaml.FullLoader)
+
+
 CONSTRUCTORS = [
 
     # General constructors
     ("Config", Config.from_yaml),
     ("ENV", _env_var_constructor),
-
 
     # Discord constructors
     ("Emoji", _emoji_constructor),
@@ -137,23 +147,14 @@ CONSTRUCTORS = [
 
     # Discord Guild dependant constructors
     ("Channel", _channel_constructor),
+    ("Message", _message_constructor),
     ("Member", _member_constructor),
     ("Role", _role_constructor)
 ]
-
 
 # Add constructors
 for key, constructor in CONSTRUCTORS:
     yaml.FullLoader.add_constructor(f'!{key}', constructor)
 
-
 # Load the config
-with open("config.yml", encoding="UTF-8") as f:
-    CONFIG = yaml.load(f, Loader=yaml.FullLoader)  # type: Config
-
-
-# Pass the bot into config
-def init_config(bot: discord.Client):
-    global _bot
-    if _bot is None:
-        _bot = bot
+config = load_config('config.yml')

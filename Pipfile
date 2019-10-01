@@ -12,6 +12,7 @@ pyyaml = "*"
 uvloop = {version = "*",os_name = "== 'posix'"}
 discord-py = {extras = ["voice"],version = "*"}
 mutagen = "*"
+psutil = "*"
 youtube-dl = "*"
 
 [requires]

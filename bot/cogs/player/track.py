@@ -16,9 +16,8 @@ from mutagen.mp3 import MP3
 import discord
 from discord.ext import commands
 
-from bot.config import CONFIG as BOT_CONFIG
-
-COG_CONFIG = BOT_CONFIG.COGS[__name__[:__name__.rindex('.')]]
+from bot.config import config as BOT_CONFIG
+COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 
 def numeric_emoji(n: int) -> str:
@@ -39,12 +38,22 @@ class Track(discord.PCMVolumeTransformer):
     def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None,  **kwargs):
         super().__init__(discord.FFmpegPCMAudio(source, **kwargs), volume)
         self.requester = requester
+        self._frames = 0
+
+    def read(self):
+        self._frames += 1
+        return super().read()
+
+    @property
+    def play_time(self) -> int:
+        """Returns the current track play time in seconds."""
+        return round(self._frames / 50)
 
     @property
     def information(self) -> str:
         """Provides basic information on a track
 
-        An example of this would be the title and atrist.
+        An example of this would be the title and artist.
         """
         return self._track_type
 
@@ -52,7 +61,7 @@ class Track(discord.PCMVolumeTransformer):
     def status_information(self) -> str:
         """Provides basic information on a track for use in the discord status section
 
-        An example of this would be the title and atrist.
+        An example of this would be the title and artist.
         """
         return self._track_type
 
