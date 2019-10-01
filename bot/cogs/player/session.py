@@ -5,11 +5,10 @@ from typing import Dict, Generator
 import discord
 from discord.ext import commands
 
-from bot.config import CONFIG as BOT_CONFIG
-
 from .queue import Queue, Radio
 
-COG_CONFIG = BOT_CONFIG.COGS[__name__[:__name__.rindex(".")]]
+from bot.config import config as BOT_CONFIG
+COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex(".")]]
 
 
 class Session:
@@ -34,7 +33,7 @@ class Session:
         self.queue_config = self.config.get('queue')
 
         self.skip_requests = list()
-        # self.repeat_requests = list() # TODO: Repeat requests?
+        self.repeat_requests = list()
 
         self.voice = None
         self.current_track = None

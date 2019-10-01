@@ -1,11 +1,15 @@
 import asyncio
 import datetime
-import inspect
 import logging
 import traceback
 
 import discord
 from discord.ext import commands
+
+
+import bot.config as config
+from bot.help import EmbedHelpCommand
+from bot.config import config as BOT_CONFIG
 
 try:
     import uvloop
@@ -14,112 +18,91 @@ except ImportError:
 else:
     asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
 
-from bot.config import CONFIG, init_config
-from bot.help import EmbedHelpCommand
-
 _start_time = datetime.datetime.utcnow()
 
-bot = commands.Bot(
-    command_prefix=commands.when_mentioned_or(*CONFIG.PREFIXES),
-    case_insensitive=True,
-    help_command=EmbedHelpCommand(dm_help=None, dm_help_threshold=500),
-    description=CONFIG.DESCRIPTION,
-    max_messages=100,
-    fetch_offline_members=False,
+# Create bot instance
+config._bot = bot = commands.Bot(
+    command_prefix=commands.when_mentioned_or(*BOT_CONFIG.PREFIXES),
     activity=discord.Activity(
-        name="Nothing", type=discord.ActivityType.playing
-    )
+        name=f"for Commands: {BOT_CONFIG.PREFIXES[0]}help", type=discord.ActivityType.watching),
+    case_insensitive=True,
+    fetch_offline_members=False,
+    help_command=EmbedHelpCommand(dm_help=None, dm_help_threshold=1000),
 )
 
+# Setup logging
 bot.log = logging.getLogger(__name__)
-bot.log.setLevel(logging.INFO)
+bot.log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL))
 
-handler = logging.FileHandler(filename=f"{CONFIG.APP_NAME}.log")
+handler = logging.FileHandler(filename=f'{BOT_CONFIG.APP_NAME}.log')
 handler.setFormatter(logging.Formatter(
-    "{asctime} - {levelname} - {message}", style="{"))
+    '{asctime} - {levelname} - {message}', style='{'))
 
 bot.log.addHandler(handler)
 bot.log.addHandler(logging.StreamHandler())
 
-bot.log.info("Instance starting...")
+bot.log.info('Instance starting...')
 
 
 @bot.event
 async def on_ready():
-    bot.log.info(f"Succesfully logged in as {bot.user}...")
-    bot.log.info(f"\tGuilds: {len(bot.guilds)}")
-    bot.log.info(f"\tTook: {datetime.datetime.utcnow() - _start_time}")
+    bot.log.info(f'Succesfylly loggged in as {bot.user}...')
+    bot.log.info(f'\tGuilds: {len(bot.guilds)}')
+    bot.log.info(f'\tTook: {datetime.datetime.utcnow() - _start_time}')
 
 
 @bot.event
 async def on_command_error(ctx: commands.Context, e: Exception):
-
-    bot.log.error(e)
-
-    if isinstance(e, commands.CheckFailure):
-
-        # Command Checks
-        for check in ctx.command.checks:
-
-            result = check(ctx)
-            if inspect.isawaitable(result):
-                result = await result
-
-            if not result:
-                return await ctx.author.send(embed=discord.Embed(
-                    title=f"Error with command: {ctx.command.name}",
-                    description=check.__doc__
-                ))
-
-        # Cog Checks
-        cog_checks = [ctx.cog.cog_check, ctx.cog.cog_check_once]
-        for check in cog_checks:
-
-            result = check(ctx)
-            if inspect.isawaitable(result):
-                result = await result
-
-            if not result:
-                await ctx.send(embed=discord.Embed(
-                    title=f"Error with command: {ctx.command.name}",
-                    description=check.__doc__
-                ))
-
-        # TODO: Global Checks
+    # Ignore if CommandNotFound
+    if isinstance(e, commands.CommandNotFound):
         return
 
+    # Ignore if command has on error handler
+    if hasattr(ctx.command, 'on_error'):
+        return
+
+    # Ignore if cog has a command error handler
+    if ctx.cog is not None:
+        if commands.Cog._get_overridden_method(ctx.cog.cog_command_error) is not None:
+            return
+
+    # Respond with error message if CheckFailure, CommandDisabled, CommandOnCooldown or UserInputError
+    if isinstance(e, (commands.CheckFailure, commands.CommandOnCooldown, commands.UserInputError)):
+        return await ctx.send(embed=discord.Embed(
+            title=f'Error with command: {ctx.command.name}',
+            description=str(e)
+        ))
+
+    # Otherwise log error
+    bot.log.error(f'Error with command: {ctx.command.name}')
+    bot.log.error(f'{type(e).__name__}: {e}')
+    bot.log.error(
+        "".join(traceback.format_exception(type(e), e, e.__traceback__)))
+
+    embed = discord.Embed()
+
+    # Send to user
     embed = discord.Embed(
-        title=f"Error with command: {ctx.command.name}",
-        description=f"```py\n{type(e).__name__}: {e}\n```"
+        title=f'Error with command: {ctx.command.name}',
+        description=f'```py\n{type(e).__name__}: {e}\n```'
     )
     await ctx.send(embed=embed)
 
-    if isinstance(e, (commands.BadArgument, commands.BadUnionArgument)):
-        return
-
-    bot.log.error(f"{type(e).__name__}: {e}")
-    bot.log.error("".join(traceback.format_exception(type(e), e, e.__traceback__)))
-
-    if isinstance(e, (commands.CommandError, asyncio.TimeoutError)):
-        return
-
-    embed.add_field(name="Channel:", value=f"<#{ctx.channel.id}>")
-    embed.add_field(name="User:", value=f"<@{ctx.author.id}>")
-    await CONFIG.ERROR_LOG_CHANNEL.send(embed=embed)
-
+    # Send to error log channel
+    embed.add_field(
+        name='Channel', value=f'<#{ctx.channel.id}> (#{ctx.channel.name})')
+    embed.add_field(name='User', value=f'<@{ctx.author.id}> ({ctx.author})')
+    await BOT_CONFIG.ERROR_LOG_CHANNEL.send(embed=embed)
 
 if __name__ == "__main__":
 
-    # Initialise bot dependant configuration
-    init_config(bot)
-
-    # Load cogs
-    for cog in CONFIG.COGS:
+    # Load extensions from config
+    for extension in BOT_CONFIG.EXTENSIONS:
         try:
-            bot.load_extension(cog)
+            bot.load_extension(extension)
         except Exception as e:
-            bot.log.error(f"Failed to load cog: {cog}")
-            bot.log.error(f"\t{type(e).__name__}: {e}")
+            bot.log.error(f'Failed to load extension: {extension}')
+            bot.log.error(f'\t{type(e).__name__}: {e}')
             bot.log.error(traceback.format_exc())
 
-    bot.run(CONFIG.TOKEN)
+    bot.run(BOT_CONFIG.TOKEN)

@@ -6,7 +6,7 @@ import re
 import discord
 from discord.ext import commands
 
-from bot.config import CONFIG
+from bot.config import config as BOT_CONFIG
 
 
 class Git(commands.Cog):
