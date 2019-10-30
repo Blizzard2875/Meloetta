@@ -6,7 +6,7 @@ from discord.ext import commands
 from bot.config import config as BOT_CONFIG
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack, Track
+from .track import MP3Track, YouTubeTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -64,6 +64,110 @@ class Player(commands.Cog):
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
 
+    @request.command(name='👻', hidden=True)
+    async def request_a(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/a.mp3', requester=ctx.author))
+
+    @request.command(name='⚰', hidden=True)
+    async def request_b(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/b.mp3', requester=ctx.author))
+
+    @request.command(name='💀', hidden=True)
+    async def request_c(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/c.mp3', requester=ctx.author))
+
+    @request.command(name='🍬', hidden=True)
+    async def request_d(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/d.mp3', requester=ctx.author))
+
+    @request.command(name='🤡', hidden=True)
+    async def request_e(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/e.mp3', requester=ctx.author))
+
+    @request.command(name='🍭', hidden=True)
+    async def request_f(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/f.mp3', requester=ctx.author))
+
+    @request.command(name='🕷', hidden=True)
+    async def request_g(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/g.mp3', requester=ctx.author))
+
+    @request.command(name='🌕', hidden=True)
+    async def request_h(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/h.mp3', requester=ctx.author))
+
+    @request.command(name='🦇', hidden=True)
+    async def request_i(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/i.mp3', requester=ctx.author))
+
+    @request.command(name='👽', hidden=True)
+    async def request_j(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/j.mp3', requester=ctx.author))
+
+    @request.command(name='🃏', hidden=True)
+    async def request_k(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/k.mp3', requester=ctx.author))
+
+    @request.command(name='🤖', hidden=True)
+    async def request_l(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/l.mp3', requester=ctx.author))
+
+    @request.command(name='🕸', hidden=True)
+    async def request_m(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/m.mp3', requester=ctx.author))
+
+    @request.command(name='🕯', hidden=True)
+    async def request_n(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/n.mp3', requester=ctx.author))
+
+    @request.command(name='☠', hidden=True)
+    async def request_o(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/o.mp3', requester=ctx.author))
+
+    @request.command(name='👹', hidden=True)
+    async def request_p(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/p.mp3', requester=ctx.author))
+
+    @request.command(name='🍫', hidden=True)
+    async def request_q(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/q.mp3', requester=ctx.author))
+
+    @request.command(name='🔮', hidden=True)
+    async def request_r(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/r.mp3', requester=ctx.author))
+
+    @request.command(name='⛓', hidden=True)
+    async def request_s(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/s.mp3', requester=ctx.author))
+
+    @request.command(name='😈', hidden=True)
+    async def request_t(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/t.mp3', requester=ctx.author))
+
+    @request.command(name='🐀', hidden=True)
+    async def request_u(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/u.mp3', requester=ctx.author))
+
+    @request.command(name='🤠', hidden=True)
+    async def request_v(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/v.mp3', requester=ctx.author))
+
+    @request.command(name='🍪', hidden=True)
+    async def request_w(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/w.mp3', requester=ctx.author))
+
+    @request.command(name='🍄', hidden=True)
+    async def request_x(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/x.mp3', requester=ctx.author))
+
+    @request.command(name='🍿', hidden=True)
+    async def request_y(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/y.mp3', requester=ctx.author))
+
+    @request.command(name='🎃', hidden=True)
+    async def request_z(self, ctx: commands.Context):
+        await ctx.invoke(self.request, request=MP3Track('res/spook/z.mp3', requester=ctx.author))
+
     @request.command(name="mp3")
     async def request_mp3(self, ctx: commands.Context, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
@@ -83,7 +187,8 @@ class Player(commands.Cog):
     # War related code - Will be deleted
     @request.command(name='map', hidden=True)
     async def request_map(self, ctx: commands.Context):
-        request = MP3Track(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY + 'mystery_dungeon_time_darkness_sky/014 Treasure Town.mp3', requester=ctx.author)
+        request = MP3Track(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY +
+                           'mystery_dungeon_time_darkness_sky/014 Treasure Town.mp3', requester=ctx.author)
         await ctx.invoke(self.request, request=request)
 
     @commands.command(name="skip")
