@@ -1,7 +1,5 @@
 import asyncio
 import aiohttp
-import datetime
-import functools
 import re
 
 from difflib import SequenceMatcher
