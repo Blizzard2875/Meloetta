@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-from difflib import SequenceMatcher
+from fuzzywuzzy import fuzz
 from pathlib import Path
 from io import BytesIO
 from typing import Dict, List, Tuple
@@ -171,7 +171,7 @@ class MP3Track(Track):
         for word in re.sub(r"[^\w\s]", "", argument).split():
             for track in tracks:
                 for _word in tracks[track]:
-                    scores[track] += SequenceMatcher(None, word, _word).ratio()
+                    scores[track] += fuzz.ratio(word.lower(), _word.lower())
         for track in tracks:
             scores[track] /= len(tracks[track])
         search_results = sorted(scores, key=scores.get, reverse=True)

@@ -5,7 +5,7 @@ from discord.ext import commands
 
 from bot.config import config as BOT_CONFIG
 
-from bot.utils import checks
+from bot.utils import checks, tools
 
 from .session import Session
 from .track import MP3Track, YouTubeTrack, AttachmentTrack
@@ -218,6 +218,7 @@ class Player(commands.Cog):
 
         await ctx.send(embed=embed)
 
+    @tools.auto_help
     @commands.group(name='force', invoke_without_command=True)
     @commands.check(checks.is_administrator)
     async def force(self, ctx: commands.Context):

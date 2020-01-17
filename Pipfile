@@ -14,6 +14,7 @@ discord-py = {extras = ["voice"],version = "*"}
 mutagen = "*"
 psutil = "*"
 youtube-dl = "*"
+fuzzywuzzy = "*"
 
 [requires]
 python_version = "3.7"
