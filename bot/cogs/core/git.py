@@ -1,7 +1,9 @@
 import asyncio
 
 import discord
-from discord.ext import commands, checks
+from discord.ext import commands
+
+from bot.utils import checks
 
 from bot.config import config as BOT_CONFIG
 
