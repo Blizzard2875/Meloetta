@@ -114,8 +114,7 @@ class Track(discord.PCMVolumeTransformer):
 tracks = {}
 for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob("**/*.mp3"):
     tags = MP3(track)
-    tracks[track] = re.sub(r"[^\w\s]", "", tags.get('TIT2')[0] + ' ' +
-                           tags.get('TALB')[0]).split(' ')
+    tracks[track] = re.sub(r"[^\w\s]", "", tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
 
 
 class MP3Track(Track):
@@ -125,7 +124,7 @@ class MP3Track(Track):
     _title = _artist = _album = _date = 'Unknown'
     _cover = open(COG_CONFIG.DEFAULT_ALBUM_ARTWORK, 'rb')
 
-    def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None,  **kwargs):
+    def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
         super().__init__(source, volume, requester, **kwargs)
 
         tags = MP3(source)
