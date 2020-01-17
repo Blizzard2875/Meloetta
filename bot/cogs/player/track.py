@@ -1,5 +1,4 @@
 import asyncio
-import aiohttp
 import re
 
 from difflib import SequenceMatcher
@@ -7,24 +6,18 @@ from pathlib import Path
 from io import BytesIO
 from typing import Dict, List, Tuple
 
+import aiohttp
 import youtube_dl
-
-from mutagen.mp3 import MP3
 
 import discord
 from discord.ext import commands
 
+from mutagen.mp3 import MP3
+
+from bot.utils import tools
+
 from bot.config import config as BOT_CONFIG
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
-
-
-def numeric_emoji(n: int) -> str:
-    return (str(n).encode("utf-8") + b"\xe2\x83\xa3").decode("utf-8")
-
-
-async def add_numberic_reactions(message: discord.Message, num_reactions: int):
-    for index in range(1, 1+num_reactions):
-        await message.add_reaction(numeric_emoji(index))
 
 
 class Track(discord.PCMVolumeTransformer):
@@ -33,7 +26,7 @@ class Track(discord.PCMVolumeTransformer):
     _embed_colour = discord.Colour.blurple()
     _track_type = 'Track'
 
-    def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None,  **kwargs):
+    def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
         super().__init__(discord.FFmpegPCMAudio(source, **kwargs), volume)
         self.requester = requester
         self._frames = 0
@@ -102,17 +95,17 @@ class Track(discord.PCMVolumeTransformer):
                 name=f'{index} - {entry[0]}', value=entry[1], inline=False)
 
         search_message = (await ctx.send(embed=embed))
-        asyncio.ensure_future(add_numberic_reactions(
-            search_message, len(entries)))
+        await tools.add_reactions(search_message, [tools.keycap_digit(n) for n in range(1, 1 + len(entries))])
 
         def check(reaction: discord.Reaction, user: discord.User):
-            return reaction.message.id == search_message.id and user == ctx.author and reaction.emoji in (numeric_emoji(n) for n in range(1, 1+len(entries)))
+            return reaction.message.id == search_message.id and user == ctx.author \
+                and reaction.emoji in (tools.keycap_digit(n) for n in range(1, 1 + len(entries)))
 
         try:
             reaction, _ = await ctx.bot.wait_for('reaction_add', check=check, timeout=60)
         except asyncio.TimeoutError:
             raise commands.BadArgument(
-                "You did not choose a search result in time.")
+                'You did not choose a search result in time.')
 
         await search_message.delete()
         return int(reaction.emoji[0]) - 1
@@ -195,23 +188,26 @@ class YouTubeTrack(Track):
     _embed_colour = discord.Colour.red()
     _track_type = 'YouTube video'
 
-    youtube_api_url = f"https://www.googleapis.com/{COG_CONFIG.YOUTUBE_API.SERVICE_NAME}/{COG_CONFIG.YOUTUBE_API.VERSION}"
+    youtube_api_url = f'https://www.googleapis.com/{COG_CONFIG.YOUTUBE_API.SERVICE_NAME}/{COG_CONFIG.YOUTUBE_API.VERSION}'
 
     video_url_check = re.compile(
         r'(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})')
     ydl_options = {
         'format': 'bestaudio/best',
+        'geo_bypass': True,
+        'geo_bypass_country': 'US'
     }
 
-    def __init__(self, video_url: str, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
+    def __init__(self, video_id: str, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
 
         with youtube_dl.YoutubeDL(self.ydl_options) as ydl:
-            info = ydl.extract_info(video_url, download=False)
+            info = ydl.extract_info(
+                'https://youtube.com/watch?v=' + video_id, download=False)
 
             if 'entries' in info:
                 info = info['entries'][0]
 
-            self.length = info['duration']
+            self.length = round(info['duration'])
 
             self._title = info['title']
             self._url = info['webpage_url']
@@ -258,22 +254,34 @@ class YouTubeTrack(Track):
         async with ctx.typing():
 
             # If user directly requested youtube video
-            if cls.video_url_check.search(argument) is not None:
-                return cls(argument, requester=ctx.author)
+            is_video = cls.video_url_check.search(argument)
+            if is_video is not None:
+                return cls(is_video.groups()[0], requester=ctx.author)
 
             # Otherwise search for video
             async with aiohttp.ClientSession() as session:
-                search_url = f'{cls.youtube_api_url}/search?q={argument}&part=snippet&maxResults={COG_CONFIG.MAX_SEARCH_RESULTS}&key={COG_CONFIG.YOUTUBE_API.KEY}&alt=json'
+                search_url = f'{cls.youtube_api_url}/search?q={argument}\
+&part=snippet&maxResults={COG_CONFIG.MAX_SEARCH_RESULTS}&key={COG_CONFIG.YOUTUBE_API.KEY}&alt=json'
 
                 async with session.get(search_url) as response:
                     search_results = (await response.json())['items']
 
             # Raise error or pick search result
             if len(search_results) == 0:
-                raise commands.BadArgument("No search results were found.")
+                raise commands.BadArgument('No search results were found.')
             elif len(search_results) == 1:
                 result = 0
             else:
                 result = await cls.get_user_choice(ctx, argument, [(entry['snippet']['title'], entry['snippet']['channelTitle']) for entry in search_results])
 
             return cls(search_results[result]['id']['videoId'], requester=ctx.author)
+
+
+class AttachmentTrack(Track):
+    _embed_colour = discord.Colour.blue()
+    _track_type = 'Local file'
+
+    def __init__(self, attachment: discord.File, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
+
+        super().__init__(attachment.proxy_url, volume, requester,
+                         before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', options='-bufsize 7680k', **kwargs)

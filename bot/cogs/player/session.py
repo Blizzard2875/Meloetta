@@ -1,6 +1,6 @@
 import asyncio
 
-from typing import Dict, Generator
+from typing import Generator
 
 import discord
 from discord.ext import commands
@@ -8,18 +8,19 @@ from discord.ext import commands
 from .queue import Queue, Radio
 
 from bot.config import config as BOT_CONFIG
-COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex(".")]]
+COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 
 class Session:
 
-    def __init__(self, bot: discord.Client, cog: commands.Cog, voice_channel: discord.VoiceChannel, *, log_channel: discord.TextChannel = None, run_forever: bool = False, **kwargs):
+    def __init__(self, bot: discord.Client, cog: commands.Cog, voice_channel: discord.VoiceChannel, *,
+                 log_channel: discord.TextChannel = None, run_forever: bool = False, **kwargs):
         """
 
         Args:
-            voice_channel (discord.VoiceChannel): The voice channel the session should start playin in.
+            voice_channel (discord.VoiceChannel): The voice channel the session should start playing in.
 
-        Kwargs: 
+        Kwargs:
             run_forever (bool): Determines wether the session should run forever
             log_channel (discord.TextChannel): Specifies a channel to log playback history.
 
@@ -60,7 +61,7 @@ class Session:
             - They are not deafened
 
         Returns:
-            `generator` of `discord.Member`: A generator concisting ow members listening to this session.
+            `generator` of `discord.Member`: A generator consisting ow members listening to this session.
 
         """
         for member in self.voice.channel.members:
@@ -69,8 +70,8 @@ class Session:
 
     def user_has_permission(self, user: discord.Member) -> bool:
         """Checks if a user has permission to interact with this session."""
-        if self.config.get("requires_role") is not None:
-            return self.config.get("requires_role") in user.roles
+        if self.config.get('requires_role') is not None:
+            return self.config.get('requires_role') in user.roles
         return True
 
     def change_volume(self, volume: float):
@@ -83,7 +84,7 @@ class Session:
         if error:
             pass
         self.skip_requests.clear()
-        # self.repeat_requests.clear()
+        self.repeat_requests.clear()
         self.bot.loop.call_soon_threadsafe(self.play_next_song.set)
 
     async def play_track(self):
@@ -126,7 +127,7 @@ class Session:
             if self.current_track is None:
                 self.stop()
                 break
-            
+
             # Set volume and play new track
             self.current_track.volume = self.volume
             await self.play_track()

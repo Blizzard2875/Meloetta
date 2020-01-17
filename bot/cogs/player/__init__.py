@@ -6,31 +6,38 @@ from discord.ext import commands
 from bot.config import config as BOT_CONFIG
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack
+from .track import MP3Track, YouTubeTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
 
 async def session_is_running(ctx: commands.Context) -> bool:
-    """A player is not running on this server."""
-    return ctx.cog._get_session(ctx.guild) is not None
+    if ctx.cog._get_session(ctx.guild) is None:
+        raise commands.CheckFailure('A player is not running on this server.')
+    return True
 
 
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
-    """You are currently not in a voice channel."""
-    return isinstance(ctx.author, discord.Member) and ctx.author.voice is not None
+    if not isinstance(ctx.author, discord.Member) or ctx.author.voice is None:
+        raise commands.CheckFailure(
+            'You are currently not in a voice channel.')
+    return True
 
 
 async def user_is_listening(ctx: commands.Context) -> bool:
-    """You are currently not listening to the bot."""
     session = ctx.cog._get_session(ctx.guild)
-    return session is not None and ctx.author in session.listeners
+    if session is None or ctx.author not in session.listeners:
+        raise commands.CheckFailure(
+            'You are currently not listening to the bot.')
+    return True
 
 
 async def user_has_required_permissions(ctx: commands.Context) -> bool:
-    """You do not have the required role to perform this action."""
     session = ctx.cog._get_session(ctx.guild)
-    return session is None or session.user_has_permission(ctx.author)
+    if session is not None and not session.user_has_permission(ctx.author):
+        raise commands.CheckFailure(
+            'You do not have the required role to perform this action.')
+    return True
 
 
 class Player(commands.Cog):
@@ -64,110 +71,6 @@ class Player(commands.Cog):
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
 
-    @request.command(name='👻', hidden=True)
-    async def request_a(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/a.mp3', requester=ctx.author))
-
-    @request.command(name='⚰', hidden=True)
-    async def request_b(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/b.mp3', requester=ctx.author))
-
-    @request.command(name='💀', hidden=True)
-    async def request_c(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/c.mp3', requester=ctx.author))
-
-    @request.command(name='🍬', hidden=True)
-    async def request_d(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/d.mp3', requester=ctx.author))
-
-    @request.command(name='🤡', hidden=True)
-    async def request_e(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/e.mp3', requester=ctx.author))
-
-    @request.command(name='🍭', hidden=True)
-    async def request_f(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/f.mp3', requester=ctx.author))
-
-    @request.command(name='🕷', hidden=True)
-    async def request_g(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/g.mp3', requester=ctx.author))
-
-    @request.command(name='🌕', hidden=True)
-    async def request_h(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/h.mp3', requester=ctx.author))
-
-    @request.command(name='🦇', hidden=True)
-    async def request_i(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/i.mp3', requester=ctx.author))
-
-    @request.command(name='👽', hidden=True)
-    async def request_j(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/j.mp3', requester=ctx.author))
-
-    @request.command(name='🃏', hidden=True)
-    async def request_k(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/k.mp3', requester=ctx.author))
-
-    @request.command(name='🤖', hidden=True)
-    async def request_l(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/l.mp3', requester=ctx.author))
-
-    @request.command(name='🕸', hidden=True)
-    async def request_m(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/m.mp3', requester=ctx.author))
-
-    @request.command(name='🕯', hidden=True)
-    async def request_n(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/n.mp3', requester=ctx.author))
-
-    @request.command(name='☠', hidden=True)
-    async def request_o(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/o.mp3', requester=ctx.author))
-
-    @request.command(name='👹', hidden=True)
-    async def request_p(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/p.mp3', requester=ctx.author))
-
-    @request.command(name='🍫', hidden=True)
-    async def request_q(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/q.mp3', requester=ctx.author))
-
-    @request.command(name='🔮', hidden=True)
-    async def request_r(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/r.mp3', requester=ctx.author))
-
-    @request.command(name='⛓', hidden=True)
-    async def request_s(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/s.mp3', requester=ctx.author))
-
-    @request.command(name='😈', hidden=True)
-    async def request_t(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/t.mp3', requester=ctx.author))
-
-    @request.command(name='🐀', hidden=True)
-    async def request_u(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/u.mp3', requester=ctx.author))
-
-    @request.command(name='🤠', hidden=True)
-    async def request_v(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/v.mp3', requester=ctx.author))
-
-    @request.command(name='🍪', hidden=True)
-    async def request_w(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/w.mp3', requester=ctx.author))
-
-    @request.command(name='🍄', hidden=True)
-    async def request_x(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/x.mp3', requester=ctx.author))
-
-    @request.command(name='🍿', hidden=True)
-    async def request_y(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/y.mp3', requester=ctx.author))
-
-    @request.command(name='🎃', hidden=True)
-    async def request_z(self, ctx: commands.Context):
-        await ctx.invoke(self.request, request=MP3Track('res/spook/z.mp3', requester=ctx.author))
-
     @request.command(name="mp3")
     async def request_mp3(self, ctx: commands.Context, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
@@ -184,12 +87,16 @@ class Player(commands.Cog):
         """
         await ctx.invoke(self.request, request=request)
 
-    # War related code - Will be deleted
-    @request.command(name='map', hidden=True)
-    async def request_map(self, ctx: commands.Context):
-        request = MP3Track(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY +
-                           'mystery_dungeon_time_darkness_sky/014 Treasure Town.mp3', requester=ctx.author)
-        await ctx.invoke(self.request, request=request)
+    @request.command(name='file')
+    async def request_file(self, ctx: commands.Context):
+        """Adds a local file to the requests queue.
+
+        `request`: The local file attached.
+        """
+        if not ctx.message.attachments:
+            raise commands.BadArgument('You did not attach a file!')
+
+        await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0], requester=ctx.author))
 
     @commands.command(name="skip")
     @commands.check(session_is_running)
@@ -260,22 +167,27 @@ class Player(commands.Cog):
     @commands.command(name="queue", aliases=["upcoming"])
     @commands.check(session_is_running)
     async def queue(self, ctx: commands.Context):
+        """Displays the current request queue."""
 
         session = self._get_session(ctx.guild)
 
+        total_length = sum(track.length for track in session.queue.requests)
+        length_str = str(datetime.timedelta(seconds=total_length))
+
         embed = discord.Embed(
             colour=discord.Colour.dark_green(),
-            title="Upcoming requests"
+            title=f'Upcoming requests - Total Queue Length: {length_str}'
         )
 
         for index, track in enumerate(session.queue.requests[:10], 1):
             embed.add_field(
-                name=f"{index} - Requested by {track.requester}",
-                value=track.information
+                name=f'{index} - Requested by {track.requester}',
+                value=track.information,
+                inline=False
             )
 
         if not embed.fields:
-            embed.description = "There are currently no requests"
+            embed.description = 'There are currently no requests'
 
         await ctx.send(embed=embed)
 
@@ -289,8 +201,11 @@ class Player(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
         if session is not None:
-            if after is None and member in session.skip_requests:
-                session.skip_requests.remove(member)
+            if after is None:
+                if member in session.skip_requests:
+                    session.skip_requests.remove(member)
+                if member in session.repeat_requests:
+                    session.repeat_requests.remove(member)
 
             if session.voice is not None:
                 session.check_listeners()
