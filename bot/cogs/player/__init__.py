@@ -54,13 +54,15 @@ class Player(commands.Cog):
     @commands.group(name="request", aliases=["play"], invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
+    @commands.cooldown(2, 30, commands.BucketType.user)
     async def request(self, ctx: commands.Context, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
         request: YouTube search query.
         """
         try:
-            await ctx.message.delete()
+            if not isinstance(request, AttachmentTrack):
+                await ctx.message.delete()
         except discord.Forbidden:
             pass
 
@@ -146,6 +148,28 @@ class Player(commands.Cog):
                 description=f'You currently need **{repeats_needed - len(session.repeat_requests)}** more votes to repeat this track.'
             ))
 
+    @commands.command(name='volume')
+    @commands.check(session_is_running)
+    @commands.check(user_is_listening)
+    @commands.check(user_has_required_permissions)
+    @commands.cooldown(2, 30, commands.BucketType.guild)
+    async def volume(self, ctx: commands.Context, volume: float):
+        """Set's the global player volume"""
+        session = self._get_session(ctx.guild)
+
+        if volume < 0:
+            raise commands.BadArgument('You can\'t set the volume to below 0%.')
+        elif volume > 2:
+            raise commands.BadArgument('You can\'t set the volume to above 200%.')
+
+        session.change_volume(volume)
+
+        await ctx.send(embed=discord.Embed(
+            colour=discord.Colour.dark_green(),
+            title='Volume change',
+            description=f'Setting volume to {volume:.0%}...'
+        ))
+
     @commands.command(name='playing', aliases=['now'])
     @commands.check(session_is_running)
     async def playing(self, ctx: commands.Context):
@@ -193,6 +217,19 @@ class Player(commands.Cog):
             embed.description = 'There are currently no requests'
 
         await ctx.send(embed=embed)
+
+    @commands.group(name='force', invoke_without_command=True)
+    @commands.check(checks.is_administrator)
+    async def force(self, ctx: commands.Context):
+        """Admin commands."""
+        pass
+
+    @force.command(name='skip')
+    @commands.check(session_is_running)
+    async def force_skip(self, ctx: commands.Context):
+        """Force skip the currently playing track."""
+        session = self._get_session(ctx.guild)
+        session.voice.stop()
 
     @commands.Cog.listener()
     async def on_ready(self):
