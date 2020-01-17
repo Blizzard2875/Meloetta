@@ -10,6 +10,9 @@ class Status(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
+    async def cog_check(self, ctx: commands.Context) -> bool:
+        return await checks.is_owner(ctx)
+
     @commands.command(name='ping')
     async def ping(self, ctx: commands.Context):
         """Determines the bots current latency"""
@@ -17,7 +20,6 @@ class Status(commands.Cog):
         await message.edit(content=f'Pong! Latency: `{(message.created_at - ctx.message.created_at).total_seconds()}s`')
 
     @commands.command(name='status')
-    @commands.check(checks.is_administrator)
     async def status(self, ctx: commands.Context):
         """Shows some basic information about the bot's current status."""
         await ctx.send(
