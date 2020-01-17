@@ -5,6 +5,8 @@ from discord.ext import commands
 
 from bot.config import config as BOT_CONFIG
 
+from bot.utils import checks
+
 from .session import Session
 from .track import MP3Track, YouTubeTrack, AttachmentTrack
 
@@ -88,6 +90,7 @@ class Player(commands.Cog):
         await ctx.invoke(self.request, request=request)
 
     @request.command(name='file')
+    @commands.check(checks.is_administrator)
     async def request_file(self, ctx: commands.Context):
         """Adds a local file to the requests queue.
 
