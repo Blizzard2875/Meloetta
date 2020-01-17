@@ -1,7 +1,7 @@
 import asyncio
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, checks
 
 from bot.config import config as BOT_CONFIG
 
@@ -13,7 +13,7 @@ class Git(commands.Cog):
         self.bot = bot
 
     async def cog_check(self, ctx: commands.Context) -> bool:
-        return await commands.is_owner.predicate(ctx)
+        return await checks.is_owner(ctx)
 
     @commands.command(name='load', hidden=True)
     async def load(self, ctx: commands.Context, cog: str):

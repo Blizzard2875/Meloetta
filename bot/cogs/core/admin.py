@@ -11,7 +11,7 @@ import discord
 from discord.ext import commands
 
 from bot.config import config as BOT_CONFIG
-from bot.utils import converters
+from bot.utils import converters, checks
 
 
 # Extra imports for eval
@@ -29,7 +29,7 @@ class Admin(commands.Cog):
         self._last_result = None  # For eval env
 
     async def cog_check(self, ctx: commands.Context) -> bool:
-        return await commands.is_owner.predicate(ctx)
+        return await checks.is_owner(ctx)
 
     @commands.command(name="sudo")
     async def sudo(self, ctx, user: Union[discord.Member, discord.User], *, command: str):
