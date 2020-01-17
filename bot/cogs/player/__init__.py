@@ -150,7 +150,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         play_time = session.current_track.play_time
-        track_length = session.current_track.length
+        track_length = int(session.current_track.length)
 
         play_time_str = str(datetime.timedelta(seconds=play_time))
         length_str = str(datetime.timedelta(seconds=track_length))
