@@ -3,7 +3,9 @@ from typing import Union
 import discord
 from discord.ext import commands
 
-from bot.config import config as BOT_CONFIG
+
+def is_administrator(ctx: Union[discord.Message, commands.Context]) -> bool:
+    return commands.has_guild_permissions(administrator=True)(ctx)
 
 
 async def is_owner(ctx: Union[discord.Message, commands.Context]) -> bool:

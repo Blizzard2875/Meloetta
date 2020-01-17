@@ -8,7 +8,6 @@ from discord.ext import commands
 
 
 import bot.config as config
-from bot.help import EmbedHelpCommand
 from bot.config import config as BOT_CONFIG
 
 try:
@@ -26,9 +25,12 @@ config._bot = bot = commands.Bot(
     activity=discord.Activity(
         name=f"for Commands: {BOT_CONFIG.PREFIXES[0]}help", type=discord.ActivityType.watching),
     case_insensitive=True,
-    fetch_offline_members=False,
-    help_command=EmbedHelpCommand(dm_help=None, dm_help_threshold=1000),
+    fetch_offline_members=False
 )
+
+bot.__version__ = BOT_CONFIG.VERSION
+bot._start_time = _start_time
+bot.dm_help = False
 
 # Setup logging
 bot.log = logging.getLogger(__name__)
@@ -95,6 +97,9 @@ async def on_command_error(ctx: commands.Context, e: Exception):
     await BOT_CONFIG.ERROR_LOG_CHANNEL.send(embed=embed)
 
 if __name__ == "__main__":
+
+    # Load help extension
+    bot.load_extension('bot.help')
 
     # Load extensions from config
     for extension in BOT_CONFIG.EXTENSIONS:
