@@ -35,6 +35,9 @@ class Session:
         self.config = kwargs
         self.queue_config = self.config.get('queue')
 
+        self.alone = asyncio.Event()
+        self.timeout = self.config.get('timeout') or COG_CONFIG.DEFAULT_TIMEOUT
+
         self.skip_requests = list()
         self.repeat_requests = list()
         self.stop_requests = list()
@@ -114,8 +117,17 @@ class Session:
         if list(self.listeners):
             if self.voice.is_paused():
                 self.voice.resume()
+                self.alone.set()
         elif self.voice.is_playing():
             self.voice.pause()
+            self.alone.clear()
+
+            # Wait to see if the bot stays alone for it's max timeout duration
+            if self.stoppable:
+                try:
+                    await asyncio.wait_for(self.alone.wait(), self.timeout)
+                except asyncio.TimeoutError:
+                    self.stop()
 
     async def session_task(self):
 
