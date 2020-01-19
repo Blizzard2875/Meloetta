@@ -5,7 +5,7 @@ from discord.ext import commands
 
 
 def is_administrator(ctx: Union[discord.Message, commands.Context]) -> bool:
-    return commands.has_guild_permissions(administrator=True)(ctx)
+    return commands.has_permissions(administrator=True)(ctx)
 
 
 async def is_owner(ctx: Union[discord.Message, commands.Context]) -> bool:
