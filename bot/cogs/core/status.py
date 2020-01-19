@@ -22,7 +22,7 @@ class Status(commands.Cog):
         message = await ctx.send('Pong!')
         await message.edit(content=f'Pong! Latency: `{(message.created_at - ctx.message.created_at).total_seconds()}s`')
 
-    @commands.command(name='info')
+    @commands.command(name='info', aliases=['whoami', 'about'])
     async def info(self, ctx):
         """Sends some basic information about the bot."""
         prefix = BOT_CONFIG.PREFIXES[0]
