@@ -127,7 +127,8 @@ class Player(commands.Cog):
 
         request: Local track search query.
         """
-        await ctx.invoke(self.request, request=request)
+        if self.request.can_run(ctx):
+            await ctx.invoke(self.request, request=request)
 
     @request.command(name="youtube")
     async def request_youtube(self, ctx, *, request: YouTubeTrack):
@@ -135,7 +136,8 @@ class Player(commands.Cog):
 
         request: YouTube search query.
         """
-        await ctx.invoke(self.request, request=request)
+        if self.request.can_run(ctx):
+            await ctx.invoke(self.request, request=request)
 
     @request.command(name='file')
     @commands.check(checks.is_administrator)
@@ -147,7 +149,8 @@ class Player(commands.Cog):
         if not ctx.message.attachments:
             raise commands.BadArgument('You did not attach a file!')
 
-        await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0], requester=ctx.author))
+        if self.request.can_run(ctx):
+            await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0], requester=ctx.author))
 
     @commands.command(name="skip")
     @commands.check(session_is_running)
@@ -265,7 +268,7 @@ class Player(commands.Cog):
         await ctx.send(embed=embed)
 
     @tools.auto_help
-    @commands.group(name='force', invoke_without_command=True)
+    @commands.group(name='force')
     @commands.check(checks.is_administrator)
     async def force(self, ctx):
         """Admin commands."""
