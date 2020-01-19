@@ -26,14 +26,17 @@ class Status(commands.Cog):
     async def info(self, ctx):
         """Sends some basic information about the bot."""
         prefix = BOT_CONFIG.PREFIXES[0]
+        zwsp = '\N{ZERO WIDTH SPACE}'
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"I am {self.bot.user}, a bot made by {self.bot.owner}",
+                title=f"I am {self.bot.user}, a bot made by {self.bot.owner}.",
                 description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
                 colour=self.bot.user.colour
             ).add_field(
-                name='\N{ZERO WIDTH SPACE}', value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}'
+                name=zwsp, value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}.'
+            ).add_field(
+                name=zwsp * 2, value=f'I\'m not publicly available yet unfortunately.'
             ).set_thumbnail(
                 url=self.bot.user.avatar_url
             )
