@@ -35,6 +35,7 @@ class Session:
 
         self.skip_requests = list()
         self.repeat_requests = list()
+        self.stop_requests = list()
 
         self.voice = None
         self.current_track = None

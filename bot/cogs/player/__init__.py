@@ -13,6 +13,12 @@ from .track import MP3Track, YouTubeTrack, AttachmentTrack
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
 
+async def session_is_not_running(ctx: commands.Context) -> bool:
+    if ctx.cog._get_session(ctx.guild) is not None:
+        raise commands.CheckFailure('A player is already running on this server.')
+    return True
+
+
 async def session_is_running(ctx: commands.Context) -> bool:
     if ctx.cog._get_session(ctx.guild) is None:
         raise commands.CheckFailure('A player is not running on this server.')
@@ -50,6 +56,38 @@ class Player(commands.Cog):
 
     def _get_session(self, guild: discord.Guild) -> Session:
         return self._sessions.get(guild)
+
+    @commands.command(name='start')
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(session_is_not_running)
+    async def start(self, ctx):
+        """Starts a new player session."""
+        self._sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel, run_forever=True)
+
+    @commands.command(name='stop')
+    @commands.check(session_is_running)
+    async def stop(self, ctx):
+        """Stops the currently running player session."""
+        session = self._get_session(ctx.guild)
+
+        if len(list(session.listeners)) == 0:
+            session.stop()
+
+        if ctx.author in session.stop_requests:
+            raise commands.CommandError("You have already requested to stop the player.")
+
+        if ctx.author in session.listeners:
+            session.stop_requests.append(ctx.author)
+
+        stops_needed = len(list(session.listeners))
+        if len(session.stop_requests) >= stops_needed:
+            session.stop()
+        else:
+            await ctx.send(embed=discord.Embed(
+                colour=discord.Colour.dark_green(),
+                title="Stop Player",
+                description=f"You currently need **{stops_needed - len(session.stop_requests)}** more votes to stop the player."
+            ))
 
     @commands.group(name="request", aliases=["play"], invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
@@ -121,7 +159,7 @@ class Player(commands.Cog):
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
-                title="Skip video",
+                title="Skip track",
                 description=f"You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track."
             ))
 
@@ -242,11 +280,10 @@ class Player(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
         if session is not None:
-            if after is None:
-                if member in session.skip_requests:
-                    session.skip_requests.remove(member)
-                if member in session.repeat_requests:
-                    session.repeat_requests.remove(member)
+            if member not in session.listeners:
+                for l in [session.skip_requests, session.repeat_requests, session.stop_requests]:
+                    if member in l:
+                        l.remove(member)
 
             if session.voice is not None:
                 session.check_listeners()
