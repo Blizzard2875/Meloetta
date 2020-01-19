@@ -59,17 +59,17 @@ class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self._sessions = dict()
+        self.bot._player_sessions = dict()
 
     def _get_session(self, guild: discord.Guild) -> Session:
-        return self._sessions.get(guild)
+        return self.bot._player_sessions.get(guild)
 
     @commands.command(name='start')
     @commands.check(user_is_in_voice_channel)
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
-        self._sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel, run_forever=True)
+        self.bot._player_sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel, run_forever=True)
 
     @commands.command(name='stop')
     @commands.check(session_is_running)
@@ -115,7 +115,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if session is None:
-            session = self._sessions[ctx.guild] = Session(
+            session = self.bot._player_sessions[ctx.guild] = Session(
                 self.bot, self, ctx.author.voice.channel)
 
         await ctx.send(**request.request_message)
@@ -281,7 +281,7 @@ class Player(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
-            self._sessions[instance.voice_channel.guild] = Session(
+            self.bot._player_sessions[instance.voice_channel.guild] = Session(
                 self.bot, self, run_forever=True, stoppable=False, **instance.__dict__)
 
     @commands.Cog.listener()
@@ -298,4 +298,6 @@ class Player(commands.Cog):
 
 
 def setup(bot: commands.Bot):
+    if not hasattr(bot, '_player_sessions'):
+        bot._player_sessions = dict()
     bot.add_cog(Player(bot))

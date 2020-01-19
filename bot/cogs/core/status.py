@@ -32,6 +32,8 @@ class Status(commands.Cog):
                 title=f"I am {self.bot.user}, a bot made by {self.bot.owner}",
                 description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
                 colour=self.bot.user.colour
+            ).add_field(
+                name=' ', value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}'
             ).set_thumbnail(
                 url=self.bot.user.avatar_url
             )
@@ -73,4 +75,6 @@ class Status(commands.Cog):
 
 
 def setup(bot: commands.Bot):
+    if not hasattr(bot, '_player_sessions'):
+        bot._player_sessions = dict()
     bot.add_cog(Status(bot))
