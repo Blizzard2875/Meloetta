@@ -88,24 +88,29 @@ class Track(discord.PCMVolumeTransformer):
             colour=cls._embed_colour,
         ).set_author(
             name=f'{cls._track_type} search results - {search_query} - Requested by {ctx.author}'
-        )
+        ).set_footer(text=f'Select a search result or {tools.regional_indicator("x")} to cancel.')
 
         for index, entry in enumerate(entries, 1):
             embed.add_field(
                 name=f'{index} - {entry[0]}', value=entry[1], inline=False)
 
         search_message = (await ctx.send(embed=embed))
-        await tools.add_reactions(search_message, [tools.keycap_digit(n) for n in range(1, 1 + len(entries))])
+        reactions = [tools.keycap_digit(n) for n in range(1, 1 + len(entries))]
+        reactions.append(tools.regional_indicator('x'))
+        await tools.add_reactions(search_message, reactions)
 
         def check(reaction: discord.Reaction, user: discord.User):
             return reaction.message.id == search_message.id and user == ctx.author \
-                and reaction.emoji in (tools.keycap_digit(n) for n in range(1, 1 + len(entries)))
+                and reaction.emoji in reactions
 
         try:
             reaction, _ = await ctx.bot.wait_for('reaction_add', check=check, timeout=60)
         except asyncio.TimeoutError:
             raise commands.BadArgument(
                 'You did not choose a search result in time.')
+
+        if reaction.emoji == tools.regional_indicator('x'):
+            raise commands.BadArgument('Selection cancelled.')
 
         await search_message.delete()
         return int(reaction.emoji[0]) - 1

@@ -201,7 +201,7 @@ class Player(commands.Cog):
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
-    @commands.cooldown(2, 30, commands.BucketType.guild)
+    @commands.cooldown(1, 30, commands.BucketType.user)
     async def volume(self, ctx, volume: float):
         """Set's the global player volume"""
         session = self._get_session(ctx.guild)
