@@ -14,15 +14,16 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 class Session:
 
     def __init__(self, bot: discord.Client, cog: commands.Cog, voice_channel: discord.VoiceChannel, *,
-                 log_channel: discord.TextChannel = None, run_forever: bool = False, **kwargs):
+                 log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True, **kwargs):
         """
 
         Args:
             voice_channel (discord.VoiceChannel): The voice channel the session should start playing in.
 
         Kwargs:
-            run_forever (bool): Determines wether the session should run forever
             log_channel (discord.TextChannel): Specifies a channel to log playback history.
+            run_forever (bool): Determines wether the session should run forever.
+            stoppable (bool): Determines wether the session should be able to be stopped by a user.
 
         """
         self.bot = bot
@@ -30,6 +31,7 @@ class Session:
         self.voice_channel = voice_channel
 
         self.log_channel = log_channel
+        self.stoppable = stoppable
         self.config = kwargs
         self.queue_config = self.config.get('queue')
 

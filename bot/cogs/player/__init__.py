@@ -25,6 +25,13 @@ async def session_is_running(ctx: commands.Context) -> bool:
     return True
 
 
+async def session_is_stoppable(ctx: commands.Context) -> bool:
+    session = ctx.cog._get_session(ctx.guild)
+    if session is None or not session.stoppable:
+        raise commands.CheckFailure('This player session cannot be stopped.')
+    return True
+
+
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
     if not isinstance(ctx.author, discord.Member) or ctx.author.voice is None:
         raise commands.CheckFailure(
@@ -66,6 +73,7 @@ class Player(commands.Cog):
 
     @commands.command(name='stop')
     @commands.check(session_is_running)
+    @commands.check(session_is_stoppable)
     async def stop(self, ctx):
         """Stops the currently running player session."""
         session = self._get_session(ctx.guild)
@@ -274,7 +282,7 @@ class Player(commands.Cog):
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
             self._sessions[instance.voice_channel.guild] = Session(
-                self.bot, self, run_forever=True, **instance.__dict__)
+                self.bot, self, run_forever=True, stoppable=False, **instance.__dict__)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
