@@ -80,7 +80,7 @@ class Player(commands.Cog):
             session.stop()
 
         if ctx.author in session.stop_requests:
-            raise commands.CommandError("You have already requested to stop the player.")
+            raise commands.CommandError('You have already requested to stop the player.')
 
         if ctx.author in session.listeners:
             session.stop_requests.append(ctx.author)
@@ -91,11 +91,11 @@ class Player(commands.Cog):
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
-                title="Stop Player",
-                description=f"You currently need **{stops_needed - len(session.stop_requests)}** more votes to stop the player."
+                title='Stop Player',
+                description=f'You currently need **{stops_needed - len(session.stop_requests)}** more votes to stop the player.'
             ))
 
-    @commands.group(name="request", aliases=["play"], invoke_without_command=True)
+    @commands.group(name='request', aliases=['play'], invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 30, commands.BucketType.user)
@@ -119,7 +119,7 @@ class Player(commands.Cog):
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
 
-    @request.command(name="mp3", aliases=['local'])
+    @request.command(name='mp3', aliases=['local'])
     async def request_mp3(self, ctx, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
 
@@ -128,7 +128,7 @@ class Player(commands.Cog):
         if self.request.can_run(ctx):
             await ctx.invoke(self.request, request=request)
 
-    @request.command(name="youtube")
+    @request.command(name='youtube')
     async def request_youtube(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
@@ -150,7 +150,7 @@ class Player(commands.Cog):
         if self.request.can_run(ctx):
             await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0], requester=ctx.author))
 
-    @commands.command(name="skip")
+    @commands.command(name='skip')
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     async def skip(self, ctx):
@@ -158,7 +158,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if ctx.author in session.skip_requests:
-            raise commands.CommandError("You have already requested to skip.")
+            raise commands.CommandError('You have already requested to skip.')
 
         session.skip_requests.append(ctx.author)
 
@@ -168,8 +168,8 @@ class Player(commands.Cog):
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
-                title="Skip track",
-                description=f"You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track."
+                title='Skip track',
+                description=f'You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track.'
             ))
 
     @commands.command(name='repeat')
@@ -238,7 +238,7 @@ class Player(commands.Cog):
 
         await ctx.send(**message)
 
-    @commands.command(name="queue", aliases=["upcoming"])
+    @commands.command(name='queue', aliases=['upcoming'])
     @commands.check(session_is_running)
     async def queue(self, ctx):
         """Displays the current request queue."""

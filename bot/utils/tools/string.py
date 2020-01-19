@@ -24,7 +24,7 @@ def regional_indicator(c: str) -> str:
 
 def keycap_digit(c: Union[int, str]) -> str:
     """Returns a keycap digit emoji given a character."""
-    return (str(c).encode("utf-8") + b"\xe2\x83\xa3").decode("utf-8")
+    return (str(c).encode('utf-8') + b'\xe2\x83\xa3').decode('utf-8')
 
 
 def rank_emoji(i: int) -> str:

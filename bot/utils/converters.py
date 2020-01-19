@@ -20,7 +20,7 @@ class Guild(commands.IDConverter):
             result = bot.get_guild(guild_id)
 
         if not isinstance(result, discord.Guild):
-            raise commands.BadArgument(f'Guild "{argument}" not found.')
+            raise commands.BadArgument(f'Guild \'{argument}\' not found.')
 
         return result
 
@@ -46,7 +46,7 @@ class User(commands.IDConverter):
                     result = None
 
             if not isinstance(result, discord.User):
-                raise commands.BadArgument(f'User "{argument}" not found.')
+                raise commands.BadArgument(f'User \'{argument}\' not found.')
 
             return result
 

@@ -4,7 +4,7 @@ from random import choice
 from .track import Track, MP3Track
 
 from bot.config import config as BOT_CONFIG
-COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex(".")]]
+COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 
 class Queue:
@@ -42,4 +42,4 @@ class Radio(Queue):
             'playlist_directory') or COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY
 
     def next_track(self) -> Track:
-        return super().next_track() or MP3Track(choice(list(Path(self.playlist_directory).glob("**/*.mp3"))))
+        return super().next_track() or MP3Track(choice(list(Path(self.playlist_directory).glob('**/*.mp3'))))

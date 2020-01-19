@@ -27,7 +27,7 @@ class RawMessage(discord.Message):
         self.channel = channel
 
     def __repr__(self):
-        return f"<RawMessage id={self.id} channel={self.channel}>"
+        return f'<RawMessage id={self.id} channel={self.channel}>'
 
 
 async def add_reactions(message: discord.Message, reactions: Iterable[discord.Emoji]):

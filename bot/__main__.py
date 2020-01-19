@@ -6,6 +6,7 @@ import traceback
 import discord
 from discord.ext import commands
 
+from bot.help import EmbedMenuHelpCommand
 
 import bot.config as config
 from bot.config import config as BOT_CONFIG
@@ -23,8 +24,9 @@ _start_time = datetime.datetime.utcnow()
 config._bot = bot = commands.Bot(
     command_prefix=commands.when_mentioned_or(*BOT_CONFIG.PREFIXES),
     activity=discord.Activity(
-        name=f"for Commands: {BOT_CONFIG.PREFIXES[0]}help", type=discord.ActivityType.watching),
+        name=f'for Commands: {BOT_CONFIG.PREFIXES[0]}help', type=discord.ActivityType.watching),
     case_insensitive=True,
+    help_command=EmbedMenuHelpCommand(),
     fetch_offline_members=False
 )
 
@@ -83,7 +85,7 @@ async def on_command_error(ctx: commands.Context, e: Exception):
     bot.log.error(f'Error with command: {ctx.command.name}')
     bot.log.error(f'{type(e).__name__}: {e}')
     bot.log.error(
-        "".join(traceback.format_exception(type(e), e, e.__traceback__)))
+        ''.join(traceback.format_exception(type(e), e, e.__traceback__)))
 
     embed = discord.Embed()
 
@@ -100,10 +102,7 @@ async def on_command_error(ctx: commands.Context, e: Exception):
     embed.add_field(name='User', value=f'<@{ctx.author.id}> ({ctx.author})')
     await BOT_CONFIG.ERROR_LOG_CHANNEL.send(embed=embed)
 
-if __name__ == "__main__":
-
-    # Load help extension
-    bot.load_extension('bot.help')
+if __name__ == '__main__':
 
     # Load extensions from config
     for extension in BOT_CONFIG.EXTENSIONS:

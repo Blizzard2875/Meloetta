@@ -30,7 +30,7 @@ class Status(commands.Cog):
 
         await ctx.send(
             embed=discord.Embed(
-                title=f"I am {self.bot.user}, a bot made by {self.bot.owner}.",
+                title=f'I am {self.bot.user}, a bot made by {self.bot.owner}.',
                 description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
                 colour=self.bot.user.colour
             ).add_field(
@@ -49,7 +49,7 @@ class Status(commands.Cog):
 
         # Get lines of code
         lines_of_code = os.popen(
-            r'find . -name "*.py" -exec cat {} \; | wc -l').read()
+            r'find . -name \"*.py\" -exec cat {} \; | wc -l').read()
 
         # Get memory usage
         process = psutil.Process(os.getpid())

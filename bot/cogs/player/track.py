@@ -117,9 +117,9 @@ class Track(discord.PCMVolumeTransformer):
 
 
 tracks = {}
-for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob("**/*.mp3"):
+for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob('**/*.mp3'):
     tags = MP3(track)
-    tracks[track] = re.sub(r"[^\w\s]", "", tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
+    tracks[track] = re.sub(r'[^\w\s]', '', tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
 
 
 class MP3Track(Track):
@@ -150,7 +150,7 @@ class MP3Track(Track):
 
     @property
     def status_information(self) -> str:
-        return f"{self._title} from {self._album}"
+        return f'{self._title} from {self._album}'
 
     @property
     def playing_message(self) -> Dict:
@@ -173,7 +173,7 @@ class MP3Track(Track):
 
         # Search through all tracks
         scores = {t: 0 for t in tracks}
-        for word in re.sub(r"[^\w\s]", "", argument).split():
+        for word in re.sub(r'[^\w\s]', '', argument).split():
             for track in tracks:
                 for _word in tracks[track]:
                     scores[track] += fuzz.ratio(word.lower(), _word.lower())

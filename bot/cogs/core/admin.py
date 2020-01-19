@@ -31,7 +31,7 @@ class Admin(commands.Cog):
     async def cog_check(self, ctx: commands.Context) -> bool:
         return await checks.is_owner(ctx)
 
-    @commands.command(name="sudo")
+    @commands.command(name='sudo')
     async def sudo(self, ctx, user: Union[discord.Member, discord.User], *, command: str):
         """Run a command as another user."""
         msg = copy.copy(ctx.message)

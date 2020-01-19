@@ -11,6 +11,7 @@ autopep8 = "*"
 pyyaml = "*"
 uvloop = {version = "*",os_name = "== 'posix'"}
 discord-py = {extras = ["voice"],version = "*"}
+discord-ext-menu = {git = "https://github.com/Rapptz/discord-ext-menus.git"}
 mutagen = "*"
 psutil = "*"
 youtube-dl = "*"
