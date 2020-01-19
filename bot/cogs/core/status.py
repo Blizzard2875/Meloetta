@@ -15,14 +15,14 @@ class Status(commands.Cog):
         self.bot = bot
 
     @commands.command(name='ping')
-    async def ping(self, ctx: commands.Context):
+    async def ping(self, ctx):
         """Determines the bots current latency."""
         message = await ctx.send('Pong!')
         await message.edit(content=f'Pong! Latency: `{(message.created_at - ctx.message.created_at).total_seconds()}s`')
 
     @commands.command(name='status')
     @commands.check(checks.is_owner)
-    async def status(self, ctx: commands.Context):
+    async def status(self, ctx):
         """Sends some basic information about the bot."""
 
         # Get lines of code

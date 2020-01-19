@@ -55,7 +55,7 @@ class Player(commands.Cog):
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 30, commands.BucketType.user)
-    async def request(self, ctx: commands.Context, *, request: YouTubeTrack):
+    async def request(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
         request: YouTube search query.
@@ -76,7 +76,7 @@ class Player(commands.Cog):
         session.queue.add_request(request)
 
     @request.command(name="mp3")
-    async def request_mp3(self, ctx: commands.Context, *, request: MP3Track):
+    async def request_mp3(self, ctx, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
 
         request: Local track search query.
@@ -84,7 +84,7 @@ class Player(commands.Cog):
         await ctx.invoke(self.request, request=request)
 
     @request.command(name="youtube")
-    async def request_youtube(self, ctx: commands.Context, *, request: YouTubeTrack):
+    async def request_youtube(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
         request: YouTube search query.
@@ -93,7 +93,7 @@ class Player(commands.Cog):
 
     @request.command(name='file')
     @commands.check(checks.is_administrator)
-    async def request_file(self, ctx: commands.Context):
+    async def request_file(self, ctx):
         """Adds a local file to the requests queue.
 
         `request`: The local file attached.
@@ -106,7 +106,7 @@ class Player(commands.Cog):
     @commands.command(name="skip")
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
-    async def skip(self, ctx: commands.Context):
+    async def skip(self, ctx):
         """Skips the currently playing track."""
         session = self._get_session(ctx.guild)
 
@@ -128,7 +128,7 @@ class Player(commands.Cog):
     @commands.command(name='repeat')
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
-    async def repeat(self, ctx: commands.Context):
+    async def repeat(self, ctx):
         """Repeats the currently playing track."""
         session = self._get_session(ctx.guild)
 
@@ -153,7 +153,7 @@ class Player(commands.Cog):
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 30, commands.BucketType.guild)
-    async def volume(self, ctx: commands.Context, volume: float):
+    async def volume(self, ctx, volume: float):
         """Set's the global player volume"""
         session = self._get_session(ctx.guild)
 
@@ -172,7 +172,7 @@ class Player(commands.Cog):
 
     @commands.command(name='playing', aliases=['now'])
     @commands.check(session_is_running)
-    async def playing(self, ctx: commands.Context):
+    async def playing(self, ctx):
         """Retrieves information on the currently playing track."""
         session = self._get_session(ctx.guild)
 
@@ -193,7 +193,7 @@ class Player(commands.Cog):
 
     @commands.command(name="queue", aliases=["upcoming"])
     @commands.check(session_is_running)
-    async def queue(self, ctx: commands.Context):
+    async def queue(self, ctx):
         """Displays the current request queue."""
 
         session = self._get_session(ctx.guild)
@@ -221,13 +221,13 @@ class Player(commands.Cog):
     @tools.auto_help
     @commands.group(name='force', invoke_without_command=True)
     @commands.check(checks.is_administrator)
-    async def force(self, ctx: commands.Context):
+    async def force(self, ctx):
         """Admin commands."""
         pass
 
     @force.command(name='skip')
     @commands.check(session_is_running)
-    async def force_skip(self, ctx: commands.Context):
+    async def force_skip(self, ctx):
         """Force skip the currently playing track."""
         session = self._get_session(ctx.guild)
         session.voice.stop()

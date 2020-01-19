@@ -44,7 +44,7 @@ class Admin(commands.Cog):
             raise e.original
 
     @commands.command(name='eval')
-    async def eval(self, ctx: commands.Context, *, body: converters.Code):
+    async def eval(self, ctx, *, body: converters.Code):
         """Evaluates python code.
 
         `code`: Python code to evaluate.

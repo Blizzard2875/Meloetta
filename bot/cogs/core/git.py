@@ -18,7 +18,7 @@ class Git(commands.Cog):
         return await checks.is_owner(ctx)
 
     @commands.command(name='load', hidden=True)
-    async def load(self, ctx: commands.Context, cog: str):
+    async def load(self, ctx, cog: str):
         """Loads a cog.
 
         `cog`: The cog to load.
@@ -32,7 +32,7 @@ class Git(commands.Cog):
         ))
 
     @commands.command(name='unload', hidden=True)
-    async def unload(self, ctx: commands.Context, cog: str):
+    async def unload(self, ctx, cog: str):
         """Unloads a cog.
 
         `cog`: The cog to unload.
@@ -46,7 +46,7 @@ class Git(commands.Cog):
         ))
 
     @commands.command(name='reload', hidden=True)
-    async def reload(self, ctx: commands.Context, cog: str):
+    async def reload(self, ctx, cog: str):
         """Reloads a cog.
 
         `cog`: The cog to reload.
@@ -60,13 +60,13 @@ class Git(commands.Cog):
         ))
 
     @commands.command(name='reload_config')
-    async def reload_config(self, ctx: commands.Context):
+    async def reload_config(self, ctx):
         """Reload the bot's config."""
         BOT_CONFIG.__reload__()
         await ctx.send('Config Reloaded.')
 
     @commands.command(name='pull', hidden=True)
-    async def pull(self, ctx: commands.Context):
+    async def pull(self, ctx):
         """Pulls the most recent version of the repository."""
 
         p = await asyncio.create_subprocess_exec(
@@ -102,7 +102,7 @@ class Git(commands.Cog):
                 '**config.yml was modified!**\nPlease ensure you reload the config using either `!reload_config` or by restarting.')
 
     @commands.command(name='restart')
-    async def restart(self, ctx: commands.Context, arg: str = None):
+    async def restart(self, ctx, arg: str = None):
         """Restarts the bot."""
         if arg == 'pull':
             await ctx.invoke(self.pull)
