@@ -1,7 +1,7 @@
 import asyncio
 import re
 
-from fuzzywuzzy import fuzz
+from functools import partial
 from pathlib import Path
 from io import BytesIO
 from typing import Dict, List, Tuple
@@ -12,6 +12,7 @@ import youtube_dl
 import discord
 from discord.ext import commands
 
+from fuzzywuzzy import fuzz
 from mutagen.mp3 import MP3
 
 from bot.utils import tools
@@ -196,16 +197,26 @@ class YouTubeTrack(Track):
 
     video_url_check = re.compile(
         r'(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})')
-    ydl_options = {
+    ytdl_options = {
         'format': 'bestaudio/best',
+        'outtmpl': 'downloads/%(extractor)s-%(id)s-%(title)s.%(ext)s',
+        'restrictfilenames': True,
+        'noplaylist': True,
+        'nocheckcertificate': True,
+        'ignoreerrors': False,
+        'logtostderr': False,
+        'quiet': True,
+        'no_warnings': True,
+        'default_search': 'auto',
+        'source_address': '0.0.0.0',  # ipv6 addresses cause issues sometimes
         'geo_bypass': True,
         'geo_bypass_country': 'US'
     }
 
     def __init__(self, video_id: str, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
 
-        with youtube_dl.YoutubeDL(self.ydl_options) as ydl:
-            info = ydl.extract_info(
+        with youtube_dl.YoutubeDL(self.ytdl_options) as ytdl:
+            info = ytdl.extract_info(
                 'https://youtube.com/watch?v=' + video_id, download=False)
 
             if 'entries' in info:
@@ -278,7 +289,8 @@ class YouTubeTrack(Track):
             else:
                 result = await cls.get_user_choice(ctx, argument, [(entry['snippet']['title'], entry['snippet']['channelTitle']) for entry in search_results])
 
-            return cls(search_results[result]['id']['videoId'], requester=ctx.author)
+            to_run = partial(cls, search_results[result]['id']['videoId'], requester=ctx.author)
+            return ctx.bot.loop.run_in_executor(None, to_run)
 
 
 class AttachmentTrack(Track):
