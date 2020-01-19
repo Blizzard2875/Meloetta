@@ -1,6 +1,6 @@
 !Config
   APP_NAME: "meloetta"
-  DESCRIPTION: "Music bot for the /r/Pokemon Discord server."
+  DESCRIPTION: "Music bot for the r/Pokemon Discord server."
 
   PREFIXES: 
     - !ENV "PREFIX"
@@ -23,11 +23,11 @@
 
       INSTANCES:
 
-        - !Config # - /R/Pokemon Discord
+        - !Config # - r/Pokemon Discord
           voice_channel: !Channel 111504456838819840 141045545992060929
           log_channel: !Channel 111504456838819840 294154647759880192
           requires_role: !Role 111504456838819840 117242433091141636
 
-        - !Config # - /R/Pokemon Mods
+        - !Config # - r/Pokemon Mods
           voice_channel: !Channel 146626123990564864 288198102387523584
           log_channel: !Channel 146626123990564864 288669917153329162

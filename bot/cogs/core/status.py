@@ -7,6 +7,8 @@ from discord.ext import commands
 
 from bot.utils import checks, tools
 
+from bot.config import config as BOT_CONFIG
+
 
 class Status(commands.Cog):
     """Bot status information."""
@@ -20,10 +22,25 @@ class Status(commands.Cog):
         message = await ctx.send('Pong!')
         await message.edit(content=f'Pong! Latency: `{(message.created_at - ctx.message.created_at).total_seconds()}s`')
 
+    @commands.command(name='info')
+    async def info(self, ctx):
+        """Sends some basic information about the bot."""
+        prefix = BOT_CONFIG.PREFIXES[0]
+
+        await ctx.send(
+            embed=discord.Embed(
+                title=f"I am {self.bot.user}, a bot made by {self.bot.owner}",
+                description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
+                colour=self.bot.user.colour
+            ).set_thumbnail(
+                url=self.bot.user.avatar_url
+            )
+        )
+
     @commands.command(name='status')
     @commands.check(checks.is_owner)
     async def status(self, ctx):
-        """Sends some basic information about the bot."""
+        """Sends some debug information."""
 
         # Get lines of code
         lines_of_code = os.popen(

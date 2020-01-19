@@ -52,6 +52,13 @@ async def on_ready():
     bot.log.info(f'\tGuilds: {len(bot.guilds)}')
     bot.log.info(f'\tTook: {datetime.datetime.utcnow() - _start_time}')
 
+    # Fetch app owner information
+    app = await bot.application_info()
+    if app.team:
+        bot.owner = next(app.team.members)
+    else:
+        bot.owner = app.owner
+
 
 @bot.event
 async def on_command_error(ctx: commands.Context, e: Exception):
