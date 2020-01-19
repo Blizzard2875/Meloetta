@@ -64,14 +64,14 @@ class Player(commands.Cog):
     def _get_session(self, guild: discord.Guild) -> Session:
         return self.bot._player_sessions.get(guild)
 
-    @commands.command(name='start')
+    @commands.command(name='start', aliases=['join'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
         self.bot._player_sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel, run_forever=True)
 
-    @commands.command(name='stop')
+    @commands.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
     @commands.check(session_is_stoppable)
     async def stop(self, ctx):
@@ -121,7 +121,7 @@ class Player(commands.Cog):
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
 
-    @request.command(name="mp3")
+    @request.command(name="mp3", aliases=['local'])
     async def request_mp3(self, ctx, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
 
@@ -194,7 +194,7 @@ class Player(commands.Cog):
                 description=f'You currently need **{repeats_needed - len(session.repeat_requests)}** more votes to repeat this track.'
             ))
 
-    @commands.command(name='volume')
+    @commands.command(name='volume', aliases=['set_volume'])
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
@@ -277,6 +277,13 @@ class Player(commands.Cog):
         """Force skip the currently playing track."""
         session = self._get_session(ctx.guild)
         session.voice.stop()
+
+    @force.command(name='stop', aliases=['leave'])
+    @commands.check(session_is_running)
+    async def force_stop(self, ctx):
+        """Force the session to stop."""
+        session = self._get_session(ctx.guild)
+        session.stop()
 
     @commands.Cog.listener()
     async def on_ready(self):
