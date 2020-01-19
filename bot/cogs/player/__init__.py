@@ -38,7 +38,7 @@ async def user_has_required_permissions(ctx: commands.Context) -> bool:
     session = ctx.cog._get_session(ctx.guild)
     if session is not None and not session.user_has_permission(ctx.author):
         raise commands.CheckFailure(
-            'You do not have the required role to perform this action.')
+            f'Only users with the {session.config["requires_role"].mention} role can use this command.')
     return True
 
 
