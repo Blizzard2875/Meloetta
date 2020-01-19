@@ -54,10 +54,7 @@ async def on_ready():
 
     # Fetch app owner information
     app = await bot.application_info()
-    if app.team:
-        bot.owner = next(app.team.members)
-    else:
-        bot.owner = app.owner
+    bot.owner = app.owner
 
 
 @bot.event
