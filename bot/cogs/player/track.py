@@ -271,7 +271,8 @@ class YouTubeTrack(Track):
             # If user directly requested youtube video
             is_video = cls.video_url_check.search(argument)
             if is_video is not None:
-                return cls(is_video.groups()[0], requester=ctx.author)
+                to_run = partial(cls, is_video.groups()[0], requester=ctx.author)
+                return await ctx.bot.loop.run_in_executor(None, to_run)
 
             # Otherwise search for video
             async with aiohttp.ClientSession() as session:
@@ -290,7 +291,7 @@ class YouTubeTrack(Track):
                 result = await cls.get_user_choice(ctx, argument, [(entry['snippet']['title'], entry['snippet']['channelTitle']) for entry in search_results])
 
             to_run = partial(cls, search_results[result]['id']['videoId'], requester=ctx.author)
-            return ctx.bot.loop.run_in_executor(None, to_run)
+            return await ctx.bot.loop.run_in_executor(None, to_run)
 
 
 class AttachmentTrack(Track):
