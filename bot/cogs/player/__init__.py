@@ -294,7 +294,7 @@ class Player(commands.Cog):
                         l.remove(member)
 
             if session.voice is not None:
-                session.check_listeners()
+                await session.check_listeners()
 
 
 def setup(bot: commands.Bot):

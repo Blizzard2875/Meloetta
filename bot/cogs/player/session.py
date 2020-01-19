@@ -112,7 +112,7 @@ class Session:
         self.is_playing = False
         self.voice.stop()
 
-    def check_listeners(self):
+    async def check_listeners(self):
         """Checks if there is anyone listening and pauses / resumes accordingly."""
         if list(self.listeners):
             if self.voice.is_paused():
@@ -146,7 +146,7 @@ class Session:
             # Set volume and play new track
             self.current_track.volume = self.volume
             await self.play_track()
-            self.check_listeners()
+            await self.check_listeners()
 
             # Wait for track to finish before playing next track
             await self.play_next_song.wait()
