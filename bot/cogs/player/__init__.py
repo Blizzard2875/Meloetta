@@ -59,8 +59,6 @@ class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
 
-        self.bot._player_sessions = dict()
-
     def _get_session(self, guild: discord.Guild) -> Session:
         return self.bot._player_sessions.get(guild)
 
