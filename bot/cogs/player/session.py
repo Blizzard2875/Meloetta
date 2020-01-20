@@ -68,6 +68,9 @@ class Session:
             `generator` of `discord.Member`: A generator consisting ow members listening to this session.
 
         """
+        if self.voice is None:
+            return
+
         for member in self.voice.channel.members:
             if not member.bot and not (member.voice.deaf or member.voice.self_deaf):
                 yield member
