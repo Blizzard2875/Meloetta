@@ -91,8 +91,6 @@ async def on_command_error(ctx: commands.Context, e: Exception):
     bot.log.error(f'Error with command: {ctx.command.name}')
     bot.log.error(f'{type(e).__name__}: {e}', exc_info=True, stack_info=True)
 
-    embed = discord.Embed()
-
     # Send to user
     embed = discord.Embed(
         title=f'Error with command: {ctx.command.name}',

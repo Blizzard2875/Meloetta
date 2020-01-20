@@ -115,6 +115,8 @@ class Player(commands.Cog):
         if session is None:
             session = self.bot._player_sessions[ctx.guild] = Session(
                 self.bot, ctx.author.voice.channel)
+        else:
+            await user_is_listening(ctx)
 
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
@@ -125,7 +127,7 @@ class Player(commands.Cog):
 
         request: Local track search query.
         """
-        if self.request.can_run(ctx):
+        if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
     @request.command(name='youtube')
@@ -134,7 +136,7 @@ class Player(commands.Cog):
 
         request: YouTube search query.
         """
-        if self.request.can_run(ctx):
+        if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
     @request.command(name='file')
@@ -147,7 +149,7 @@ class Player(commands.Cog):
         if not ctx.message.attachments:
             raise commands.BadArgument('You did not attach a file!')
 
-        if self.request.can_run(ctx):
+        if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0], requester=ctx.author))
 
     @commands.command(name='skip')
