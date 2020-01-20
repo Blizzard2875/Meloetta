@@ -67,7 +67,7 @@ class Player(commands.Cog):
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
-        self.bot._player_sessions[ctx.guild] = Session(self.bot, self, ctx.author.voice.channel, run_forever=True)
+        self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, run_forever=True)
 
     @commands.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
@@ -114,7 +114,7 @@ class Player(commands.Cog):
 
         if session is None:
             session = self.bot._player_sessions[ctx.guild] = Session(
-                self.bot, self, ctx.author.voice.channel)
+                self.bot, ctx.author.voice.channel)
 
         await ctx.send(**request.request_message)
         session.queue.add_request(request)
@@ -290,7 +290,7 @@ class Player(commands.Cog):
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
             self.bot._player_sessions[instance.voice_channel.guild] = Session(
-                self.bot, self, run_forever=True, stoppable=False, **instance.__dict__)
+                self.bot, run_forever=True, stoppable=False, **instance.__dict__)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):

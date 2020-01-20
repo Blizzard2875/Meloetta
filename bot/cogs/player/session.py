@@ -3,7 +3,6 @@ import asyncio
 from typing import Generator
 
 import discord
-from discord.ext import commands
 
 from .queue import Queue, Radio
 
@@ -13,7 +12,7 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 class Session:
 
-    def __init__(self, bot: discord.Client, cog: commands.Cog, voice_channel: discord.VoiceChannel, *,
+    def __init__(self, bot: discord.Client, voice_channel: discord.VoiceChannel, *,
                  log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True, **kwargs):
         """
 
@@ -27,7 +26,6 @@ class Session:
 
         """
         self.bot = bot
-        self.cog = cog
         self.voice_channel = voice_channel
 
         self.log_channel = log_channel
@@ -152,5 +150,5 @@ class Session:
             await self.play_next_song.wait()
 
         # Delete session and disconnect
-        del self.cog._sessions[self.voice.guild]
+        del self.bot._player_sessions[self.voice.guild]
         await self.voice.disconnect()
