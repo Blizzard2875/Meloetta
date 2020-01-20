@@ -60,6 +60,13 @@ async def on_ready():
 
 
 @bot.event
+async def on_error(event_method, *args, **kwargs):
+    if event_method == 'command_error':
+        return
+    bot.log.error(f'Exception in event: {event_method}', exc_info=True, stack_info=True)
+
+
+@bot.event
 async def on_command_error(ctx: commands.Context, e: Exception):
     # Ignore if CommandNotFound
     if isinstance(e, commands.CommandNotFound):
@@ -83,9 +90,7 @@ async def on_command_error(ctx: commands.Context, e: Exception):
 
     # Otherwise log error
     bot.log.error(f'Error with command: {ctx.command.name}')
-    bot.log.error(f'{type(e).__name__}: {e}')
-    bot.log.error(
-        ''.join(traceback.format_exception(type(e), e, e.__traceback__)))
+    bot.log.error(f'{type(e).__name__}: {e}', exc_info=True, stack_info=True)
 
     embed = discord.Embed()
 
@@ -110,7 +115,6 @@ if __name__ == '__main__':
             bot.load_extension(extension)
         except Exception as e:
             bot.log.error(f'Failed to load extension: {extension}')
-            bot.log.error(f'\t{type(e).__name__}: {e}')
-            bot.log.error(traceback.format_exc())
+            bot.log.error(f'\t{type(e).__name__}: {e}', exc_info=True, stack_info=True)
 
     bot.run(BOT_CONFIG.TOKEN)
