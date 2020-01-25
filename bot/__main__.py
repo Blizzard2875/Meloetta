@@ -26,7 +26,8 @@ config._bot = bot = commands.Bot(
         name=f'for Commands: {BOT_CONFIG.PREFIXES[0]}help', type=discord.ActivityType.watching),
     case_insensitive=True,
     help_command=EmbedMenuHelpCommand(),
-    fetch_offline_members=False
+    fetch_offline_members=False,
+    guild_subscriptions=False,
 )
 
 bot.__version__ = BOT_CONFIG.VERSION

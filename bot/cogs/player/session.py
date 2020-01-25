@@ -57,23 +57,23 @@ class Session:
         asyncio.create_task(self.session_task())
 
     @property
-    def listeners(self) -> Generator[discord.Member, None, None]:
+    def listeners(self) -> Generator[int, None, None]:
         """Members listening to this session.
 
         A member is classified as a listener if:
-            - They are not a bot account
+            - They are the not the bot
             - They are not deafened
 
         Returns:
-            `generator` of `discord.Member`: A generator consisting ow members listening to this session.
+            `generator` of `int`: A generator consisting of the user_id's of members listening to the bot.
 
         """
         if self.voice is None:
             return
 
-        for member in self.voice.channel.members:
-            if not member.bot and not (member.voice.deaf or member.voice.self_deaf):
-                yield member
+        for user_id, state in self.voice.channel.voice_states.items():
+            if user_id != self.bot.user.id and not (state.deaf or state.self_deaf):
+                yield user_id
 
     def user_has_permission(self, user: discord.Member) -> bool:
         """Checks if a user has permission to interact with this session."""

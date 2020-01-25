@@ -41,7 +41,7 @@ async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
 
 async def user_is_listening(ctx: commands.Context) -> bool:
     session = ctx.cog._get_session(ctx.guild)
-    if session is None or ctx.author not in session.listeners:
+    if session is None or ctx.author.id not in session.listeners:
         raise commands.CheckFailure(
             'You are currently not listening to the bot.')
     return True
@@ -82,7 +82,7 @@ class Player(commands.Cog):
         if ctx.author in session.stop_requests:
             raise commands.CommandError('You have already requested to stop the player.')
 
-        if ctx.author in session.listeners:
+        if ctx.author.id in session.listeners:
             session.stop_requests.append(ctx.author)
 
         stops_needed = len(list(session.listeners))
@@ -298,7 +298,7 @@ class Player(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
         if session is not None:
-            if member not in session.listeners:
+            if member.id not in session.listeners:
                 for l in [session.skip_requests, session.repeat_requests, session.stop_requests]:
                     if member in l:
                         l.remove(member)
