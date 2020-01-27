@@ -92,17 +92,17 @@
         },
         "discord-ext-menu": {
             "git": "https://github.com/Rapptz/discord-ext-menus.git",
-            "ref": "8864624248a1c64a2de85d7bb3d84a0aac0f95fa"
+            "ref": "81045c9ab24e403dd5940209bb04e970f61a6609"
         },
         "discord-py": {
             "extras": [
                 "voice"
             ],
             "hashes": [
-                "sha256:6c5ffc741e53f3ebd8dce2c15048590fc496841bb6c36f612657385f8defa7cb"
+                "sha256:8bfe5628d31771744000f19135c386c74ac337479d7282c26cc1627b9d31f360"
             ],
             "index": "pypi",
-            "version": "==1.3.0"
+            "version": "==1.3.1"
         },
         "fuzzywuzzy": {
             "hashes": [
