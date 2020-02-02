@@ -265,18 +265,30 @@ class YouTubeTrack(Track):
         return message
 
     @classmethod
+    async def _convert(cls, ctx, video_id):
+        try:
+            to_run = partial(cls, video_id, requester=ctx.author)
+            return await ctx.bot.loop.run_in_executor(None, to_run)
+        except youtube_dl.DownloadError() as e:
+            if '429' in str(e):
+                raise commands.BadArgument('Error downloading Youtube video: Too many requests.')
+            elif str(e) == 'ERROR: This video is not available.\nSorry about that.':
+                raise commands.BadArgument('Error downloading YouTube video: Cannot download video.')
+            else:
+                raise e
+
+    @classmethod
     async def convert(cls, ctx: commands.Converter, argument: str):
         async with ctx.typing():
 
             # If user directly requested youtube video
             is_video = cls.video_url_check.search(argument)
             if is_video is not None:
-                to_run = partial(cls, is_video.groups()[0], requester=ctx.author)
-                return await ctx.bot.loop.run_in_executor(None, to_run)
+                return await cls._convert(ctx, is_video.groups()[0])
 
             # Otherwise search for video
             async with aiohttp.ClientSession() as session:
-                search_url = f'{cls.youtube_api_url}/search?q={argument}\
+                search_url = f'{cls.youtube_api_url}/search?type=video&videoSyndicated=true&q={argument}\
 &part=snippet&maxResults={COG_CONFIG.MAX_SEARCH_RESULTS}&key={COG_CONFIG.YOUTUBE_API.KEY}&alt=json'
 
                 async with session.get(search_url) as response:
@@ -290,8 +302,7 @@ class YouTubeTrack(Track):
             else:
                 result = await cls.get_user_choice(ctx, argument, [(entry['snippet']['title'], entry['snippet']['channelTitle']) for entry in search_results])
 
-            to_run = partial(cls, search_results[result]['id']['videoId'], requester=ctx.author)
-            return await ctx.bot.loop.run_in_executor(None, to_run)
+            return await cls._convert(ctx, search_results[result]['id']['videoId'])
 
 
 class AttachmentTrack(Track):
