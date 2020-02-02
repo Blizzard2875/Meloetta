@@ -174,7 +174,7 @@ class Player(commands.Cog):
                 description=f'You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track.'
             ))
 
-    @commands.command(name='repeat')
+    @commands.command(name='repeat', aliases=['encore'])
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     async def repeat(self, ctx):
@@ -189,7 +189,7 @@ class Player(commands.Cog):
 
         repeats_needed = len(list(session.listeners)) // 2 + 1
         if len(session.repeat_requests) >= repeats_needed:
-            session.queue.add_request(session.current_track, at_start=True)
+            session.queue.add_request(session.current_track.copy(ctx.author, session.volume), at_start=True)
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),

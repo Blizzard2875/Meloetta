@@ -1,6 +1,7 @@
 import asyncio
 import re
 
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from io import BytesIO
@@ -28,13 +29,20 @@ class Track(discord.PCMVolumeTransformer):
     _track_type = 'Track'
 
     def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-        super().__init__(discord.FFmpegPCMAudio(source, **kwargs), volume)
+        self.source = source
         self.requester = requester
         self._frames = 0
+        self.kwargs = kwargs
+        super().__init__(discord.FFmpegPCMAudio(self.source, **self.kwargs), volume)
 
     def read(self):
         self._frames += 1
         return super().read()
+
+    def copy(self, requester, volume):
+        ret = deepcopy(self)
+        ret.__init__(self.source, volume, requester, **self.kwargs)
+        return ret
 
     @property
     def play_time(self) -> int:
