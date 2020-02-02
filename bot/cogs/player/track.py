@@ -89,7 +89,7 @@ class Track(discord.PCMVolumeTransformer):
             colour=cls._embed_colour,
         ).set_author(
             name=f'{cls._track_type} search results - {search_query} - Requested by {ctx.author}'
-        ).set_footer(text=f'Select a search result or {tools.regional_indicator("x")}\N{VARIATION SELECTOR-16} to cancel.')
+        ).set_footer(text=f'Select a search result or {tools.regional_indicator("x")} to cancel.')
 
         for index, entry in enumerate(entries, 1):
             embed.add_field(
