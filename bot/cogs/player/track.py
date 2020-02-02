@@ -269,7 +269,7 @@ class YouTubeTrack(Track):
         try:
             to_run = partial(cls, video_id, requester=ctx.author)
             return await ctx.bot.loop.run_in_executor(None, to_run)
-        except youtube_dl.DownloadError() as e:
+        except youtube_dl.DownloadError as e:
             if '429' in str(e):
                 raise commands.BadArgument('Error downloading Youtube video: Too many requests.')
             elif str(e) == 'ERROR: This video is not available.\nSorry about that.':
