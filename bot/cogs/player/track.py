@@ -39,7 +39,7 @@ class Track(discord.PCMVolumeTransformer):
         return super().read()
 
     def copy(self, requester, volume):
-        return self(self.source, volume, requester, **self.kwargs)
+        return Track(self.source, volume, requester, **self.kwargs)
 
     @property
     def play_time(self) -> int:
