@@ -190,6 +190,11 @@ class Player(commands.Cog):
         repeats_needed = len(list(session.listeners)) // 2 + 1
         if len(session.repeat_requests) >= repeats_needed:
             session.queue.add_request(session.current_track.copy(ctx.author, session.volume), at_start=True)
+            await ctx.send(embed=discord.Embed(
+                colour=discord.Colour.dark_green(),
+                title='Repeat track',
+                description='This track has been re-added to the queue.'
+            ))
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
