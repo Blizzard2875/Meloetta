@@ -1,7 +1,6 @@
 import asyncio
 import re
 
-from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from io import BytesIO
@@ -40,9 +39,7 @@ class Track(discord.PCMVolumeTransformer):
         return super().read()
 
     def copy(self, requester, volume):
-        ret = deepcopy(self)
-        ret.__init__(self.source, volume, requester, **self.kwargs)
-        return ret
+        return self(self.source, volume, requester, **self.kwargs)
 
     @property
     def play_time(self) -> int:
