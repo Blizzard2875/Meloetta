@@ -288,6 +288,13 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
         session.stop()
 
+    @force.command(name='repeat', aliases=['encore'])
+    @commands.check(session_is_running)
+    async def force_repeat(self, ctx):
+        """Force the currently track to be repeated."""
+        session = self._get_session(ctx.guild)
+        session.queue.add_request(session.current_track.copy(ctx.author, session.volume), at_start=True)
+
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
