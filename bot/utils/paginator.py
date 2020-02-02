@@ -7,6 +7,7 @@ class EmbedPaginator(commands.Paginator, menus.PageSource):
     def __init__(self, embed=None, **options):
         self._embed = embed or discord.Embed()
         self.clear()
+        self.prefix = None
         self._count = 0
 
         self.max_embed_size = options.get('max_embed_size', 5500)
