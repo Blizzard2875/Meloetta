@@ -255,7 +255,7 @@ class YouTubeTrack(Track):
                 colour=self._embed_colour,
                 description=f'[{self._title}]({self._url})'
             ).set_author(
-                name=self._uploader, url=self._uploader_url
+                name=f'{self._uploader} - Requested By: {self.requester}', url=self._uploader_url
             ).set_thumbnail(
                 url=self._thumbnail
             )
