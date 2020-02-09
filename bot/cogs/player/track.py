@@ -256,8 +256,13 @@ class YouTubeTrack(Track):
     }
 
     def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-        super().__init__(source, length, metadata, volume, requester,
-                         before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', options='-bufsize 7680k', **kwargs)
+        options = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 
+            'options': '-bufsize 7680k'
+        }
+        options.update(**kwargs)
+
+        super().__init__(source, length, metadata, volume, requester, **options)
 
     @classmethod
     def get_source(cls, video_id: str) -> Tuple[str, float, dict]:
@@ -368,8 +373,13 @@ class AttachmentTrack(Track):
     _track_type = 'Local file'
 
     def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-        super().__init__(source, length, metadata, volume, requester,
-                         before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', options='-bufsize 7680k', **kwargs)
+        options = {
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 
+            'options': '-bufsize 7680k'
+        }
+        options.update(**kwargs)
+
+        super().__init__(source, length, metadata, volume, requester, **options)
 
     @classmethod
     def get_source(self, attachment: discord.File) -> Tuple[str, float, dict]:
