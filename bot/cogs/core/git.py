@@ -112,6 +112,10 @@ class Git(commands.Cog):
             colour=discord.Colour.red()
         ))
 
+        if hasattr(self.bot, '_player_sessions'):
+            for session in self.bot._player_sessions:
+                session.stop()
+
         self.bot.log.info(f'Restarting')
         await self.bot.logout()
 
