@@ -257,7 +257,7 @@ class YouTubeTrack(Track):
 
     def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
         options = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-bufsize 7680k'
         }
         options.update(**kwargs)
@@ -374,7 +374,7 @@ class AttachmentTrack(Track):
 
     def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
         options = {
-            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', 
+            'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
             'options': '-bufsize 7680k'
         }
         options.update(**kwargs)
