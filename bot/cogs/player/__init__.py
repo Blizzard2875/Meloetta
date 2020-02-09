@@ -253,7 +253,8 @@ class Player(commands.Cog):
 
         session = self._get_session(ctx.guild)
 
-        total_length = sum(track.length for track in session.queue.requests)
+        total_length = session.current_track.length - session.current_track.play_time
+        total_length += sum(track.length for track in session.queue.requests)
         length_str = str(datetime.timedelta(seconds=total_length))
 
         embed = discord.Embed(
