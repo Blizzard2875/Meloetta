@@ -27,19 +27,26 @@ class Track(discord.PCMVolumeTransformer):
     _embed_colour = discord.Colour.blurple()
     _track_type = 'Track'
 
-    def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
+    def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
         self.source = source
+        self.length = length
+        self.metadata = metadata
+
         self.requester = requester
         self._frames = 0
         self.kwargs = kwargs
         super().__init__(discord.FFmpegPCMAudio(self.source, **self.kwargs), volume)
+
+    @classmethod
+    def get_source(cls) -> Tuple[str, float, dict]:
+        raise NotImplementedError
 
     def read(self):
         self._frames += 1
         return super().read()
 
     def copy(self, requester, volume):
-        return Track(self.source, volume, requester, **self.kwargs)
+        return self.__class__(self.source, self.length, self.metadata, volume, requester, **self.kwargs)
 
     @property
     def play_time(self) -> int:
@@ -125,26 +132,49 @@ class Track(discord.PCMVolumeTransformer):
 class MP3Track(Track):
     _embed_colour = discord.Colour.dark_green()
     _track_type = 'MP3 file'
-
-    _title = _artist = _album = _date = 'Unknown'
-    _cover = open(COG_CONFIG.DEFAULT_ALBUM_ARTWORK, 'rb')
     _search_ready = asyncio.Event()
     _tracks = dict()
 
-    def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-        super().__init__(source, volume, requester, **kwargs)
+    @classmethod
+    def get_source(cls, filename: str) -> Tuple[str, float, dict]:
+        tags = MP3(filename)
+        meta = dict()
 
-        tags = MP3(source)
-
-        self.length = tags.info.length
-
-        for attribute, tag in (('_title', 'TIT2'), ('_artist', 'TPE1'), ('_album', 'TALB'), ('_date', 'TDRC'), ('_cover', 'APIC:'), ('_cover', 'APIC')):
+        for attribute, tag in (('title', 'TIT2'), ('artist', 'TPE1'), ('album', 'TALB'), ('date', 'TDRC')):
             data = tags.get(tag)
             if data is not None:
-                if attribute != '_cover':
-                    self.__setattr__(attribute, data[0])
-                else:
-                    self.__setattr__(attribute, BytesIO(data.data))
+                meta[attribute] = data[0]
+
+        for attribute, tag in (('cover', 'APIC:'), ('cover', 'APIC')):
+            data = tags.get(tag)
+            if data is not None:
+                meta[attribute] = BytesIO(data.data)
+
+        return (filename, tags.info.length, meta)
+
+    # region metadata
+
+    @property
+    def _title(self):
+        return self.metadata.get('title', 'Unknown')
+
+    @property
+    def _album(self):
+        return self.metadata.get('album', 'Unknown')
+
+    @property
+    def _artist(self):
+        return self.metadata.get('artist', 'Unknown')
+
+    @property
+    def _date(self):
+        return self.metadata.get('date', 'Unknown')
+
+    @property
+    def _cover(self):
+        return self.metadata.get('cover', open(COG_CONFIG.DEFAULT_ALBUM_ARTWORK, 'rb'))
+
+    # endregion
 
     @property
     def information(self) -> str:
@@ -187,7 +217,7 @@ class MP3Track(Track):
         search_results = sorted(scores, key=scores.get, reverse=True)
 
         # Raise error or pick search result
-        _tracks = [cls(track, requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
+        _tracks = [cls(*cls.get_source(track), requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
         result = await cls.get_user_choice(ctx, argument, [(track._title, (track._album)) for track in _tracks])
 
         return _tracks[result]
@@ -225,27 +255,41 @@ class YouTubeTrack(Track):
         'geo_bypass_country': 'US'
     }
 
-    def __init__(self, video_id: str, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
+    def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
+        super().__init__(source, length, metadata, volume, requester,
+                         before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', options='-bufsize 7680k', **kwargs)
 
-        with youtube_dl.YoutubeDL(self.ytdl_options) as ytdl:
-            info = ytdl.extract_info(
-                'https://youtube.com/watch?v=' + video_id, download=False)
+    @classmethod
+    def get_source(cls, video_id: str) -> Tuple[str, float, dict]:
 
-            if 'entries' in info:
-                info = info['entries'][0]
+        with youtube_dl.YoutubeDL(cls.ytdl_options) as ytdl:
+            info = ytdl.extract_info('https://youtube.com/watch?v=' + video_id, download=False)
 
-            self.length = round(info['duration'])
+        return (info['url'], round(info['duration']), info)
 
-            self._title = info['title']
-            self._url = info['webpage_url']
+    # region metadata
 
-            self._uploader = info['uploader']
-            self._uploader_url = info['channel_url']
+    @property
+    def _title(self):
+        return self.metadata.get('title', 'Unknown')
 
-            self._thumbnail = info['thumbnail']
+    @property
+    def _url(self):
+        return self.metadata.get('webpage_url', '#')
 
-        super().__init__(
-            info['url'], volume, requester, before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', options='-bufsize 7680k', **kwargs)
+    @property
+    def _uploader(self):
+        return self.metadata.get('uploader', 'Unknown')
+
+    @property
+    def _uploader_url(self):
+        return self.metadata.get('channel_url', '#')
+
+    @property
+    def _thumbnail(self):
+        return self.metadata.get('thumbnail', '#')
+
+    # endregion
 
     @property
     def information(self) -> str:
@@ -279,8 +323,10 @@ class YouTubeTrack(Track):
     @classmethod
     async def _convert(cls, ctx, video_id):
         try:
-            to_run = partial(cls, video_id, requester=ctx.author)
-            return await ctx.bot.loop.run_in_executor(None, to_run)
+            to_run = partial(cls.get_source, video_id)
+            source = await ctx.bot.loop.run_in_executor(None, to_run)
+            return cls(*source, requester=ctx.author)
+
         except youtube_dl.DownloadError as e:
             if '429' in str(e):
                 raise commands.BadArgument('Error downloading Youtube video: Too many requests.')
@@ -321,7 +367,10 @@ class AttachmentTrack(Track):
     _embed_colour = discord.Colour.blue()
     _track_type = 'Local file'
 
-    def __init__(self, attachment: discord.File, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-
-        super().__init__(attachment.proxy_url, volume, requester,
+    def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
+        super().__init__(source, length, metadata, volume, requester,
                          before_options='-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5', options='-bufsize 7680k', **kwargs)
+
+    @classmethod
+    def get_source(self, attachment: discord.File) -> Tuple[str, float, dict]:
+        return (attachment.proxy_url, 1, None)

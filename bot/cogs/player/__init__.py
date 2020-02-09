@@ -150,7 +150,8 @@ class Player(commands.Cog):
             raise commands.BadArgument('You did not attach a file!')
 
         if (await self.request.can_run(ctx)):
-            await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0], requester=ctx.author))
+            source = AttachmentTrack.get_source(ctx.message.attachments[0])
+            await ctx.invoke(self.request, request=AttachmentTrack(*source, requester=ctx.author))
 
     @commands.command(name='skip')
     @commands.check(session_is_running)

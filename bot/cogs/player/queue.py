@@ -42,4 +42,8 @@ class Radio(Queue):
             'playlist_directory') or COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY
 
     def next_track(self) -> Track:
-        return super().next_track() or MP3Track(choice(list(Path(self.playlist_directory).glob('**/*.mp3'))))
+        next_track = super().next_track()
+        if next_track is None:
+            source = MP3Track.get_source(choice(list(Path(self.playlist_directory).glob('**/*.mp3'))))
+            return MP3Track(*source)
+        return next_track
