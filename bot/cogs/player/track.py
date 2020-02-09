@@ -122,18 +122,14 @@ class Track(discord.PCMVolumeTransformer):
         return int(reaction.emoji[0]) - 1
 
 
-tracks = {}
-for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob('**/*.mp3'):
-    tags = MP3(track)
-    tracks[track] = re.sub(r'[^\w\s]', '', tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
-
-
 class MP3Track(Track):
     _embed_colour = discord.Colour.dark_green()
     _track_type = 'MP3 file'
 
     _title = _artist = _album = _date = 'Unknown'
     _cover = open(COG_CONFIG.DEFAULT_ALBUM_ARTWORK, 'rb')
+    _search_ready = asyncio.Event()
+    _tracks = dict()
 
     def __init__(self, source, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
         super().__init__(source, volume, requester, **kwargs)
@@ -177,14 +173,17 @@ class MP3Track(Track):
     @classmethod
     async def convert(cls, ctx: commands.Context, argument: str):
 
+        await cls._search_ready.wait()
+
         # Search through all tracks
-        scores = {t: 0 for t in tracks}
+        scores = {t: 0 for t in cls._tracks}
         for word in re.sub(r'[^\w\s]', '', argument).split():
-            for track in tracks:
-                for _word in tracks[track]:
+            for track in cls._tracks:
+                for _word in cls._tracks[track]:
                     scores[track] += fuzz.ratio(word.lower(), _word.lower())
-        for track in tracks:
-            scores[track] /= len(tracks[track])
+
+        for track in cls._tracks:
+            scores[track] /= len(cls._tracks[track])
         search_results = sorted(scores, key=scores.get, reverse=True)
 
         # Raise error or pick search result
@@ -192,6 +191,14 @@ class MP3Track(Track):
         result = await cls.get_user_choice(ctx, argument, [(track._title, (track._album)) for track in _tracks])
 
         return _tracks[result]
+
+    @classmethod
+    def setup_search(cls):
+        for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob('**/*.mp3'):
+            tags = MP3(track)
+            cls._tracks[track] = re.sub(r'[^\w\s]', '', tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
+
+        cls._search_ready.set()
 
 
 class YouTubeTrack(Track):

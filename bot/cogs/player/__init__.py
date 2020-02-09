@@ -306,6 +306,9 @@ class Player(commands.Cog):
             self.bot._player_sessions[instance.voice_channel.guild] = Session(
                 self.bot, run_forever=True, stoppable=False, **instance.__dict__)
 
+        if not MP3Track._search_ready.is_set():
+            self.bot.loop.run_in_executor(None, MP3Track.setup_search)
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
