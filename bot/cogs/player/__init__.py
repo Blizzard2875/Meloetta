@@ -8,7 +8,7 @@ from bot.config import config as BOT_CONFIG
 from bot.utils import checks, tools
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack, AttachmentTrack
+from .track import MP3Track, SoundCloudTrack, YouTubeTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -130,11 +130,20 @@ class Player(commands.Cog):
         if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
-    @request.command(name='youtube')
+    @request.command(name='youtube', aliases=['yt'])
     async def request_youtube(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
         request: YouTube search query.
+        """
+        if (await self.request.can_run(ctx)):
+            await ctx.invoke(self.request, request=request)
+
+    @request.command(name='soundcloud', aliases=['sc'])
+    async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
+        """Adds a SoundCloud track to the requests queue.
+
+        request: SoundCloud search query.
         """
         if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
