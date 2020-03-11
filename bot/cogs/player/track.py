@@ -276,23 +276,25 @@ class StreamableTrack(Track):
 
     @property
     def playing_message(self) -> Dict:
+        embed = discord.Embed(
+            colour=self._embed_colour,
+            description=f'[{self._title}]({self._url})'
+        ).set_author(
+            name=f'{self._uploader} - Requested By: {self.requester}', url=self._uploader_url
+        )
+
+        if self._thumbnail:
+            embed.set_thumbnail(url=self._thumbnail)
+
         return {
-            'embed': discord.Embed(
-                colour=self._embed_colour,
-                description=f'[{self._title}]({self._url})'
-            ).set_author(
-                name=f'{self._uploader} - Requested By: {self.requester}', url=self._uploader_url
-            ).set_thumbnail(
-                url=self._thumbnail
-            )
+            'embed': embed
         }
 
     @property
     def request_message(self) -> Dict:
         message = super().request_message
-        message['embed'].set_thumbnail(
-            url=self._thumbnail
-        )
+        if self._thumbnail:
+            message['embed'].set_thumbnail(url=self._thumbnail)
         return message
 
 
@@ -459,7 +461,7 @@ class SoundCloudTrack(StreamableTrack):
                 async with session.get(search_url) as response:
                     search_results = await response.json()
 
-            search_results = [result for result in search_results if result['streamable']]
+            search_results = [result for result in search_results if result['streamable']][:COG_CONFIG.MAX_SEARCH_RESULTS]
 
             # Raise error or pick search result
             if len(search_results) == 0:
