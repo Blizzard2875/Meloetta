@@ -80,7 +80,7 @@ class Player(commands.Cog):
             session.stop()
 
         if ctx.author in session.stop_requests:
-            raise commands.CommandError('You have already requested to stop the player.')
+            raise commands.BadArgument('You have already requested to stop the player.')
 
         if ctx.author.id in session.listeners:
             session.stop_requests.append(ctx.author)
@@ -170,7 +170,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if ctx.author in session.skip_requests:
-            raise commands.CommandError('You have already requested to skip.')
+            raise commands.BadArgument('You have already requested to skip.')
 
         session.skip_requests.append(ctx.author)
 
@@ -192,8 +192,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if ctx.author in session.repeat_requests:
-            raise commands.CommandError(
-                'You have already requested to repeat.')
+            raise commands.BadArgument('You have already requested to repeat.')
 
         session.repeat_requests.append(ctx.author)
 
