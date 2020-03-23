@@ -384,7 +384,10 @@ class YouTubeTrack(StreamableTrack):
 &part=snippet&maxResults={COG_CONFIG.MAX_SEARCH_RESULTS}&key={COG_CONFIG.YOUTUBE_API.KEY}&alt=json'
 
                 async with session.get(search_url) as response:
-                    search_results = (await response.json())['items']
+                    try:
+                        search_results = (await response.json())['items']
+                    except KeyError:
+                        raise commands.BadArgument('Too many requests please try again in a few hours.\nAlternatively you can requests songs by URL.')
 
             # Raise error or pick search result
             if len(search_results) == 0:
