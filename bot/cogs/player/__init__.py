@@ -1,7 +1,8 @@
+import asyncio
 import datetime
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from bot.config import config as BOT_CONFIG
 
@@ -58,6 +59,11 @@ async def user_has_required_permissions(ctx: commands.Context) -> bool:
 class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self._alone = asyncio.Event()
+        self._restart.start()
+
+    def cog_unload(self):
+        self._restart.cancel()
 
     def _get_session(self, guild: discord.Guild) -> Session:
         return self.bot._player_sessions.get(guild)
@@ -330,6 +336,19 @@ class Player(commands.Cog):
 
             if session.voice is not None:
                 await session.check_listeners()
+
+            # Set alone flag for auto restart
+            if all(session.alone.is_set() for session in self.bot._player_sessions):
+                self._alone.set()
+            else:
+                self._alone.clear()
+
+    @tasks.loop(hours=12)
+    async def _restart(self):
+        if self._restart.current_loop != 0:
+            await self._alone.wait()
+            self.bot.log.info(f'Automatically Restarting')
+            await self.bot.logout()
 
 
 def setup(bot: commands.Bot):
