@@ -338,7 +338,7 @@ class Player(commands.Cog):
                 await session.check_listeners()
 
             # Set alone flag for auto restart
-            if all(session.alone.is_set() for session in self.bot._player_sessions):
+            if all(session.alone.is_set() for session in self.bot._player_sessions.values()):
                 self._alone.set()
             else:
                 self._alone.clear()
