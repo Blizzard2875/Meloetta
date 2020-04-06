@@ -58,19 +58,19 @@ class Session(discord.VoiceClient):
         self.repeat_requests.clear()
         self.loop.call_soon_threadsafe(self.play_next_song.set)
 
-    async def play_track(self):
+    async def play(self, source, after=None):
         """Plays the next track in the queue."""
-
         if COG_CONFIG.PLAYING_STATUS_GUILD is not None:
             if self.channel.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
                 await self.client.change_presence(activity=discord.Activity(
-                    name=self.current_track.status_information, type=discord.ActivityType.playing
+                    name=source.status_information, type=discord.ActivityType.playing
                 ))
 
         if self.log_channel is not None:
-            await self.log_channel.send(**self.current_track.playing_message)
+            await self.log_channel.send(**source.playing_message)
 
-        self.play(self.current_track, after=self.toggle_next)
+        super().play(source, after=after)
+        self.current_track = source
 
     def start(self, log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True, **kwargs):
         """Start's the player session.
@@ -137,14 +137,14 @@ class Session(discord.VoiceClient):
             self.play_next_song.clear()
 
             # if no more tracks in queue exit
-            self.current_track = self.queue.next_track()
-            if self.current_track is None:
+            next_track = self.queue.next_track()
+            if next_track is None:
                 self.stop()
                 break
 
             # Set volume and play new track
-            self.current_track.volume = self.volume
-            await self.play_track()
+            next_track.volume = self.volume
+            await self.play(next_track, after=self.toggle_next)
             await self.check_listeners()
 
             # Wait for track to finish before playing next track
