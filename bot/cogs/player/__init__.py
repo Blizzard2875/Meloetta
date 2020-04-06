@@ -73,7 +73,8 @@ class Player(commands.Cog):
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
-        self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, run_forever=True)
+        session = self.bot._player_sessions[ctx.guild] = await ctx.author.voice_channel.join(cls=Session)
+        session.start(run_forever=True)
 
     @commands.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
@@ -119,8 +120,8 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if session is None:
-            session = self.bot._player_sessions[ctx.guild] = Session(
-                self.bot, ctx.author.voice.channel)
+            session = self.bot._player_sessions[ctx.guild] = await ctx.author.channel.connect(cls=Session)
+            session.start()
         else:
             await user_is_listening(ctx)
 
@@ -182,7 +183,7 @@ class Player(commands.Cog):
 
         skips_needed = len(list(session.listeners)) // 2 + 1
         if len(session.skip_requests) >= skips_needed:
-            session.voice.stop()
+            session.skip()
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
@@ -300,7 +301,7 @@ class Player(commands.Cog):
     async def force_skip(self, ctx):
         """Force skip the currently playing track."""
         session = self._get_session(ctx.guild)
-        session.voice.stop()
+        session.skip()
 
     @force.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
@@ -319,8 +320,8 @@ class Player(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
-            self.bot._player_sessions[instance.voice_channel.guild] = Session(
-                self.bot, run_forever=True, stoppable=False, **instance.__dict__)
+            session = self.bot._player_sessions[instance.voice_channel.guild] = await instance.voice_channel.connect(cls=Session)
+            session.start(run_forever=True, stoppable=False, **instance.__dict__)
 
         if not MP3Track._search_ready.is_set():
             self.bot.loop.run_in_executor(None, MP3Track.setup_search)
@@ -334,8 +335,7 @@ class Player(commands.Cog):
                     if member in l:
                         l.remove(member)
 
-            if session.voice is not None:
-                await session.check_listeners()
+            await session.check_listeners()
 
             # Set alone flag for auto restart
             if not any(session.not_alone.is_set() for session in self.bot._player_sessions.values()):
