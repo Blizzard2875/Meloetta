@@ -43,7 +43,7 @@ discord_log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL_EXT))
 
 handler = logging.FileHandler(filename=f'{BOT_CONFIG.APP_NAME}.log')
 handler.setFormatter(logging.Formatter(
-    '{asctime} - {module}:{levelname} - {message}', style='{'))
+    '[{asctime}] [{levelname}] - {module} : {message}', style='{'))
 
 bot.log.addHandler(handler)
 bot.log.addHandler(logging.StreamHandler())
