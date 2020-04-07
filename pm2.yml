@@ -1,4 +1,4 @@
 apps:
   script: '/bin/bash'
   name: 'Meloetta'
-  args: ['-c', 'pipenv run start']
+  args: ['-c', 'poetry run python -m bot']
