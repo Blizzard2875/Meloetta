@@ -38,12 +38,18 @@ bot.dm_help = False
 bot.log = logging.getLogger(__name__)
 bot.log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL))
 
+discord_log = logging.getLogger(discord.__name__)
+discord_log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL_EXT))
+
 handler = logging.FileHandler(filename=f'{BOT_CONFIG.APP_NAME}.log')
 handler.setFormatter(logging.Formatter(
-    '{asctime} - {levelname} - {message}', style='{'))
+    '{asctime} - {module}:{levelname} - {message}', style='{'))
 
 bot.log.addHandler(handler)
 bot.log.addHandler(logging.StreamHandler())
+
+discord_log.addHandler(handler)
+discord_log.addHandler(logging.StreamHandler)
 
 bot.log.info('Instance starting...')
 
