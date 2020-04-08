@@ -44,8 +44,8 @@ class Track:
         return self.track
 
     @property
-    def length(self):
-        return round(self.track.length / 1000, 2)
+    def length(self) -> int:
+        return self.track.length // 1000
 
     @property
     def _title(self):

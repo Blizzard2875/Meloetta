@@ -58,8 +58,8 @@ class Session:
         asyncio.create_task(self.session_task(voice_channel))
 
     @property
-    def current_track_play_time(self) -> float:
-        return round(self.player.position / 1000, 2)
+    def current_track_play_time(self) -> int:
+        return self.player.position // 1000
 
     @property
     def listeners(self) -> Generator[int, None, None]:
