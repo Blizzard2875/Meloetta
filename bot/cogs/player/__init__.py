@@ -250,7 +250,7 @@ class Player(commands.Cog):
             return await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
                 title='Volume change',
-                description=f'Currently the player volume is set to {session.player.volume}%...'
+                description=f'Currently the player volume is set to {session.player.volume:.2f}%...'
             ))
 
         if volume < 0:
