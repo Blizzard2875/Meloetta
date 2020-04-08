@@ -12,7 +12,7 @@ from bot.config import config as BOT_CONFIG
 from bot.utils import checks, tools
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack  # , SoundCloudTrack, AttachmentTrack
+from .track import MP3Track, YouTubeTrack, SoundCloudTrack  # AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -160,16 +160,16 @@ class Player(commands.Cog):
         if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
-    # @request.command(name='soundcloud', aliases=['sc'])
-    # @commands.check(user_is_in_voice_channel)
-    # @commands.check(user_has_required_permissions)
-    # async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
-    #     """Adds a SoundCloud track to the requests queue.
+    @request.command(name='soundcloud', aliases=['sc'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
+    async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
+        """Adds a SoundCloud track to the requests queue.
 
-    #     request: SoundCloud search query.
-    #     """
-    #     if (await self.request.can_run(ctx)):
-    #         await ctx.invoke(self.request, request=request)
+        request: SoundCloud search query.
+        """
+        if (await self.request.can_run(ctx)):
+            await ctx.invoke(self.request, request=request)
 
     # @request.command(name='file')
     # @commands.check(user_is_in_voice_channel)
@@ -292,7 +292,7 @@ class Player(commands.Cog):
 
         session = self._get_session(ctx.guild)
 
-        total_length = session.current_track.length - session.current_track.play_time
+        total_length = session.current_track.length
         total_length += sum(track.length for track in session.queue.requests)
         length_str = str(datetime.timedelta(seconds=total_length))
 
@@ -365,7 +365,12 @@ class Player(commands.Cog):
                 await session.toggle_next()
 
     async def start_nodes(self):
+        # If nodes already setup return
+        if self.bot._wavelink.nodes:
+            return
+
         await self.bot.wait_until_ready()
+
         node = await self.bot._wavelink.initiate_node(
             host='127.0.0.1',
             port=2333,

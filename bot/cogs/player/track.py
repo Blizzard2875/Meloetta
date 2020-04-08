@@ -233,6 +233,10 @@ class StreamableTrack(Track):
         return '#'
 
     @property
+    def _thumbnail(self):
+        return self.track.thumb
+
+    @property
     def information(self) -> str:
         return f'**[{self._title}]({self._url})** by **{self._author}**'
 
@@ -280,10 +284,6 @@ class YouTubeTrack(StreamableTrack):
     def _url(self):
         return f'https://youtu.be/{self.track.ytid}'
 
-    @property
-    def _thumbnail(self):
-        return self.track.thumb
-
     # endregion
 
     @classmethod
@@ -297,81 +297,15 @@ class YouTubeTrack(StreamableTrack):
 
         return await super().convert(ctx, argument)
 
-# class SoundCloudTrack(StreamableTrack):
-#     _embed_colour = discord.Colour.orange()
-#     _track_type = 'SoundCloud track'
 
-#     @classmethod
-#     async def get_source(cls, track_id: str) -> Tuple[str, float, dict]:
+class SoundCloudTrack(StreamableTrack):
+    _embed_colour = discord.Colour.orange()
+    _track_type = 'SoundCloud track'
+    _search_type = 'scsearch:'
 
-#         async with aiohttp.ClientSession() as session:
-#             track_url = f'https://api-v2.soundcloud.com/tracks/{track_id}?client_id={COG_CONFIG.SOUNDCLOUD_API.KEY}'
-
-#             async with session.get(track_url) as response:
-#                 info = await response.json()
-
-#             stream_url = info['media']['transcodings'][0]['url'] + f'?client_id={COG_CONFIG.SOUNDCLOUD_API.KEY}'
-
-#             async with session.get(stream_url) as response:
-#                 response = await response.json()
-
-#         return (response['url'], info['full_duration'] / 1000, info)
-
-#     # region metadata
-
-#     @property
-#     def _title(self):
-#         return self.metadata.get('title', 'Unknown')
-
-#     @property
-#     def _url(self):
-#         return self.metadata.get('permalink_url', '#')
-
-#     @property
-#     def _uploader(self):
-#         return self.metadata.get('user', {}).get('username', 'Unknown')
-
-#     @property
-#     def _uploader_url(self):
-#         return self.metadata.get('user', {}).get('permalink_url', '#')
-
-#     @property
-#     def _thumbnail(self):
-#         return self.metadata.get('artwork_url', None)
-
-#     # endregion
-
-#     @classmethod
-#     async def _convert(cls, ctx, track_id):
-#         try:
-#             source = await cls.get_source(track_id)
-#             return cls(*source, requester=ctx.author)
-
-#         except AttributeError:
-#             raise commands.BadArgument('Error downloading SoundCloud track.')
-
-#     @classmethod
-#     async def convert(cls, ctx: commands.Converter, argument: str):
-#         async with ctx.typing():
-
-#             # Search for track
-#             async with aiohttp.ClientSession() as session:
-#                 search_url = f'https://api.soundcloud.com/tracks?client_id={COG_CONFIG.SOUNDCLOUD_API.KEY}&q={argument}'
-
-#                 async with session.get(search_url) as response:
-#                     search_results = await response.json()
-
-#             search_results = [result for result in search_results if result['streamable']][:COG_CONFIG.MAX_SEARCH_RESULTS]
-
-#             # Raise error or pick search result
-#             if len(search_results) == 0:
-#                 raise commands.BadArgument('No search results were found.')
-#             elif len(search_results) == 1:
-#                 result = 0
-#             else:
-#                 result = await cls.get_user_choice(ctx, argument, [(entry['title'], entry['user']['username']) for entry in search_results])
-
-#             return await cls._convert(ctx, search_results[result]['id'])
+    @property
+    def _url(self):
+        return self.track.info['uri']
 
 
 # class AttachmentTrack(Track):

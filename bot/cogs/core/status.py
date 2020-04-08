@@ -10,6 +10,9 @@ from bot.utils import checks, tools
 from bot.config import config as BOT_CONFIG
 
 
+INVITE_URL = 'https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot'
+
+
 class Status(commands.Cog):
     """Bot status information."""
 
@@ -36,7 +39,7 @@ class Status(commands.Cog):
             ).add_field(
                 name=zwsp, value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}.'
             ).add_field(
-                name=zwsp * 2, value=f'You can add me to your server [here](https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot).'
+                name=zwsp * 2, value=f'You can add me to your server [here]({INVITE_URL}).'
             ).set_thumbnail(
                 url=self.bot.user.avatar_url
             )
@@ -45,7 +48,7 @@ class Status(commands.Cog):
     @commands.command(name='invite', aliases=['invite_link'])
     async def invite(self, ctx):
         """Provides an invite link."""
-        await ctx.send('https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot')
+        await ctx.send(f'<{INVITE_URL}>')
 
     @commands.command(name='status')
     @commands.check(checks.is_owner)
