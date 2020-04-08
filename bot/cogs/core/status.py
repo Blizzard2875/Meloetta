@@ -11,6 +11,7 @@ from bot.config import config as BOT_CONFIG
 
 
 INVITE_URL = 'https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot'
+SUPPORT_INVITE_URL = 'http://discord.gg/pokemon'
 
 
 class Status(commands.Cog):
@@ -39,7 +40,7 @@ class Status(commands.Cog):
             ).add_field(
                 name=zwsp, value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}.'
             ).add_field(
-                name=zwsp * 2, value=f'You can add me to your server [here]({INVITE_URL}).'
+                name=zwsp * 2, value=f'You can add me to your server [here]({INVITE_URL}).\nAdditionally you can get support [here]({SUPPORT_INVITE_URL}).'
             ).set_thumbnail(
                 url=self.bot.user.avatar_url
             )
