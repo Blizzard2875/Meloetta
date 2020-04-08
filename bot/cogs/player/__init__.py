@@ -242,9 +242,16 @@ class Player(commands.Cog):
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 20, commands.BucketType.user)
-    async def volume(self, ctx, volume: float):
+    async def volume(self, ctx, volume: float = None):
         """Set's the global player volume"""
         session = self._get_session(ctx.guild)
+
+        if volume is None:
+            return await ctx.send(embed=discord.Embed(
+                colour=discord.Colour.dark_green(),
+                title='Volume change',
+                description=f'Currently the player volume is set to {session.player.volume}%...'
+            ))
 
         if volume < 0:
             raise commands.BadArgument('You can\'t set the volume to below 0%.')
