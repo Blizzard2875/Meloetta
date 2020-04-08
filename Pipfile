@@ -8,6 +8,7 @@ flake8 = "*"
 autopep8 = "*"
 
 [packages]
+websockets = "==6.0"
 pyyaml = "*"
 uvloop = {version = "*",os_name = "== 'posix'"}
 discord-py = {ref= "feature-voiceclient-cleanup",git = "https://github.com/bijij/discord.py.git",extras = ["voice"],version = "*"}
