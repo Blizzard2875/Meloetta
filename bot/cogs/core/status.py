@@ -48,7 +48,13 @@ class Status(commands.Cog):
     @commands.command(name='invite', aliases=['invite_link'])
     async def invite(self, ctx):
         """Provides an invite link."""
-        await ctx.send(f'<{INVITE_URL}>')
+        await ctx.send(
+            embed=discord.Embed(
+                title=self.bot.user.name,
+                colour=self.bot.user.colour,
+                description=f'You can invite me to your server using [this link]({INVITE_URL}).'
+            ).set_thumbnail(url=self.bot.user.avatar_url)
+        )
 
     @commands.command(name='status')
     @commands.check(checks.is_owner)
