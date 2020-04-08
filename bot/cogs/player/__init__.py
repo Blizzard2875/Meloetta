@@ -32,6 +32,10 @@ async def session_is_stoppable(ctx: commands.Context) -> bool:
         raise commands.CheckFailure('This player session cannot be stopped.')
     return True
 
+async def is_whitelisted_guild(ctx: commands.Context) -> bool:
+    if ctx.guild not in COG_CONFIG.WHITELISTED_GUILDS:
+        raise commands.CheckFailure('This feature is not available on this server.')
+    return True
 
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
     if not isinstance(ctx.author, discord.Member) or ctx.author.voice is None:
@@ -103,6 +107,7 @@ class Player(commands.Cog):
             ))
 
     @commands.group(name='request', aliases=['play'], invoke_without_command=True)
+    @commands.check(is_whitelisted_guild)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 30, commands.BucketType.user)
@@ -129,6 +134,8 @@ class Player(commands.Cog):
         session.queue.add_request(request)
 
     @request.command(name='mp3', aliases=['local'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     async def request_mp3(self, ctx, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
 
@@ -138,6 +145,8 @@ class Player(commands.Cog):
             await ctx.invoke(self.request, request=request)
 
     @request.command(name='youtube', aliases=['yt'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     async def request_youtube(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
@@ -147,6 +156,8 @@ class Player(commands.Cog):
             await ctx.invoke(self.request, request=request)
 
     @request.command(name='soundcloud', aliases=['sc'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
         """Adds a SoundCloud track to the requests queue.
 
@@ -156,6 +167,8 @@ class Player(commands.Cog):
             await ctx.invoke(self.request, request=request)
 
     @request.command(name='file')
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     @commands.check(checks.is_administrator)
     async def request_file(self, ctx):
         """Adds a local file to the requests queue.
@@ -320,6 +333,10 @@ class Player(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
+            guild = self.bot.get_guild(instance.voice_channel.id)
+            if guild is None:
+                continue
+
             session = self.bot._player_sessions[instance.voice_channel.guild] = await instance.voice_channel.connect(cls=Session)
             session.start(run_forever=True, stoppable=False, **instance.__dict__)
 
