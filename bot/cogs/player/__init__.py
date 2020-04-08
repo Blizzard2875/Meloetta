@@ -174,7 +174,7 @@ class Player(commands.Cog):
     @request.command(name='file')
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
-    @commands.check(checks.is_owner)
+    @commands.check(checks.is_administrator)
     async def request_file(self, ctx):
         """Adds a local file to the requests queue.
 
@@ -322,7 +322,7 @@ class Player(commands.Cog):
 
     @tools.auto_help
     @commands.group(name='force')
-    @commands.check(checks.is_owner)
+    @commands.check(checks.is_administrator)
     async def force(self, ctx):
         """Admin commands."""
         pass

@@ -4,6 +4,13 @@ import discord
 from discord.ext import commands
 
 
+def is_administrator(ctx: Union[discord.Message, commands.Context]) -> bool:
+    is_guild(ctx)
+    if not ctx.channel.permissions_for(ctx.author).administrator:
+        raise commands.MissingPermissions(discord.Permissions(administrator=True))
+    return True
+
+
 async def is_owner(ctx: Union[discord.Message, commands.Context]) -> bool:
     is_owner = await ctx.bot.is_owner(ctx.author)
     if not is_owner:
