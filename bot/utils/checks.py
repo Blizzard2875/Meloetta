@@ -7,7 +7,7 @@ from discord.ext import commands
 def is_administrator(ctx: Union[discord.Message, commands.Context]) -> bool:
     is_guild(ctx)
     if not ctx.channel.permissions_for(ctx.author).administrator:
-        raise commands.MissingPermissions(discord.Permissions(administrator=True))
+        raise commands.MissingPermissions(['administrator'])
     return True
 
 
