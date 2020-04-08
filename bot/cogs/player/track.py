@@ -311,19 +311,14 @@ class SoundCloudTrack(StreamableTrack):
         return self.track.info['uri']
 
 
-# class AttachmentTrack(Track):
-#     _embed_colour = discord.Colour.blue()
-#     _track_type = 'Local file'
+class AttachmentTrack(Track):
+    _embed_colour = discord.Colour.blue()
+    _track_type = 'Local file'
 
-#     def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-#         options = {
-#             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-#             'options': '-bufsize 7680k'
-#         }
-#         options.update(**kwargs)
+    @property
+    def _title(self):
+        return 'File'
 
-#         super().__init__(source, length, metadata, volume, requester, **options)
-
-    # @classmethod
-    # def get_source(self, attachment: discord.File) -> Tuple[str, float, dict]:
-    #     return (attachment.proxy_url, 1, None)
+    @property
+    def _author(self):
+        return self.requester.name

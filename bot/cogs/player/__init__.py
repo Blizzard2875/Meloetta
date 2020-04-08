@@ -12,7 +12,7 @@ from bot.config import config as BOT_CONFIG
 from bot.utils import checks, tools
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack, SoundCloudTrack  # AttachmentTrack
+from .track import MP3Track, YouTubeTrack, SoundCloudTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -171,21 +171,20 @@ class Player(commands.Cog):
         if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
-    # @request.command(name='file')
-    # @commands.check(user_is_in_voice_channel)
-    # @commands.check(user_has_required_permissions)
-    # @commands.check(checks.is_administrator)
-    # async def request_file(self, ctx):
-    #     """Adds a local file to the requests queue.
+    @request.command(name='file')
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
+    @commands.check(checks.is_administrator)
+    async def request_file(self, ctx):
+        """Adds a local file to the requests queue.
 
-    #     `request`: The local file attached.
-    #     """
-    #     if not ctx.message.attachments:
-    #         raise commands.BadArgument('You did not attach a file!')
+        `request`: The local file attached.
+        """
+        if not ctx.message.attachments:
+            raise commands.BadArgument('You did not attach a file!')
 
-    #     if (await self.request.can_run(ctx)):
-    #         source = AttachmentTrack.get_source(ctx.message.attachments[0])
-    #         await ctx.invoke(self.request, request=AttachmentTrack(*source, requester=ctx.author))
+        if (await self.request.can_run(ctx)):
+            await ctx.invoke(self.request, request=AttachmentTrack(ctx.message.attachments[0].url, ctx.author))
 
     @commands.command(name='skip')
     @commands.check(session_is_running)
