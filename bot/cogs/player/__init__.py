@@ -273,10 +273,11 @@ class Player(commands.Cog):
         message['embed'].add_field(
             name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
 
-        if random.random() > 0.95:
-            message['embed'].add_field(
-                name=f'Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
-            )
+        if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
+            if random.random() > 0.95:
+                message['embed'].add_field(
+                    name=f'Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
+                )
 
         await ctx.send(**message)
 
