@@ -8,6 +8,7 @@ flake8 = "*"
 autopep8 = "*"
 
 [packages]
+websockets = "==6.0"
 pyyaml = "*"
 uvloop = {version = "*",os_name = "== 'posix'"}
 discord-py = {extras = ["voice"],version = "*"}

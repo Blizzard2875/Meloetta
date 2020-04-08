@@ -36,11 +36,16 @@ class Status(commands.Cog):
             ).add_field(
                 name=zwsp, value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}.'
             ).add_field(
-                name=zwsp * 2, value=f'I\'m not publicly available yet unfortunately.'
+                name=zwsp * 2, value=f'You can add me to your server [here](https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot).'
             ).set_thumbnail(
                 url=self.bot.user.avatar_url
             )
         )
+
+    @commands.command(name='invite', aliases=['invite_link'])
+    async def invite(self, ctx):
+        """Provides an invite link."""
+        await ctx.send('https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot')
 
     @commands.command(name='status')
     @commands.check(checks.is_owner)

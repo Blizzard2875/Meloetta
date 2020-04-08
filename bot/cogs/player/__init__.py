@@ -1,14 +1,16 @@
+import asyncio
 import datetime
+import random
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, tasks
 
 from bot.config import config as BOT_CONFIG
 
 from bot.utils import checks, tools
 
 from .session import Session
-from .track import MP3Track, YouTubeTrack, AttachmentTrack
+from .track import MP3Track, SoundCloudTrack, YouTubeTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -31,6 +33,10 @@ async def session_is_stoppable(ctx: commands.Context) -> bool:
         raise commands.CheckFailure('This player session cannot be stopped.')
     return True
 
+async def is_whitelisted_guild(ctx: commands.Context) -> bool:
+    if ctx.guild not in COG_CONFIG.WHITELISTED_GUILDS:
+        raise commands.CheckFailure('This feature is not available on this server.')
+    return True
 
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
     if not isinstance(ctx.author, discord.Member) or ctx.author.voice is None:
@@ -58,6 +64,11 @@ async def user_has_required_permissions(ctx: commands.Context) -> bool:
 class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
+        self._alone = asyncio.Event()
+        self._restart.start()
+
+    def cog_unload(self):
+        self._restart.cancel()
 
     def _get_session(self, guild: discord.Guild) -> Session:
         return self.bot._player_sessions.get(guild)
@@ -80,7 +91,7 @@ class Player(commands.Cog):
             session.stop()
 
         if ctx.author in session.stop_requests:
-            raise commands.CommandError('You have already requested to stop the player.')
+            raise commands.BadArgument('You have already requested to stop the player.')
 
         if ctx.author.id in session.listeners:
             session.stop_requests.append(ctx.author)
@@ -96,6 +107,7 @@ class Player(commands.Cog):
             ))
 
     @commands.group(name='request', aliases=['play'], invoke_without_command=True)
+    @commands.check(is_whitelisted_guild)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 30, commands.BucketType.user)
@@ -113,8 +125,8 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if session is None:
-            session = self.bot._player_sessions[ctx.guild] = Session(
-                self.bot, ctx.author.voice.channel)
+            session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
+            session.start()
         else:
             await user_is_listening(ctx)
 
@@ -122,6 +134,8 @@ class Player(commands.Cog):
         session.queue.add_request(request)
 
     @request.command(name='mp3', aliases=['local'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     async def request_mp3(self, ctx, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
 
@@ -130,7 +144,9 @@ class Player(commands.Cog):
         if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
-    @request.command(name='youtube')
+    @request.command(name='youtube', aliases=['yt'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     async def request_youtube(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
@@ -139,7 +155,20 @@ class Player(commands.Cog):
         if (await self.request.can_run(ctx)):
             await ctx.invoke(self.request, request=request)
 
+    @request.command(name='soundcloud', aliases=['sc'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
+    async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
+        """Adds a SoundCloud track to the requests queue.
+
+        request: SoundCloud search query.
+        """
+        if (await self.request.can_run(ctx)):
+            await ctx.invoke(self.request, request=request)
+
     @request.command(name='file')
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
     @commands.check(checks.is_administrator)
     async def request_file(self, ctx):
         """Adds a local file to the requests queue.
@@ -161,13 +190,13 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if ctx.author in session.skip_requests:
-            raise commands.CommandError('You have already requested to skip.')
+            raise commands.BadArgument('You have already requested to skip.')
 
         session.skip_requests.append(ctx.author)
 
         skips_needed = len(list(session.listeners)) // 2 + 1
         if len(session.skip_requests) >= skips_needed:
-            session.voice.stop()
+            session.skip()
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
@@ -183,8 +212,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if ctx.author in session.repeat_requests:
-            raise commands.CommandError(
-                'You have already requested to repeat.')
+            raise commands.BadArgument('You have already requested to repeat.')
 
         session.repeat_requests.append(ctx.author)
 
@@ -244,6 +272,12 @@ class Player(commands.Cog):
         message['embed'].add_field(
             name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
 
+        if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
+            if random.random() > 0.95:
+                message['embed'].add_field(
+                    name=f'Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
+                )
+
         await ctx.send(**message)
 
     @commands.command(name='queue', aliases=['upcoming'])
@@ -286,7 +320,7 @@ class Player(commands.Cog):
     async def force_skip(self, ctx):
         """Force skip the currently playing track."""
         session = self._get_session(ctx.guild)
-        session.voice.stop()
+        session.skip()
 
     @force.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
@@ -305,8 +339,10 @@ class Player(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
-            self.bot._player_sessions[instance.voice_channel.guild] = Session(
-                self.bot, run_forever=True, stoppable=False, **instance.__dict__)
+            if self.bot.get_channel(instance.voice_channel.id) is None:
+                continue
+            
+            self.bot._player_sessions[instance.voice_channel.guild] = Session(self.bot, run_forever=True, stoppable=False, **instance.__dict__)
 
         if not MP3Track._search_ready.is_set():
             self.bot.loop.run_in_executor(None, MP3Track.setup_search)
@@ -320,8 +356,20 @@ class Player(commands.Cog):
                     if member in l:
                         l.remove(member)
 
-            if session.voice is not None:
-                await session.check_listeners()
+            await session.check_listeners()
+
+            # Set alone flag for auto restart
+            if not any(session.not_alone.is_set() for session in self.bot._player_sessions.values()):
+                self._alone.set()
+            else:
+                self._alone.clear()
+
+    @tasks.loop(hours=12)
+    async def _restart(self):
+        if self._restart.current_loop != 0:
+            await self._alone.wait()
+            self.bot.log.info(f'Automatically Restarting')
+            await self.bot.logout()
 
 
 def setup(bot: commands.Bot):
