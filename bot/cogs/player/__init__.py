@@ -122,8 +122,8 @@ class Player(commands.Cog):
         request: YouTube search query.
         """
         try:
-            # if not isinstance(request, AttachmentTrack):
-            await ctx.message.delete()
+            if not isinstance(request, AttachmentTrack):
+                await ctx.message.delete()
         except discord.Forbidden:
             pass
 

@@ -5,7 +5,7 @@ from discord.ext import commands
 
 
 def is_administrator(ctx: Union[discord.Message, commands.Context]) -> bool:
-    return commands.has_permissions(administrator=True)(ctx)
+    return commands.has_guild_permissions(administrator=True)(ctx)
 
 
 async def is_owner(ctx: Union[discord.Message, commands.Context]) -> bool:
@@ -32,6 +32,6 @@ def is_direct_message(ctx: commands.Context) -> bool:
 
 def has_administrator_permission(ctx: commands.Context) -> bool:
     is_guild(ctx)
-    commands.has_permissions(administrator=True)(ctx)
+    commands.has_guild_permissions(administrator=True)(ctx)
     commands.bot_has_permissions(administrator=True)(ctx)
     return True
