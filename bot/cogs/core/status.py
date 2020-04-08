@@ -45,7 +45,7 @@ class Status(commands.Cog):
                 description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
                 colour=self.bot.user.colour
             ).add_field(
-                name=zwsp, value=f'Right now I\'m idle in **{tools.plural(idle):server}**.\bAnd playing in **{playing}**'
+                name=zwsp, value=f'Right now, I\'m idle in **{tools.plural(idle):server}**.\nAnd playing in **{playing}**.'
             ).add_field(
                 name=zwsp * 2, value=f'You can add me to your server [here]({INVITE_URL}).\nAdditionally you can get support [here]({SUPPORT_INVITE_URL}).'
             ).set_thumbnail(
