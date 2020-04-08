@@ -223,7 +223,8 @@ class Player(commands.Cog):
 
         repeats_needed = len(list(session.listeners)) // 2 + 1
         if len(session.repeat_requests) >= repeats_needed:
-            session.queue.add_request(session.current_track.copy(ctx.author, session.volume), at_start=True)
+            session.queue.add_request(session.current_track, at_start=True)
+
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
                 title='Repeat track',
@@ -264,18 +265,18 @@ class Player(commands.Cog):
         """Retrieves information on the currently playing track."""
         session = self._get_session(ctx.guild)
 
-        # play_time = session.current_track.play_time
-        # track_length = int(session.current_track.length)
+        play_time = session.current_track_play_time
+        track_length = session.current_track.length
 
-        # play_time_str = str(datetime.timedelta(seconds=play_time))
-        # length_str = str(datetime.timedelta(seconds=track_length))
+        play_time_str = str(datetime.timedelta(seconds=play_time))
+        length_str = str(datetime.timedelta(seconds=track_length))
 
-        # seek_length = 50
-        # seek_distance = round(seek_length * play_time / track_length)
+        seek_length = 50
+        seek_distance = round(seek_length * play_time / track_length)
 
         message = session.current_track.playing_message
-        # message['embed'].add_field(
-        #     name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
+        message['embed'].add_field(
+            name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
 
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
@@ -292,7 +293,7 @@ class Player(commands.Cog):
 
         session = self._get_session(ctx.guild)
 
-        total_length = session.current_track.length
+        total_length = session.current_track.length - session.current_track_play_time
         total_length += sum(track.length for track in session.queue.requests)
         length_str = str(datetime.timedelta(seconds=total_length))
 

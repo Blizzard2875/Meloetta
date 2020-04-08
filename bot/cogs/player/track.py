@@ -22,7 +22,6 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 
 class Track:
-    length = 0
     requester = None
     _embed_colour = discord.Colour.blurple()
     _track_type = 'Track'
@@ -43,6 +42,10 @@ class Track:
             self.track = data.pop(0)
 
         return self.track
+
+    @property
+    def length(self):
+        return round(self.track.length / 1000, 2)
 
     @property
     def _title(self):
