@@ -174,7 +174,7 @@ class Player(commands.Cog):
     @request.command(name='file')
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
-    @commands.check(checks.is_administrator)
+    @commands.check(checks.is_owner)
     async def request_file(self, ctx):
         """Adds a local file to the requests queue.
 
@@ -322,7 +322,7 @@ class Player(commands.Cog):
 
     @tools.auto_help
     @commands.group(name='force')
-    @commands.check(checks.is_administrator)
+    @commands.check(checks.is_owner)
     async def force(self, ctx):
         """Admin commands."""
         pass
@@ -346,7 +346,7 @@ class Player(commands.Cog):
     async def force_repeat(self, ctx):
         """Force the currently track to be repeated."""
         session = self._get_session(ctx.guild)
-        session.queue.add_request(session.current_track.copy(ctx.author, session.volume), at_start=True)
+        session.queue.add_request(session.current_track, at_start=True)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
