@@ -32,13 +32,20 @@ class Status(commands.Cog):
         prefix = BOT_CONFIG.PREFIXES[0]
         zwsp = '\N{ZERO WIDTH SPACE}'
 
+        if hasattr(self.bot, '_player_sessions'):
+            idle = sum(not session.not_alone.is_set() for session in self.bot._player_sessions.values())
+            playing = sum(session.not_alone.is_set() for session in self.bot._player_sessions.values())
+        else:
+            idle = 0
+            playing = 0
+
         await ctx.send(
             embed=discord.Embed(
                 title=f'I am {self.bot.user}, a bot made by {self.bot.owner}.',
                 description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
                 colour=self.bot.user.colour
             ).add_field(
-                name=zwsp, value=f'Right now I\'m playing in {tools.plural(len(self.bot._player_sessions)):server}.'
+                name=zwsp, value=f'Right now I\'m idle in **{tools.plural(idle):server}**.\bAnd playing in **{playing}**'
             ).add_field(
                 name=zwsp * 2, value=f'You can add me to your server [here]({INVITE_URL}).\nAdditionally you can get support [here]({SUPPORT_INVITE_URL}).'
             ).set_thumbnail(
