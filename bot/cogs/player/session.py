@@ -116,14 +116,11 @@ class Session:
             await self.log_channel.send(**self.current_track.playing_message)
 
         # Create wavelink object for track
-        if not isinstance(self.current_track.track, wavelink.Track):
-
-            tracks = await self.player.node.get_tracks(self.current_track.track)
-            if len(tracks) == 0:
-                return await self.toggle_next()
-            self.current_track.track = tracks[0]
-
-        await self.player.play(self.current_track.track)
+        try:
+            await self.current_track.setup(self.player.node)
+            await self.player.play(self.current_track.track)
+        except wavelink.BuildTrackError:
+            await self.toggle_next()
 
     async def skip(self):
         """Skips the currently playing track"""

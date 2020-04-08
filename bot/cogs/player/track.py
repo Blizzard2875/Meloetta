@@ -4,7 +4,7 @@ import re
 # from functools import partial
 from pathlib import Path
 from io import BytesIO
-from typing import Dict, List, Tuple, Union
+from typing import Dict, List, Tuple
 
 # import aiohttp
 import wavelink
@@ -27,23 +27,20 @@ class Track:
     _embed_colour = discord.Colour.blurple()
     _track_type = 'Track'
 
-    def __init__(self, track: Union[str, wavelink.Track], length: float, metadata: Dict, requester: discord.User = None, **kwargs):
-        self.track = track
-        self.length = length
-        self.metadata = metadata
-
+    def __init__(self, url: str, requester: discord.User = None, track: wavelink.Track = None):
+        self.url = url
         self.requester = requester
-        self._frames = 0
-        self.kwargs = kwargs
+        self.track = track
 
-    @classmethod
-    def get_source(cls) -> Tuple[str, float, dict]:
-        raise NotImplementedError
+    async def setup(self, node: wavelink.Node):
+        if self.track is None:
+            data = await node.get_tracks(self.url)
 
-    @property
-    def play_time(self) -> int:
-        """Returns the current track play time in seconds."""
-        return round(self._frames / 50)
+            if not data:
+                raise wavelink.BuildTrackError()
+
+            self.track = data.pop(0)
+        return self
 
     @property
     def information(self) -> str:
@@ -127,24 +124,22 @@ class MP3Track(Track):
     _search_ready = asyncio.Event()
     _tracks = dict()
 
-    @classmethod
-    def get_source(cls, filename: str) -> Tuple[str, float, dict]:
+    def __init__(self, filename: str, requester: discord.User = None, track: wavelink.Track = None, **kwargs):
+        super().__init__(filename, requester, track)
+        self.metadata = dict()
+
+        # Populate metadata
         tags = MP3(filename)
-        meta = dict()
 
         for attribute, tag in (('title', 'TIT2'), ('artist', 'TPE1'), ('album', 'TALB'), ('date', 'TDRC')):
             data = tags.get(tag)
             if data is not None:
-                meta[attribute] = data[0]
+                self.metadata[attribute] = data[0]
 
         for attribute, tag in (('cover', 'APIC:'), ('cover', 'APIC')):
             data = tags.get(tag)
             if data is not None:
-                meta[attribute] = BytesIO(data.data)
-
-        return (filename, tags.info.length, meta)
-
-    # region metadata
+                self.metadata[attribute] = BytesIO(data.data)
 
     @property
     def _title(self):
@@ -209,7 +204,7 @@ class MP3Track(Track):
         search_results = sorted(scores, key=scores.get, reverse=True)
 
         # Raise error or pick search result
-        _tracks = [cls(*cls.get_source(track), requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
+        _tracks = [cls(track, requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
         result = await cls.get_user_choice(ctx, argument, [(track._title, (track._album)) for track in _tracks])
 
         return _tracks[result]
@@ -222,7 +217,6 @@ class MP3Track(Track):
 
         cls._search_ready.set()
 
-# TODO: Streamables
 
 # class StreamableTrack(Track):
 
@@ -314,14 +308,6 @@ class MP3Track(Track):
 #         'geo_bypass': True,
 #         'geo_bypass_country': 'US'
 #     }
-
-#     @classmethod
-#     def get_source(cls, video_id: str) -> Tuple[str, float, dict]:
-
-#         with youtube_dl.YoutubeDL(cls.ytdl_options) as ytdl:
-#             info = ytdl.extract_info('https://youtube.com/watch?v=' + video_id, download=False)
-
-#         return (info['url'], round(info['duration']), info)
 
 #     # region metadata
 
