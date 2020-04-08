@@ -32,15 +32,25 @@ class Track:
         self.requester = requester
         self.track = track
 
-    async def setup(self, node: wavelink.Node):
+    async def setup(self, bot) -> wavelink.Track:
+        """Prepares a wavelink track object for playing."""
         if self.track is None:
-            data = await node.get_tracks(self.url)
+            data = await bot._wavelink.get_tracks(self.url)
 
             if not data:
-                raise wavelink.BuildTrackError()
+                raise commands.BadArgument('Error loading track.')
 
             self.track = data.pop(0)
-        return self
+
+        return self.track
+
+    @property
+    def _title(self):
+        return self.track.title
+
+    @property
+    def _author(self):
+        return self.track.author
 
     @property
     def information(self) -> str:
@@ -48,7 +58,7 @@ class Track:
 
         An example of this would be the title and artist.
         """
-        return self._track_type
+        return f"**{self._title}** by **{self._author}**"
 
     @property
     def status_information(self) -> str:
@@ -56,7 +66,7 @@ class Track:
 
         An example of this would be the title and artist.
         """
-        return self._track_type
+        return self.information
 
     @property
     def playing_message(self) -> Dict:
@@ -150,7 +160,7 @@ class MP3Track(Track):
         return self.metadata.get('album', 'Unknown')
 
     @property
-    def _artist(self):
+    def _author(self):
         return self.metadata.get('artist', 'Unknown')
 
     @property
@@ -165,10 +175,6 @@ class MP3Track(Track):
 
     @property
     def information(self) -> str:
-        return f'**{self._title}** by **{self._artist}**'
-
-    @property
-    def status_information(self) -> str:
         return f'{self._title} from {self._album}'
 
     @property
@@ -180,7 +186,7 @@ class MP3Track(Track):
                 title=self._title,
                 description=f'{self._album} - ({self._date})'
             ).set_author(
-                name=self._artist
+                name=self._author
             ).set_thumbnail(
                 url='attachment://cover.jpg'
             ),
@@ -205,7 +211,7 @@ class MP3Track(Track):
 
         # Raise error or pick search result
         _tracks = [cls(track, requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
-        result = await cls.get_user_choice(ctx, argument, [(track._title, (track._album)) for track in _tracks])
+        result = await cls.get_user_choice(ctx, argument, [(track._title, track._album) for track in _tracks])
 
         return _tracks[result]
 
@@ -218,166 +224,78 @@ class MP3Track(Track):
         cls._search_ready.set()
 
 
-# class StreamableTrack(Track):
+class StreamableTrack(Track):
+    _track_type = 'Unknown Stream'
+    _search_type = ''
 
-#     def __init__(self, source, length: float, metadata: Dict, volume: float = COG_CONFIG.DEFAULT_VOLUME, requester: discord.User = None, **kwargs):
-#         options = {
-#             'before_options': '-reconnect 1 -reconnect_streamed 1 -reconnect_delay_max 5',
-#             'options': '-bufsize 7680k'
-#         }
-#         options.update(**kwargs)
+    @property
+    def _url(self):
+        return '#'
 
-#         super().__init__(source, length, metadata, volume, requester, **options)
+    @property
+    def information(self) -> str:
+        return f'**[{self._title}]({self._url})** by **{self._author}**'
 
-#     # region metadata
+    @property
+    def playing_message(self) -> Dict:
+        embed = discord.Embed(
+            colour=self._embed_colour,
+            description=f'[{self._title}]({self._url})'
+        ).set_author(name=f'{self._author} - Requested By: {self.requester}')
 
-#     @property
-#     def _title(self):
-#         raise NotImplementedError
+        if self._thumbnail:
+            embed.set_thumbnail(url=self._thumbnail)
 
-#     @property
-#     def _url(self):
-#         raise NotImplementedError
+        return {
+            'embed': embed
+        }
 
-#     @property
-#     def _uploader(self):
-#         raise NotImplementedError
+    @classmethod
+    async def convert(cls, ctx: commands.Converter, argument: str):
+        async with ctx.typing():
 
-#     @property
-#     def _uploader_url(self):
-#         raise NotImplementedError
+            tracks = await ctx.bot._wavelink.get_tracks(cls._search_type + argument)
+            if not isinstance(tracks, list):
+                raise commands.BadArgument('No search results were found.')
 
-#     @property
-#     def _thumbnail(self):
-#         raise NotImplementedError
+            tracks = [cls(argument, ctx.author, track) for track in tracks[:COG_CONFIG.MAX_SEARCH_RESULTS]]
+            if len(tracks) == 1:
+                return tracks[0]
 
-#     # endregion
-
-#     @property
-#     def information(self) -> str:
-#         return f'**[{self._title}]({self._url})** by **[{self._uploader}]({self._uploader_url})**'
-
-#     @property
-#     def status_information(self) -> str:
-#         return f'{self._title} by {self._uploader}'
-
-#     @property
-#     def playing_message(self) -> Dict:
-#         embed = discord.Embed(
-#             colour=self._embed_colour,
-#             description=f'[{self._title}]({self._url})'
-#         ).set_author(
-#             name=f'{self._uploader} - Requested By: {self.requester}', url=self._uploader_url
-#         )
-
-#         if self._thumbnail:
-#             embed.set_thumbnail(url=self._thumbnail)
-
-#         return {
-#             'embed': embed
-#         }
-
-#     @property
-#     def request_message(self) -> Dict:
-#         message = super().request_message
-#         if self._thumbnail:
-#             message['embed'].set_thumbnail(url=self._thumbnail)
-#         return message
+            choice = await cls.get_user_choice(ctx, argument, [(track._title, track._author) for track in tracks])
+            return tracks[choice]
 
 
-# class YouTubeTrack(StreamableTrack):
-#     _embed_colour = discord.Colour.red()
-#     _track_type = 'YouTube video'
+class YouTubeTrack(StreamableTrack):
+    _embed_colour = discord.Colour.red()
+    _track_type = 'YouTube video'
+    _search_type = 'ytsearch:'
 
-#     youtube_api_url = f'https://www.googleapis.com/{COG_CONFIG.YOUTUBE_API.SERVICE_NAME}/{COG_CONFIG.YOUTUBE_API.VERSION}'
+    video_url_check = re.compile(
+        r'(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})')
 
-#     video_url_check = re.compile(
-#         r'(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})')
-#     ytdl_options = {
-#         'format': 'bestaudio/best',
-#         'outtmpl': 'downloads/%(extractor)s-%(id)s-%(title)s.%(ext)s',
-#         'restrictfilenames': True,
-#         'noplaylist': True,
-#         'nocheckcertificate': True,
-#         'ignoreerrors': False,
-#         'logtostderr': False,
-#         'quiet': True,
-#         'no_warnings': True,
-#         'default_search': 'auto',
-#         'source_address': '0.0.0.0',  # ipv6 addresses cause issues sometimes
-#         'geo_bypass': True,
-#         'geo_bypass_country': 'US'
-#     }
+    # region metadata
 
-#     # region metadata
+    @property
+    def _url(self):
+        return f'https://youtu.be/{self.track.ytid}'
 
-#     @property
-#     def _title(self):
-#         return self.metadata.get('title', 'Unknown')
+    @property
+    def _thumbnail(self):
+        return self.track.thumb
 
-#     @property
-#     def _url(self):
-#         return self.metadata.get('webpage_url', '#')
+    # endregion
 
-#     @property
-#     def _uploader(self):
-#         return self.metadata.get('uploader', 'Unknown')
+    @classmethod
+    async def convert(cls, ctx: commands.Converter, argument: str):
+        # If user directly requested youtube video
+        is_video = cls.video_url_check.search(argument)
+        if is_video is not None:
+            track = cls(argument, ctx.author)
+            await track.setup(ctx.bot)
+            return track
 
-#     @property
-#     def _uploader_url(self):
-#         return self.metadata.get('channel_url', '#')
-
-#     @property
-#     def _thumbnail(self):
-#         return self.metadata.get('thumbnail', '#')
-
-#     # endregion
-
-#     @classmethod
-#     async def _convert(cls, ctx, video_id):
-#         try:
-#             to_run = partial(cls.get_source, video_id)
-#             source = await ctx.bot.loop.run_in_executor(None, to_run)
-#             return cls(*source, requester=ctx.author)
-
-#         except youtube_dl.DownloadError as e:
-#             if '429' in str(e):
-#                 raise commands.BadArgument('Error downloading Youtube video: Too many requests.')
-#             elif str(e) == 'ERROR: This video is not available.\nSorry about that.':
-#                 raise commands.BadArgument('Error downloading YouTube video: Cannot download video.')
-#             else:
-#                 raise e
-
-#     @classmethod
-#     async def convert(cls, ctx: commands.Converter, argument: str):
-#         async with ctx.typing():
-
-#             # If user directly requested youtube video
-#             is_video = cls.video_url_check.search(argument)
-#             if is_video is not None:
-#                 return await cls._convert(ctx, is_video.groups()[0])
-
-#             # Otherwise search for video
-#             async with aiohttp.ClientSession() as session:
-#                 search_url = f'{cls.youtube_api_url}/search?type=video&videoSyndicated=true&q={argument}\
-# &part=snippet&maxResults={COG_CONFIG.MAX_SEARCH_RESULTS}&key={COG_CONFIG.YOUTUBE_API.KEY}&alt=json'
-
-#                 async with session.get(search_url) as response:
-#                     try:
-#                         search_results = (await response.json())['items']
-#                     except KeyError:
-#                         raise commands.BadArgument('Too many requests please try again in a few hours.\nAlternatively you can requests songs by URL.')
-
-#             # Raise error or pick search result
-#             if len(search_results) == 0:
-#                 raise commands.BadArgument('No search results were found.')
-#             elif len(search_results) == 1:
-#                 result = 0
-#             else:
-#                 result = await cls.get_user_choice(ctx, argument, [(entry['snippet']['title'], entry['snippet']['channelTitle']) for entry in search_results])
-
-#             return await cls._convert(ctx, search_results[result]['id']['videoId'])
-
+        return await super().convert(ctx, argument)
 
 # class SoundCloudTrack(StreamableTrack):
 #     _embed_colour = discord.Colour.orange()

@@ -3,7 +3,7 @@ import asyncio
 from typing import Generator
 
 import discord
-import wavelink
+from discord.ext import commands
 
 from .queue import Queue, Radio
 
@@ -117,9 +117,8 @@ class Session:
 
         # Create wavelink object for track
         try:
-            await self.current_track.setup(self.player.node)
-            await self.player.play(self.current_track.track)
-        except wavelink.BuildTrackError:
+            await self.player.play(await self.current_track.setup(self.bot))
+        except commands.BadArgument:
             await self.toggle_next()
 
     async def skip(self):

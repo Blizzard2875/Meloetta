@@ -12,7 +12,7 @@ from bot.config import config as BOT_CONFIG
 from bot.utils import checks, tools
 
 from .session import Session
-from .track import MP3Track  # , SoundCloudTrack, YouTubeTrack, AttachmentTrack
+from .track import MP3Track, YouTubeTrack  # , SoundCloudTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -112,54 +112,53 @@ class Player(commands.Cog):
                 description=f'You currently need **{stops_needed - len(session.stop_requests)}** more votes to stop the player.'
             ))
 
-    # @commands.group(name='request', aliases=['play'], invoke_without_command=True)
-    # @commands.check(is_whitelisted_guild)
-    # @commands.check(user_is_in_voice_channel)
-    # @commands.check(user_has_required_permissions)
-    # @commands.cooldown(2, 30, commands.BucketType.user)
-    # async def request(self, ctx, *, request: YouTubeTrack):
-    #     """Adds a YouTube video to the requests queue.
+    @commands.group(name='request', aliases=['play'], invoke_without_command=True)
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
+    @commands.cooldown(2, 30, commands.BucketType.user)
+    async def request(self, ctx, *, request: YouTubeTrack):
+        """Adds a YouTube video to the requests queue.
 
-    #     request: YouTube search query.
-    #     """
-    #     try:
-    #         if not isinstance(request, AttachmentTrack):
-    #             await ctx.message.delete()
-    #     except discord.Forbidden:
-    #         pass
+        request: YouTube search query.
+        """
+        try:
+            # if not isinstance(request, AttachmentTrack):
+            await ctx.message.delete()
+        except discord.Forbidden:
+            pass
 
-    #     session = self._get_session(ctx.guild)
+        session = self._get_session(ctx.guild)
 
-    #     if session is None:
-    #         session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
-    #         session.start()
-    #     else:
-    #         await user_is_listening(ctx)
+        if session is None:
+            session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
+            session.start()
+        else:
+            await user_is_listening(ctx)
 
-    #     await ctx.send(**request.request_message)
-    #     session.queue.add_request(request)
+        await ctx.send(**request.request_message)
+        session.queue.add_request(request)
 
-    # @request.command(name='mp3', aliases=['local'])
-    # @commands.check(user_is_in_voice_channel)
-    # @commands.check(user_has_required_permissions)
-    # async def request_mp3(self, ctx, *, request: MP3Track):
-    #     """Adds a local MP3 file to the requests queue.
+    @request.command(name='mp3', aliases=['local'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
+    async def request_mp3(self, ctx, *, request: MP3Track):
+        """Adds a local MP3 file to the requests queue.
 
-    #     request: Local track search query.
-    #     """
-    #     if (await self.request.can_run(ctx)):
-    #         await ctx.invoke(self.request, request=request)
+        request: Local track search query.
+        """
+        if (await self.request.can_run(ctx)):
+            await ctx.invoke(self.request, request=request)
 
-    # @request.command(name='youtube', aliases=['yt'])
-    # @commands.check(user_is_in_voice_channel)
-    # @commands.check(user_has_required_permissions)
-    # async def request_youtube(self, ctx, *, request: YouTubeTrack):
-    #     """Adds a YouTube video to the requests queue.
+    @request.command(name='youtube', aliases=['yt'])
+    @commands.check(user_is_in_voice_channel)
+    @commands.check(user_has_required_permissions)
+    async def request_youtube(self, ctx, *, request: YouTubeTrack):
+        """Adds a YouTube video to the requests queue.
 
-    #     request: YouTube search query.
-    #     """
-    #     if (await self.request.can_run(ctx)):
-    #         await ctx.invoke(self.request, request=request)
+        request: YouTube search query.
+        """
+        if (await self.request.can_run(ctx)):
+            await ctx.invoke(self.request, request=request)
 
     # @request.command(name='soundcloud', aliases=['sc'])
     # @commands.check(user_is_in_voice_channel)
