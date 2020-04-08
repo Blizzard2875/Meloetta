@@ -3,6 +3,7 @@ import asyncio
 from typing import Generator
 
 import discord
+import wavelink
 
 from .queue import Queue, Radio
 
@@ -26,7 +27,8 @@ class Session:
 
         """
         self.bot = bot
-        self.voice_channel = voice_channel
+        self.guild = voice_channel.guild
+        self.player = self.bot._wavelink.get_player(voice_channel.guild.id)
 
         self.log_channel = log_channel
         self.stoppable = stoppable
@@ -40,7 +42,6 @@ class Session:
         self.repeat_requests = list()
         self.stop_requests = list()
 
-        self.voice = None
         self.current_track = None
 
         if run_forever:
@@ -54,7 +55,7 @@ class Session:
         self.is_playing = True
         self.play_next_song = asyncio.Event()
 
-        asyncio.create_task(self.session_task())
+        asyncio.create_task(self.session_task(voice_channel))
 
     @property
     def listeners(self) -> Generator[int, None, None]:
@@ -68,10 +69,11 @@ class Session:
             `generator` of `int`: A generator consisting of the user_id's of members listening to the bot.
 
         """
-        if self.voice is None:
+        voice_channel = self.bot.get_channel(int(self.player.channel_id))
+        if voice_channel is None:
             return
 
-        for user_id, state in self.voice.channel.voice_states.items():
+        for user_id, state in voice_channel.voice_states.items():
             if user_id != self.bot.user.id and not (state.deaf or state.self_deaf):
                 yield user_id
 
@@ -81,24 +83,31 @@ class Session:
             return self.config.get('requires_role') in user.roles
         return True
 
-    def change_volume(self, volume: float):
+    async def change_volume(self, volume: float):
         """Changes this session's volume"""
-        self.volume = volume
-        self.current_track.volume = self.volume
+        await self.player.set_volume(volume)
 
-    def toggle_next(self, error=None):
+    async def toggle_next(self):
         """Sets the next track to start playing"""
-        if error:
-            pass
+        self.current_track = self.queue.next_track()
+
+        # if no more tracks in queue exit
+        if not self.is_playing or self.current_track is None:
+            del self.bot._player_sessions[self.guild]
+            await self.player.disconnect()
+            await self.player.destroy()
+            return
+
         self.skip_requests.clear()
         self.repeat_requests.clear()
-        self.bot.loop.call_soon_threadsafe(self.play_next_song.set)
+
+        await self.play_track()
 
     async def play_track(self):
         """Plays the next track in the queue."""
 
         if COG_CONFIG.PLAYING_STATUS_GUILD is not None:
-            if self.voice_channel.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
+            if self.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
                 await self.bot.change_presence(activity=discord.Activity(
                     name=self.current_track.status_information, type=discord.ActivityType.playing
                 ))
@@ -106,21 +115,33 @@ class Session:
         if self.log_channel is not None:
             await self.log_channel.send(**self.current_track.playing_message)
 
-        self.voice.play(self.current_track, after=self.toggle_next)
+        # Create wavelink object for track
+        if not isinstance(self.current_track.track, wavelink.Track):
 
-    def stop(self):
+            tracks = await self.player.node.get_tracks(self.current_track.track)
+            if len(tracks) == 0:
+                return await self.toggle_next()
+            self.current_track.track = tracks[0]
+
+        await self.player.play(self.current_track.track)
+
+    async def skip(self):
+        """Skips the currently playing track"""
+        await self.player.stop()
+
+    async def stop(self):
         """Stops this session."""
         self.is_playing = False
-        self.voice.stop()
+        await self.player.stop()
 
     async def check_listeners(self):
         """Checks if there is anyone listening and pauses / resumes accordingly."""
         if list(self.listeners):
-            if self.voice.is_paused():
-                self.voice.resume()
+            if self.player.is_paused:
+                await self.player.set_pause(False)
                 self.not_alone.set()
-        elif self.voice.is_playing():
-            self.voice.pause()
+        elif self.player.is_playing:
+            await self.player.set_pause(True)
             self.not_alone.clear()
 
             # Wait to see if the bot stays alone for it's max timeout duration
@@ -130,28 +151,8 @@ class Session:
                 except asyncio.TimeoutError:
                     self.stop()
 
-    async def session_task(self):
-
-        self.voice = await self.voice_channel.connect()
-        self.voice.session = self
-
-        while self.is_playing:
-            self.play_next_song.clear()
-
-            # if no more tracks in queue exit
-            self.current_track = self.queue.next_track()
-            if self.current_track is None:
-                self.stop()
-                break
-
-            # Set volume and play new track
-            self.current_track.volume = self.volume
-            await self.play_track()
-            await self.check_listeners()
-
-            # Wait for track to finish before playing next track
-            await self.play_next_song.wait()
-
-        # Delete session and disconnect
-        del self.bot._player_sessions[self.voice.guild]
-        await self.voice.disconnect()
+    async def session_task(self, voice_channel):
+        await self.player.connect(voice_channel.id)
+        await self.player.set_volume(self.volume)
+        await self.toggle_next()
+        await self.check_listeners()

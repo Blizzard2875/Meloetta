@@ -15,8 +15,9 @@ discord-py = {extras = ["voice"],version = "*"}
 discord-ext-menu = {git = "https://github.com/Rapptz/discord-ext-menus.git",version = "*"}
 mutagen = "*"
 psutil = "*"
-youtube-dl = "*"
 fuzzywuzzy = "*"
+wavelink = "*"
+python-levenshtein = "*"
 
 [scripts]
 start = "python -m bot"

@@ -5,12 +5,14 @@ import random
 import discord
 from discord.ext import commands, tasks
 
+import wavelink
+
 from bot.config import config as BOT_CONFIG
 
 from bot.utils import checks, tools
 
 from .session import Session
-from .track import MP3Track, SoundCloudTrack, YouTubeTrack, AttachmentTrack
+from .track import MP3Track  # , SoundCloudTrack, YouTubeTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
@@ -33,10 +35,12 @@ async def session_is_stoppable(ctx: commands.Context) -> bool:
         raise commands.CheckFailure('This player session cannot be stopped.')
     return True
 
+
 async def is_whitelisted_guild(ctx: commands.Context) -> bool:
     if ctx.guild not in COG_CONFIG.WHITELISTED_GUILDS:
         raise commands.CheckFailure('This feature is not available on this server.')
     return True
+
 
 async def user_is_in_voice_channel(ctx: commands.Context) -> bool:
     if not isinstance(ctx.author, discord.Member) or ctx.author.voice is None:
@@ -67,6 +71,8 @@ class Player(commands.Cog):
         self._alone = asyncio.Event()
         self._restart.start()
 
+        self.bot.loop.create_task(self.start_nodes())
+
     def cog_unload(self):
         self._restart.cancel()
 
@@ -88,7 +94,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
 
         if len(list(session.listeners)) == 0:
-            session.stop()
+            await session.stop()
 
         if ctx.author in session.stop_requests:
             raise commands.BadArgument('You have already requested to stop the player.')
@@ -98,7 +104,7 @@ class Player(commands.Cog):
 
         stops_needed = len(list(session.listeners))
         if len(session.stop_requests) >= stops_needed:
-            session.stop()
+            await session.stop()
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
@@ -106,81 +112,81 @@ class Player(commands.Cog):
                 description=f'You currently need **{stops_needed - len(session.stop_requests)}** more votes to stop the player.'
             ))
 
-    @commands.group(name='request', aliases=['play'], invoke_without_command=True)
-    @commands.check(is_whitelisted_guild)
-    @commands.check(user_is_in_voice_channel)
-    @commands.check(user_has_required_permissions)
-    @commands.cooldown(2, 30, commands.BucketType.user)
-    async def request(self, ctx, *, request: YouTubeTrack):
-        """Adds a YouTube video to the requests queue.
+    # @commands.group(name='request', aliases=['play'], invoke_without_command=True)
+    # @commands.check(is_whitelisted_guild)
+    # @commands.check(user_is_in_voice_channel)
+    # @commands.check(user_has_required_permissions)
+    # @commands.cooldown(2, 30, commands.BucketType.user)
+    # async def request(self, ctx, *, request: YouTubeTrack):
+    #     """Adds a YouTube video to the requests queue.
 
-        request: YouTube search query.
-        """
-        try:
-            if not isinstance(request, AttachmentTrack):
-                await ctx.message.delete()
-        except discord.Forbidden:
-            pass
+    #     request: YouTube search query.
+    #     """
+    #     try:
+    #         if not isinstance(request, AttachmentTrack):
+    #             await ctx.message.delete()
+    #     except discord.Forbidden:
+    #         pass
 
-        session = self._get_session(ctx.guild)
+    #     session = self._get_session(ctx.guild)
 
-        if session is None:
-            session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
-            session.start()
-        else:
-            await user_is_listening(ctx)
+    #     if session is None:
+    #         session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
+    #         session.start()
+    #     else:
+    #         await user_is_listening(ctx)
 
-        await ctx.send(**request.request_message)
-        session.queue.add_request(request)
+    #     await ctx.send(**request.request_message)
+    #     session.queue.add_request(request)
 
-    @request.command(name='mp3', aliases=['local'])
-    @commands.check(user_is_in_voice_channel)
-    @commands.check(user_has_required_permissions)
-    async def request_mp3(self, ctx, *, request: MP3Track):
-        """Adds a local MP3 file to the requests queue.
+    # @request.command(name='mp3', aliases=['local'])
+    # @commands.check(user_is_in_voice_channel)
+    # @commands.check(user_has_required_permissions)
+    # async def request_mp3(self, ctx, *, request: MP3Track):
+    #     """Adds a local MP3 file to the requests queue.
 
-        request: Local track search query.
-        """
-        if (await self.request.can_run(ctx)):
-            await ctx.invoke(self.request, request=request)
+    #     request: Local track search query.
+    #     """
+    #     if (await self.request.can_run(ctx)):
+    #         await ctx.invoke(self.request, request=request)
 
-    @request.command(name='youtube', aliases=['yt'])
-    @commands.check(user_is_in_voice_channel)
-    @commands.check(user_has_required_permissions)
-    async def request_youtube(self, ctx, *, request: YouTubeTrack):
-        """Adds a YouTube video to the requests queue.
+    # @request.command(name='youtube', aliases=['yt'])
+    # @commands.check(user_is_in_voice_channel)
+    # @commands.check(user_has_required_permissions)
+    # async def request_youtube(self, ctx, *, request: YouTubeTrack):
+    #     """Adds a YouTube video to the requests queue.
 
-        request: YouTube search query.
-        """
-        if (await self.request.can_run(ctx)):
-            await ctx.invoke(self.request, request=request)
+    #     request: YouTube search query.
+    #     """
+    #     if (await self.request.can_run(ctx)):
+    #         await ctx.invoke(self.request, request=request)
 
-    @request.command(name='soundcloud', aliases=['sc'])
-    @commands.check(user_is_in_voice_channel)
-    @commands.check(user_has_required_permissions)
-    async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
-        """Adds a SoundCloud track to the requests queue.
+    # @request.command(name='soundcloud', aliases=['sc'])
+    # @commands.check(user_is_in_voice_channel)
+    # @commands.check(user_has_required_permissions)
+    # async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
+    #     """Adds a SoundCloud track to the requests queue.
 
-        request: SoundCloud search query.
-        """
-        if (await self.request.can_run(ctx)):
-            await ctx.invoke(self.request, request=request)
+    #     request: SoundCloud search query.
+    #     """
+    #     if (await self.request.can_run(ctx)):
+    #         await ctx.invoke(self.request, request=request)
 
-    @request.command(name='file')
-    @commands.check(user_is_in_voice_channel)
-    @commands.check(user_has_required_permissions)
-    @commands.check(checks.is_administrator)
-    async def request_file(self, ctx):
-        """Adds a local file to the requests queue.
+    # @request.command(name='file')
+    # @commands.check(user_is_in_voice_channel)
+    # @commands.check(user_has_required_permissions)
+    # @commands.check(checks.is_administrator)
+    # async def request_file(self, ctx):
+    #     """Adds a local file to the requests queue.
 
-        `request`: The local file attached.
-        """
-        if not ctx.message.attachments:
-            raise commands.BadArgument('You did not attach a file!')
+    #     `request`: The local file attached.
+    #     """
+    #     if not ctx.message.attachments:
+    #         raise commands.BadArgument('You did not attach a file!')
 
-        if (await self.request.can_run(ctx)):
-            source = AttachmentTrack.get_source(ctx.message.attachments[0])
-            await ctx.invoke(self.request, request=AttachmentTrack(*source, requester=ctx.author))
+    #     if (await self.request.can_run(ctx)):
+    #         source = AttachmentTrack.get_source(ctx.message.attachments[0])
+    #         await ctx.invoke(self.request, request=AttachmentTrack(*source, requester=ctx.author))
 
     @commands.command(name='skip')
     @commands.check(session_is_running)
@@ -196,7 +202,7 @@ class Player(commands.Cog):
 
         skips_needed = len(list(session.listeners)) // 2 + 1
         if len(session.skip_requests) >= skips_needed:
-            session.skip()
+            await session.skip()
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
@@ -235,22 +241,22 @@ class Player(commands.Cog):
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
-    @commands.cooldown(1, 30, commands.BucketType.user)
+    @commands.cooldown(2, 20, commands.BucketType.user)
     async def volume(self, ctx, volume: float):
         """Set's the global player volume"""
         session = self._get_session(ctx.guild)
 
         if volume < 0:
             raise commands.BadArgument('You can\'t set the volume to below 0%.')
-        elif volume > 2:
-            raise commands.BadArgument('You can\'t set the volume to above 200%.')
+        elif volume > 100:
+            raise commands.BadArgument('You can\'t set the volume to above 100%.')
 
-        session.change_volume(volume)
+        await session.change_volume(volume)
 
         await ctx.send(embed=discord.Embed(
             colour=discord.Colour.dark_green(),
             title='Volume change',
-            description=f'Setting volume to {volume:.0%}...'
+            description=f'Setting volume to {volume:.2f}%...'
         ))
 
     @commands.command(name='playing', aliases=['now'])
@@ -259,18 +265,18 @@ class Player(commands.Cog):
         """Retrieves information on the currently playing track."""
         session = self._get_session(ctx.guild)
 
-        play_time = session.current_track.play_time
-        track_length = int(session.current_track.length)
+        # play_time = session.current_track.play_time
+        # track_length = int(session.current_track.length)
 
-        play_time_str = str(datetime.timedelta(seconds=play_time))
-        length_str = str(datetime.timedelta(seconds=track_length))
+        # play_time_str = str(datetime.timedelta(seconds=play_time))
+        # length_str = str(datetime.timedelta(seconds=track_length))
 
-        seek_length = 50
-        seek_distance = round(seek_length * play_time / track_length)
+        # seek_length = 50
+        # seek_distance = round(seek_length * play_time / track_length)
 
         message = session.current_track.playing_message
-        message['embed'].add_field(
-            name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
+        # message['embed'].add_field(
+        #     name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
 
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
@@ -320,14 +326,14 @@ class Player(commands.Cog):
     async def force_skip(self, ctx):
         """Force skip the currently playing track."""
         session = self._get_session(ctx.guild)
-        session.skip()
+        await session.skip()
 
     @force.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
     async def force_stop(self, ctx):
         """Force the session to stop."""
         session = self._get_session(ctx.guild)
-        session.stop()
+        await session.stop()
 
     @force.command(name='repeat', aliases=['encore'])
     @commands.check(session_is_running)
@@ -335,17 +341,6 @@ class Player(commands.Cog):
         """Force the currently track to be repeated."""
         session = self._get_session(ctx.guild)
         session.queue.add_request(session.current_track.copy(ctx.author, session.volume), at_start=True)
-
-    @commands.Cog.listener()
-    async def on_ready(self):
-        for instance in COG_CONFIG.INSTANCES:
-            if self.bot.get_channel(instance.voice_channel.id) is None:
-                continue
-            
-            self.bot._player_sessions[instance.voice_channel.guild] = Session(self.bot, run_forever=True, stoppable=False, **instance.__dict__)
-
-        if not MP3Track._search_ready.is_set():
-            self.bot.loop.run_in_executor(None, MP3Track.setup_search)
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
@@ -364,6 +359,33 @@ class Player(commands.Cog):
             else:
                 self._alone.clear()
 
+    async def node_event_hook(self, event: wavelink.WavelinkEvent):
+        if isinstance(event, (wavelink.TrackStuck, wavelink.TrackException, wavelink.TrackEnd)):
+            session = self._get_session(self.bot.get_guild(int(event.player.guild_id)))
+            if session is not None:
+                await session.toggle_next()
+
+    async def start_nodes(self):
+        await self.bot.wait_until_ready()
+        node = await self.bot._wavelink.initiate_node(
+            host='127.0.0.1',
+            port=2333,
+            rest_uri='http://127.0.0.1:2333',
+            password=COG_CONFIG.LAVALINK_PASSWORD,
+            identifier=BOT_CONFIG.APP_NAME,
+            region='us_east'
+        )
+        node.set_hook(self.node_event_hook)
+
+        for instance in COG_CONFIG.INSTANCES:
+            if self.bot.get_channel(instance.voice_channel.id) is None:
+                continue
+
+            self.bot._player_sessions[instance.voice_channel.guild] = Session(self.bot, run_forever=True, stoppable=False, **instance.__dict__)
+
+        if not MP3Track._search_ready.is_set():
+            self.bot.loop.run_in_executor(None, MP3Track.setup_search)
+
     @tasks.loop(hours=12)
     async def _restart(self):
         if self._restart.current_loop != 0:
@@ -373,6 +395,10 @@ class Player(commands.Cog):
 
 
 def setup(bot: commands.Bot):
+    if not hasattr(bot, '_wavelink'):
+        bot._wavelink = wavelink.Client(bot)
+
     if not hasattr(bot, '_player_sessions'):
         bot._player_sessions = dict()
+
     bot.add_cog(Player(bot))

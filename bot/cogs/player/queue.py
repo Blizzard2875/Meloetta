@@ -44,6 +44,9 @@ class Radio(Queue):
     def next_track(self) -> Track:
         next_track = super().next_track()
         if next_track is None:
-            source = MP3Track.get_source(choice(list(Path(self.playlist_directory).glob('**/*.mp3'))))
+            directory = Path(self.playlist_directory).absolute()
+            tracks = list(directory.glob('**/*.mp3'))
+            track = str(choice(tracks))
+            source = MP3Track.get_source(track)
             return MP3Track(*source)
         return next_track
