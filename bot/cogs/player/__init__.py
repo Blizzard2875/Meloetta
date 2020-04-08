@@ -333,10 +333,8 @@ class Player(commands.Cog):
     @commands.Cog.listener()
     async def on_ready(self):
         for instance in COG_CONFIG.INSTANCES:
-            guild = self.bot.get_guild(instance.voice_channel.id)
-            if guild is None:
+            if self.bot.get_channel(instance.voice_channel.id) is None:
                 continue
-
             session = self.bot._player_sessions[instance.voice_channel.guild] = await instance.voice_channel.connect(cls=Session)
             session.start(run_forever=True, stoppable=False, **instance.__dict__)
 
