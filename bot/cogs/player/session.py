@@ -136,7 +136,7 @@ class Session:
 
     async def check_listeners(self):
         """Checks if there is anyone listening and pauses / resumes accordingly."""
-        if list(self.listeners):
+        if len(list(self.listeners)) > 0:
             if self.player.is_paused:
                 await self.player.set_pause(False)
                 self.not_alone.set()

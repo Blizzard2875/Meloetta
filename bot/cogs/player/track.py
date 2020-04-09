@@ -69,7 +69,7 @@ class Track:
 
         An example of this would be the title and artist.
         """
-        return self.information
+        return f"{self._title} by {self._author}"
 
     @property
     def playing_message(self) -> Dict:
