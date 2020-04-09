@@ -92,17 +92,18 @@ class Player(commands.Cog):
     async def stop(self, ctx):
         """Stops the currently running player session."""
         session = self._get_session(ctx.guild)
+        listeners = list(session.listeners)
 
-        if len(list(session.listeners)) == 0:
+        if len(listeners) == 0:
             await session.stop()
 
         if ctx.author in session.stop_requests:
             raise commands.BadArgument('You have already requested to stop the player.')
 
-        if ctx.author.id in session.listeners:
+        if ctx.author.id in listeners:
             session.stop_requests.append(ctx.author)
 
-        stops_needed = len(list(session.listeners))
+        stops_needed = len(listeners)
         if len(session.stop_requests) >= stops_needed:
             await session.stop()
         else:
@@ -322,7 +323,7 @@ class Player(commands.Cog):
 
     @tools.auto_help
     @commands.group(name='force')
-    @commands.check(checks.is_administrator)
+    @commands.check_any(checks.is_administrator, checks.is_owner)
     async def force(self, ctx):
         """Admin commands."""
         pass

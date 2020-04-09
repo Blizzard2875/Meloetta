@@ -123,8 +123,9 @@ class Track:
         except asyncio.TimeoutError:
             raise commands.BadArgument(
                 'You did not choose a search result in time.')
+        finally:
+            await search_message.delete()
 
-        await search_message.delete()
         if reaction.emoji == tools.regional_indicator('x'):
             raise commands.BadArgument('Selection cancelled.')
 
