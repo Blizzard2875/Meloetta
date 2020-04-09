@@ -79,14 +79,14 @@ class Player(commands.Cog):
     def _get_session(self, guild: discord.Guild) -> Session:
         return self.bot._player_sessions.get(guild)
 
-    @commands.command(name='start', aliases=['join'])
+    @commands.command(name='start', aliases=['join', 'start'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
         self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, run_forever=True)
 
-    @commands.command(name='stop', aliases=['leave'])
+    @commands.command(name='stop', aliases=['leave', 'q'])
     @commands.check(session_is_running)
     @commands.check(session_is_stoppable)
     async def stop(self, ctx):
@@ -113,7 +113,7 @@ class Player(commands.Cog):
                 description=f'You currently need **{stops_needed - len(session.stop_requests)}** more votes to stop the player.'
             ))
 
-    @commands.group(name='request', aliases=['play'], invoke_without_command=True)
+    @commands.group(name='request', aliases=['play', 'p'], invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     @commands.cooldown(2, 30, commands.BucketType.user)
@@ -132,7 +132,6 @@ class Player(commands.Cog):
 
         if session is None:
             session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
-            session.start()
         else:
             await user_is_listening(ctx)
 
@@ -209,7 +208,7 @@ class Player(commands.Cog):
                 description=f'You currently need **{skips_needed - len(session.skip_requests)}** more votes to skip this track.'
             ))
 
-    @commands.command(name='repeat', aliases=['encore'])
+    @commands.command(name='repeat', aliases=['encore', 'again'])
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     async def repeat(self, ctx):
@@ -237,7 +236,7 @@ class Player(commands.Cog):
                 description=f'You currently need **{repeats_needed - len(session.repeat_requests)}** more votes to repeat this track.'
             ))
 
-    @commands.command(name='volume', aliases=['set_volume'])
+    @commands.command(name='volume', aliases=['set_volume', 'v'])
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
@@ -266,7 +265,7 @@ class Player(commands.Cog):
             description=f'Setting volume to {volume:.2f}%...'
         ))
 
-    @commands.command(name='playing', aliases=['now'])
+    @commands.command(name='playing', aliases=['now', 'now_playing', 'np'])
     @commands.check(session_is_running)
     async def playing(self, ctx):
         """Retrieves information on the currently playing track."""
@@ -293,7 +292,7 @@ class Player(commands.Cog):
 
         await ctx.send(**message)
 
-    @commands.command(name='queue', aliases=['upcoming'])
+    @commands.command(name='queue', aliases=['upcoming', 'next'])
     @commands.check(session_is_running)
     async def queue(self, ctx):
         """Displays the current request queue."""
@@ -342,7 +341,7 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
         await session.stop()
 
-    @force.command(name='repeat', aliases=['encore'])
+    @force.command(name='repeat', aliases=['encore', 'again'])
     @commands.check(session_is_running)
     async def force_repeat(self, ctx):
         """Force the currently track to be repeated."""
