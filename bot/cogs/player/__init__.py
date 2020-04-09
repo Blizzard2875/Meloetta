@@ -79,7 +79,7 @@ class Player(commands.Cog):
     def _get_session(self, guild: discord.Guild) -> Session:
         return self.bot._player_sessions.get(guild)
 
-    @commands.command(name='start', aliases=['join', 'start'])
+    @commands.command(name='start', aliases=['join'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(session_is_not_running)
     async def start(self, ctx):
