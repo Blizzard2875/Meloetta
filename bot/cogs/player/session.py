@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from .queue import Queue, Radio
+from .track import Track
 
 from bot.config import config as BOT_CONFIG
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
@@ -14,7 +15,8 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 class Session:
 
     def __init__(self, bot: discord.Client, voice_channel: discord.VoiceChannel, *,
-                 log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True, **kwargs):
+                 log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True,
+                 request: Track = None, **kwargs):
         """
 
         Args:
@@ -48,6 +50,9 @@ class Session:
             self.queue = Radio(self.queue_config)
         else:
             self.queue = Queue(self.queue_config)
+
+        if request is not None:
+            self.queue.add_request(request)
 
         self.volume = self.config.get(
             'default_volume') or COG_CONFIG.DEFAULT_VOLUME

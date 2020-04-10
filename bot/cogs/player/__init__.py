@@ -130,13 +130,14 @@ class Player(commands.Cog):
 
         session = self._get_session(ctx.guild)
 
+        # If there is no player session start one
         if session is None:
-            session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel)
+            session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, request=request)
         else:
             await user_is_listening(ctx)
+            session.queue.add_request(request)
 
         await ctx.send(**request.request_message)
-        session.queue.add_request(request)
 
     @request.command(name='mp3', aliases=['local'])
     @commands.check(user_is_in_voice_channel)
