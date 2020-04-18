@@ -287,7 +287,7 @@ class Player(commands.Cog):
 
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
-                message['embed'].add_field(
+                message['embed'].set_footer(
                     name=f'Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
                 )
 
