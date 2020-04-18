@@ -133,9 +133,13 @@ class Player(commands.Cog):
         # If there is no player session start one
         if session is None:
             session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, request=request)
-        else:
-            await user_is_listening(ctx)
-            session.queue.add_request(request)
+
+        await user_is_listening(ctx)
+
+        if len(r for r in session.queue.requests if r.requester == ctx.author) > COG_CONFIG.MAX_REQUESTS:
+            raise UserInputError('You already have too many requests in the queue.')
+
+        session.queue.add_request(request)
 
         await ctx.send(**request.request_message)
 
