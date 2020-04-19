@@ -3,13 +3,14 @@ import datetime
 import random
 
 import discord
-from discord.ext import commands, tasks
+from discord.ext import commands, menus, tasks
 
 import wavelink
 
 from bot.config import config as BOT_CONFIG
 
 from bot.utils import checks, tools
+from bot.utils.paginator import EmbedPaginator
 
 from .session import Session
 from .track import MP3Track, YouTubeTrack, SoundCloudTrack, AttachmentTrack
@@ -308,22 +309,26 @@ class Player(commands.Cog):
         total_length += sum(track.length for track in session.queue.requests)
         length_str = str(datetime.timedelta(seconds=total_length))
 
-        embed = discord.Embed(
+        paginator = EmbedPaginator(embed=discord.Embed(
             colour=discord.Colour.dark_green(),
             title=f'Upcoming requests - Total Queue Length: {length_str}'
-        )
+        ))
 
-        for index, track in enumerate(session.queue.requests[:10], 1):
-            embed.add_field(
+        if not session.queue.requests:
+            raise commands.UserInputError('There are currently no requests.')
+
+        for index, track in enumerate(session.queue.requests, 1):
+            paginator.add_field(
                 name=f'{index} - Requested by {track.requester}',
                 value=track.information,
                 inline=False
             )
 
-        if not embed.fields:
-            embed.description = 'There are currently no requests'
-
-        await ctx.send(embed=embed)
+        try:
+            menu = menus.MenuPages(paginator, clear_reactions_after=True, check_embeds=True)
+            await menu.start(ctx)
+        except discord.HTTPException:
+            raise commands.BadArgument('I couldn\'t post the queue in this channel.')
 
     @tools.auto_help
     @commands.group(name='force')
