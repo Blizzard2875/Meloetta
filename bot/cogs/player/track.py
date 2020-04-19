@@ -318,8 +318,8 @@ class AttachmentTrack(Track):
 
     @property
     def _title(self):
-        return 'File'
+        return self.track.title if not self.track.title.isdigit() else 'File'
 
     @property
     def _author(self):
-        return self.requester.name
+        return self.track.author if self.track.author != 'Unknown artist' else self.requester.name

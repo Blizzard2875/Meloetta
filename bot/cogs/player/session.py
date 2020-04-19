@@ -1,5 +1,6 @@
 import asyncio
 
+from contextlib import suppress
 from typing import Generator
 
 import discord
@@ -78,6 +79,9 @@ class Session:
             `generator` of `int`: A generator consisting of the user_id's of members listening to the bot.
 
         """
+        if self.player.channel_id is None:
+            return
+
         voice_channel = self.bot.get_channel(int(self.player.channel_id))
         if voice_channel is None:
             return
@@ -107,28 +111,32 @@ class Session:
             await self.player.destroy()
             return
 
+        # Clear the queues
         self.skip_requests.clear()
         self.repeat_requests.clear()
 
-        await self.play_track()
-
-    async def play_track(self):
-        """Plays the next track in the queue."""
-
+        # If on r/Pokemon update presence
         if COG_CONFIG.PLAYING_STATUS_GUILD is not None:
             if self.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
-                await self.bot.change_presence(activity=discord.Activity(
-                    name=self.current_track.status_information, type=discord.ActivityType.playing
-                ))
+                with suppress(discord.HTTPException):
+                    await self.bot.change_presence(activity=discord.Activity(
+                        name=self.current_track.status_information, type=discord.ActivityType.playing
+                    ))
 
+        # If server has log channel log new track
         if self.log_channel is not None:
-            await self.log_channel.send(**self.current_track.playing_message)
+            with suppress(discord.HTTPException):
+                await self.log_channel.send(**self.current_track.playing_message)
 
         # Create wavelink object for track
         try:
-            await self.player.play(await self.current_track.setup(self.bot))
+            track = await self.current_track.setup(self.bot)
         except commands.BadArgument:
+            self.bot.log.error(f'Failed to play track {self.current_track.title!r}.')
             await self.toggle_next()
+
+        # Play the new track
+        await self.player.play(track)
 
     async def skip(self):
         """Skips the currently playing track"""

@@ -137,7 +137,7 @@ class Player(commands.Cog):
         await user_is_listening(ctx)
 
         if len(r for r in session.queue.requests if r.requester == ctx.author) > COG_CONFIG.MAX_REQUESTS:
-            raise UserInputError('You already have too many requests in the queue.')
+            raise commands.UserInputError('You already have too many requests in the queue.')
 
         session.queue.add_request(request)
 
