@@ -123,17 +123,17 @@ class Session:
                         name=self.current_track.status_information, type=discord.ActivityType.playing
                     ))
 
-        # If server has log channel log new track
-        if self.log_channel is not None:
-            with suppress(discord.HTTPException):
-                await self.log_channel.send(**self.current_track.playing_message)
-
         # Create wavelink object for track
         try:
             track = await self.current_track.setup(self.bot)
         except commands.BadArgument:
             self.bot.log.error(f'Failed to play track {self.current_track.title!r}.')
             await self.toggle_next()
+
+        # If server has log channel log new track
+        if self.log_channel is not None:
+            with suppress(discord.HTTPException):
+                await self.log_channel.send(**self.current_track.playing_message)
 
         # Play the new track
         await self.player.play(track)
