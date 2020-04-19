@@ -45,7 +45,9 @@ class Track:
 
     @property
     def length(self) -> int:
-        return self.track.length // 1000
+        if self.track:
+            return self.track.length // 1000
+        return 0
 
     @property
     def _title(self):
@@ -318,8 +320,14 @@ class AttachmentTrack(Track):
 
     @property
     def _title(self):
-        return self.track.title if not self.track.title.isdigit() else 'File'
+        if self.track is not None:
+            if not self.track.title.isdigit():
+                return self.track.title
+        return 'File'
 
     @property
     def _author(self):
-        return self.track.author if self.track.author != 'Unknown artist' else self.requester.name
+        if self.track is not None:
+            if self.track.author != 'Unknown artist':
+                return self.track.author
+        return self.requester.name
