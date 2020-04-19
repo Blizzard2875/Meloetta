@@ -309,10 +309,13 @@ class Player(commands.Cog):
         total_length += sum(track.length for track in session.queue.requests)
         length_str = str(datetime.timedelta(seconds=total_length))
 
-        paginator = EmbedPaginator(embed=discord.Embed(
-            colour=discord.Colour.dark_green(),
-            title=f'Upcoming requests - Total Queue Length: {length_str}'
-        ))
+        paginator = EmbedPaginator(
+            embed=discord.Embed(
+                colour=discord.Colour.dark_green(),
+                title=f'Upcoming requests - Total Queue Length: {length_str}'
+            ),
+            max_fields=10
+        )
 
         if not session.queue.requests:
             raise commands.UserInputError('There are currently no requests.')
