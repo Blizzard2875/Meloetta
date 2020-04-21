@@ -314,7 +314,7 @@ class SoundCloudTrack(StreamableTrack):
         return self.track.info['uri']
 
 
-class AttachmentTrack(Track):
+class AttachmentTrack(StreamableTrack):
     _embed_colour = discord.Colour.blue()
     _track_type = 'Local file'
 
@@ -331,3 +331,7 @@ class AttachmentTrack(Track):
             if self.track.author != 'Unknown artist':
                 return self.track.author
         return self.requester.name
+
+    @classmethod
+    async def convert(cls, ctx: commands.Context, argument: str):
+        raise NotImplementedError
