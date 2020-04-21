@@ -280,15 +280,17 @@ class Player(commands.Cog):
         play_time = session.current_track_play_time
         track_length = session.current_track.length
 
-        play_time_str = str(datetime.timedelta(seconds=play_time))
-        length_str = str(datetime.timedelta(seconds=track_length))
-
-        seek_length = 50
-        seek_distance = round(seek_length * play_time / track_length)
-
         message = session.current_track.playing_message
-        message['embed'].add_field(
-            name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
+
+        if track_length:
+            play_time_str = str(datetime.timedelta(seconds=play_time))
+            length_str = str(datetime.timedelta(seconds=track_length))
+
+            seek_length = 50
+            seek_distance = round(seek_length * play_time / track_length)
+
+            message['embed'].add_field(
+                name=f'{play_time_str} / {length_str}', value=f'`{"-" * seek_distance}|{"-" * (seek_length - seek_distance)}`', inline=False)
 
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
