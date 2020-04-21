@@ -66,6 +66,13 @@ async def user_has_required_permissions(ctx: commands.Context) -> bool:
     return True
 
 
+async def user_has_requests_remaining(ctx: commands.Context) -> bool:
+    session = ctx.cog._get_session(ctx.guild)
+    if len([r for r in session.queue.requests if r.requester == ctx.author]) > COG_CONFIG.MAX_REQUESTS:
+        raise commands.UserInputError('You already have too many requests in the queue.')
+    return True
+
+
 class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -117,6 +124,7 @@ class Player(commands.Cog):
     @commands.group(name='request', aliases=['play', 'p'], invoke_without_command=True)
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
+    @commands.check(user_has_requests_remaining)
     @commands.cooldown(2, 30, commands.BucketType.user)
     async def request(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
@@ -136,10 +144,6 @@ class Player(commands.Cog):
             session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, request=request)
 
         await user_is_listening(ctx)
-
-        if len([r for r in session.queue.requests if r.requester == ctx.author]) > COG_CONFIG.MAX_REQUESTS:
-            raise commands.UserInputError('You already have too many requests in the queue.')
-
         session.queue.add_request(request)
 
         await ctx.send(**request.request_message)
@@ -147,6 +151,7 @@ class Player(commands.Cog):
     @request.command(name='mp3', aliases=['local'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
+    @commands.check(user_has_requests_remaining)
     async def request_mp3(self, ctx, *, request: MP3Track):
         """Adds a local MP3 file to the requests queue.
 
@@ -158,6 +163,7 @@ class Player(commands.Cog):
     @request.command(name='youtube', aliases=['yt'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
+    @commands.check(user_has_requests_remaining)
     async def request_youtube(self, ctx, *, request: YouTubeTrack):
         """Adds a YouTube video to the requests queue.
 
@@ -169,6 +175,7 @@ class Player(commands.Cog):
     @request.command(name='soundcloud', aliases=['sc'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
+    @commands.check(user_has_requests_remaining)
     async def request_soundcloud(self, ctx, *, request: SoundCloudTrack):
         """Adds a SoundCloud track to the requests queue.
 
@@ -181,6 +188,7 @@ class Player(commands.Cog):
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
     @commands.check(checks.is_administrator)
+    @commands.check(user_has_requests_remaining)
     async def request_file(self, ctx):
         """Adds a local file to the requests queue.
 
