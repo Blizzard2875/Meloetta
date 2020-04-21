@@ -68,9 +68,10 @@ async def user_has_required_permissions(ctx: commands.Context) -> bool:
 
 async def user_has_requests_remaining(ctx: commands.Context) -> bool:
     session = ctx.cog._get_session(ctx.guild)
-    max_requests = COG_CONFIG.MAX_CONCURRENT_REQUESTS.get(ctx.guild, float('inf'))
-    if len([r for r in session.queue.requests if r.requester == ctx.author]) >= max_requests:
-        raise commands.UserInputError('You already have too many requests in the queue.')
+    if session is not None:
+        max_requests = COG_CONFIG.MAX_CONCURRENT_REQUESTS.get(ctx.guild, float('inf'))
+        if len([r for r in session.queue.requests if r.requester == ctx.author]) >= max_requests:
+            raise commands.UserInputError('You already have too many requests in the queue.')
     return True
 
 
