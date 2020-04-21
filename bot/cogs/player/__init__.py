@@ -332,6 +332,8 @@ class Player(commands.Cog):
             )
 
         try:
+            if len(paginator.pages) == 1:
+                return await ctx.send(embed=paginator.pages[0])
             menu = menus.MenuPages(paginator, clear_reactions_after=True, check_embeds=True)
             await menu.start(ctx)
         except discord.HTTPException:
