@@ -191,7 +191,7 @@ class Player(commands.Cog):
 
         if (await self.request.can_run(ctx)):
             track = AttachmentTrack(ctx.message.attachments[0].url, ctx.author)
-            await track.setup()
+            await track.setup(self.bot)
             await ctx.invoke(self.request, request=track)
 
     @commands.command(name='skip')
