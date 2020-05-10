@@ -128,7 +128,6 @@ class Session:
             track = await self.current_track.setup(self.bot)
         except commands.BadArgument:
             self.bot.log.error(f'Failed to play track {self.current_track.title!r}.')
-            await self.toggle_next()
 
         # If server has log channel log new track
         if self.log_channel is not None:

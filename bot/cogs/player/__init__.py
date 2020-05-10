@@ -396,7 +396,7 @@ class Player(commands.Cog):
 
     async def node_event_hook(self, event: wavelink.WavelinkEvent):
         self.bot.log.info(f'Event: {event.player.guild_id} - {str(type(event))}')  # TODO: Remove
-        if isinstance(event, (wavelink.TrackStuck, wavelink.TrackException, wavelink.TrackEnd)):
+        if isinstance(event, (wavelink.TrackStuck, wavelink.TrackException, wavelink.TrackEnd, wavelink.TrackException)):
             session = self._get_session(self.bot.get_guild(int(event.player.guild_id)))
             if session is not None:
                 await session.toggle_next()
