@@ -144,9 +144,9 @@ class Player(commands.Cog):
         # If there is no player session start one
         if session is None:
             session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, request=request)
-
-        await user_is_listening(ctx)
-        session.queue.add_request(request)
+        else:
+            await user_is_listening(ctx)
+            session.queue.add_request(request)
 
         await ctx.send(**request.request_message)
 
