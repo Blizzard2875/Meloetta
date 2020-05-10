@@ -361,7 +361,7 @@ class Player(commands.Cog):
     async def force_skip(self, ctx):
         """Force skip the currently playing track."""
         session = self._get_session(ctx.guild)
-        await session.toggle_next()
+        await session.skip()
 
     @force.command(name='stop', aliases=['leave'])
     @commands.check(session_is_running)
