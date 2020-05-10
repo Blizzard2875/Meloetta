@@ -250,11 +250,11 @@
         },
         "wavelink": {
             "hashes": [
-                "sha256:ddbf09f0533a83f89211cd1cea73d2e13268a10f924c493fcad5019c237d01ea",
-                "sha256:f5c9b9437e995045016f90701b9fa81d01113f9d51af9138d05969afe5277fba"
+                "sha256:1f2e4734e3867ad3559c802dcf6914c23103fdaba22cce98997cd28eecfb9906",
+                "sha256:91b1d8004e8e59ade45d024ee7fdc6bb59efb866f49f80431fcb9855ed6397d7"
             ],
             "index": "pypi",
-            "version": "==0.6.0"
+            "version": "==0.7.1"
         },
         "websockets": {
             "hashes": [
@@ -309,10 +309,10 @@
     "develop": {
         "autopep8": {
             "hashes": [
-                "sha256:cc6be1dfd46f2c7fa00e84a357f1a269683985b09eaffb47654ed551194399eb"
+                "sha256:152fd8fe47d02082be86e05001ec23d6f420086db56b17fc883f3f965fb34954"
             ],
             "index": "pypi",
-            "version": "==1.5.1"
+            "version": "==1.5.2"
         },
         "entrypoints": {
             "hashes": [
