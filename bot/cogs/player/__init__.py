@@ -437,7 +437,7 @@ class Player(commands.Cog):
 
 def setup(bot: commands.Bot):
     if not hasattr(bot, '_wavelink'):
-        bot._wavelink = wavelink.Client(bot)
+        bot._wavelink = wavelink.Client(bot=bot)
 
     if not hasattr(bot, '_player_sessions'):
         bot._player_sessions = dict()
