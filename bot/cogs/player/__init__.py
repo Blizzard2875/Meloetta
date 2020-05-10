@@ -96,7 +96,7 @@ class Player(commands.Cog):
         """Starts a new player session."""
         self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, run_forever=True)
 
-    @commands.command(name='stop', aliases=['leave', 'q'])
+    @commands.command(name='stop', aliases=['leave', 'quit'])
     @commands.check(session_is_running)
     @commands.check(session_is_stoppable)
     async def stop(self, ctx):
@@ -254,7 +254,7 @@ class Player(commands.Cog):
                 description=f'You currently need **{repeats_needed - len(session.repeat_requests)}** more votes to repeat this track.'
             ))
 
-    @commands.command(name='volume', aliases=['set_volume', 'v'])
+    @commands.command(name='volume', aliases=['set_volume', 'v', 'vol', 'set_vol'])
     @commands.check(session_is_running)
     @commands.check(user_is_listening)
     @commands.check(user_has_required_permissions)
@@ -312,7 +312,7 @@ class Player(commands.Cog):
 
         await ctx.send(**message)
 
-    @commands.command(name='queue', aliases=['upcoming', 'next'])
+    @commands.command(name='queue', aliases=['upcoming', 'next', 'q'])
     @commands.check(session_is_running)
     async def queue(self, ctx):
         """Displays the current request queue."""
