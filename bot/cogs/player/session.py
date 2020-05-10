@@ -153,7 +153,7 @@ class Session:
             if self.player.is_paused:
                 await self.player.set_pause(False)
                 self.not_alone.set()
-        elif self.player.is_playing:
+        elif not self.player.is_paused:
             await self.player.set_pause(True)
             self.not_alone.clear()
 
