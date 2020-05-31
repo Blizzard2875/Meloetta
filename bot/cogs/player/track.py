@@ -141,7 +141,7 @@ class MP3Track(Track):
     _tracks = dict()
 
     def __init__(self, filename: str, requester: discord.User = None, track: wavelink.Track = None, **kwargs):
-        super().__init__(filename, requester, track)
+        super().__init__(COG_CONFIG.MP3_BASE_URL + filename, requester, track)
         self.metadata = dict()
 
         # Populate metadata

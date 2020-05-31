@@ -410,9 +410,9 @@ class Player(commands.Cog):
         await self.bot.wait_until_ready()
 
         node = await self.bot._wavelink.initiate_node(
-            host='127.0.0.1',
+            host=COG_CONFIG.LAVALINK_ADDRESS,
             port=2333,
-            rest_uri='http://127.0.0.1:2333',
+            rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
             password=COG_CONFIG.LAVALINK_PASSWORD,
             identifier=BOT_CONFIG.APP_NAME,
             region='us_east'
