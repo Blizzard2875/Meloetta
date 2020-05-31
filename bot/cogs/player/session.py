@@ -127,7 +127,8 @@ class Session:
         try:
             track = await self.current_track.setup(self.bot)
         except commands.BadArgument:
-            self.bot.log.error(f'Failed to play track {self.current_track.title!r}.')
+            self.bot.log.error(f'Failed to play track {self.current_track._title!r}.')
+            await asyncio.sleep(1)
 
         # If server has log channel log new track
         if self.log_channel is not None:
