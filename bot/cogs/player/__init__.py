@@ -377,6 +377,15 @@ class Player(commands.Cog):
         session = self._get_session(ctx.guild)
         session.queue.add_request(session.current_track, at_start=True)
 
+    @force.command(name='remove')
+    @commands.check(session_is_running)
+    async def force_remove(self, ctx, track_number: int):
+        """Force remove a track from the queue"""
+        session = self._get_session(ctx.guild)
+        if track_number < 0 or track_number > len(session.queue.requests):
+            raise commands.BadArgument('Track not in queue.')
+        session.queue.requests.pop(track_number - 1)
+
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
