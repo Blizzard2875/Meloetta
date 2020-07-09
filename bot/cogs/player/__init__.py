@@ -75,7 +75,7 @@ async def user_has_requests_remaining(ctx: commands.Context) -> bool:
     return True
 
 
-class Player(commands.Cog):
+class Player(commands.Cog, wavelink.WavelinkMixin):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._alone = asyncio.Event()
@@ -403,13 +403,23 @@ class Player(commands.Cog):
             else:
                 self._alone.clear()
 
-    async def node_event_hook(self, event: wavelink.WavelinkEvent):
-        session = self._get_session(self.bot.get_guild(int(event.player.guild_id)))
+    @wavelink.WavelinkMixin.listener()
+    async def on_track_end(self, node, payload):
+        session = self._get_session(self.bot.get_guild(int(payload.player.guild_id)))
         if session is not None:
-            if isinstance(event, wavelink.TrackEnd):
-                await session.toggle_next()
-            elif isinstance(event, (wavelink.TrackStuck, wavelink.TrackException)):
-                await session.skip()
+            await session.toggle_next()
+
+    @wavelink.WavelinkMixin.listener()
+    async def on_track_stuck(self, node, payload):
+        session = self._get_session(self.bot.get_guild(int(payload.player.guild_id)))
+        if session is not None:
+            await session.toggle_next()
+
+    @wavelink.WavelinkMixin.listener()
+    async def on_track_exception(self, node, payload):
+        session = self._get_session(self.bot.get_guild(int(payload.player.guild_id)))
+        if session is not None:
+            await session.toggle_next()
 
     async def start_nodes(self):
         # If nodes already setup return
