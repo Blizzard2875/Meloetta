@@ -436,7 +436,6 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
             identifier=BOT_CONFIG.APP_NAME,
             region='us_east'
         )
-        node.set_hook(self.node_event_hook)
 
         for instance in COG_CONFIG.INSTANCES:
             if self.bot.get_channel(instance.voice_channel.id) is None:
