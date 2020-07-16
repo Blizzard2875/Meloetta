@@ -1,7 +1,7 @@
 import asyncio
 
 from contextlib import suppress
-from typing import Generator
+from typing import Generator, List
 
 import discord
 from discord.ext import commands
@@ -41,16 +41,16 @@ class Session:
         self.not_alone = asyncio.Event()
         self.timeout = self.config.get('timeout') or COG_CONFIG.DEFAULT_TIMEOUT
 
-        self.skip_requests = list()
-        self.repeat_requests = list()
-        self.stop_requests = list()
+        self.skip_requests: List[discord.User] = list()
+        self.repeat_requests: List[discord.User] = list()
+        self.stop_requests: List[discord.User] = list()
 
         self.current_track = None
 
-        if run_forever:
-            self.queue = Radio(self.queue_config)
-        else:
+        if not run_forever:
             self.queue = Queue(self.queue_config)
+        else:
+            self.queue = Radio(self.queue_config)
 
         if request is not None:
             self.queue.add_request(request)

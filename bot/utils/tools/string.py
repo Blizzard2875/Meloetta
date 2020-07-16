@@ -8,7 +8,7 @@ __all__ = [
 ]
 
 
-def format_dt(dt: datetime.datetime):
+def format_dt(dt: datetime.datetime) -> str:
     """Formats datetime strings.
 
     Args:
@@ -51,6 +51,6 @@ class plural:
         return f'{v} {singular}'
 
 
-def ordinal(n):
+def ordinal(n: int) -> str:
     """Determines The ordinal for a given integer."""
     return f'{n}{"tsnrhtdd"[(n // 10 % 10 != 1) * (n % 10 < 4) * n % 10 :: 4]}'

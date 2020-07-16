@@ -33,7 +33,7 @@ class Object(discord.Object):
         return getattr(self._func(), '__repr__', super().__repr__)()
 
 
-def _env_var_constructor(loader: yaml.Loader, node: yaml.Node):
+def _env_var_constructor(loader: yaml.Loader, node: yaml.ScalarNode):
     """Implements a custom YAML tag for loading optional environment variables.
     If the environment variable is set it returns its value.
     Otherwise returns `None`.

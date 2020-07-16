@@ -4,39 +4,33 @@ from discord.ext import commands, menus
 from bot.utils.paginator import EmbedPaginator
 
 
-class EmbedMenuHelpCommand(commands.DefaultHelpCommand):
+class EmbedHelpCommand(commands.DefaultHelpCommand):
 
     def __init__(self, **options):
-        super().__init__(**options, paginator=options.pop('paginator', EmbedPaginator(max_fields=8)))
+        options.update({
+            'paginator': EmbedPaginator(max_fields=8)
+        })
 
-    def get_ending_note(self):
-        return None
+        super().__init__(**options)
 
     async def send_pages(self):
         destination = self.get_destination()
 
-        self.paginator.update_embed(
-            discord.Embed(
-                colour=self.context.me.colour
-            ).set_author(
-                name=f'{self.context.me} Help Manual',
-                icon_url=self.context.me.avatar_url
-            ).set_footer(
-                text=super().get_ending_note()
-            )
+        self.paginator.colour = self.context.me.colour
+        self.paginator.set_author(
+            name=f'{self.context.me} Help Manual',
+            icon_url=self.context.me.avatar_url
+        )
+        self.paginator.set_footer(
+            text=self.get_ending_note()
         )
 
         try:
             menu = menus.MenuPages(self.paginator, clear_reactions_after=True, check_embeds=True)
             await menu.start(self.context, channel=destination)
 
-        except discord.Forbidden:
-            await self.context.send(
-                embed=discord.Embed(
-                    title='Error with command: help',
-                    description='I was not able to Direct Message you.\nDo you have direct messages disabled?'
-                )
-            )
+        except menus.MenuError:
+            raise commands.UserInputError('I was not able to send command help.')
 
     def get_command_signature(self, command):
         return f'Syntax: `{super().get_command_signature(command)}`'

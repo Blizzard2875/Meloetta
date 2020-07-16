@@ -100,7 +100,7 @@ class Track:
         raise NotImplementedError
 
     @classmethod
-    async def get_user_choice(cls, ctx: commands.Context, search_query: str, entries: List[Tuple[str]]) -> int:
+    async def get_user_choice(cls, ctx: commands.Context, search_query: str, entries: List[Tuple[str, str]]) -> int:
         embed = discord.Embed(
             colour=cls._embed_colour,
         ).set_author(
@@ -138,7 +138,7 @@ class MP3Track(Track):
     _embed_colour = discord.Colour.dark_green()
     _track_type = 'MP3 file'
     _search_ready = asyncio.Event()
-    _tracks = dict()
+    _tracks: Dict[Path, str] = dict()
 
     def __init__(self, filename: str, requester: discord.User = None, track: wavelink.Track = None, **kwargs):
         super().__init__(COG_CONFIG.MP3_BASE_URL + filename, requester, track)
@@ -205,7 +205,7 @@ class MP3Track(Track):
         await cls._search_ready.wait()
 
         # Search through all tracks
-        scores = {t: 0 for t in cls._tracks}
+        scores = {t: 0.0 for t in cls._tracks}
         for word in re.sub(r'[^\w\s]', '', argument).split():
             for track in cls._tracks:
                 for _word in cls._tracks[track]:
@@ -216,10 +216,10 @@ class MP3Track(Track):
         search_results = sorted(scores, key=scores.get, reverse=True)
 
         # Raise error or pick search result
-        _tracks = [cls(track, requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
-        result = await cls.get_user_choice(ctx, argument, [(track._title, track._album) for track in _tracks])
+        tracks = [cls(str(track), requester=ctx.author) for track in search_results[:COG_CONFIG.MAX_SEARCH_RESULTS]]
+        result = await cls.get_user_choice(ctx, argument, [(track._title, track._album) for track in tracks])
 
-        return _tracks[result]
+        return tracks[result]
 
     @classmethod
     def setup_search(cls):

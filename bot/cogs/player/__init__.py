@@ -307,7 +307,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
                 message['embed'].set_footer(
-                    name=f'Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
+                    name='Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
                 )
 
         await ctx.send(**message)
@@ -324,10 +324,8 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
         length_str = str(datetime.timedelta(seconds=total_length))
 
         paginator = EmbedPaginator(
-            embed=discord.Embed(
-                colour=discord.Colour.dark_green(),
-                title=f'Upcoming requests - Total Queue Length: {length_str}'
-            ),
+            colour=discord.Colour.dark_green(),
+            title=f'Upcoming requests - Total Queue Length: {length_str}',
             max_fields=10
         )
 
@@ -391,9 +389,9 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
         session = self._get_session(member.guild)
         if session is not None:
             if member.id not in session.listeners:
-                for l in [session.skip_requests, session.repeat_requests, session.stop_requests]:
-                    if member in l:
-                        l.remove(member)
+                for request_list in [session.skip_requests, session.repeat_requests, session.stop_requests]:
+                    if member in request_list:
+                        request_list.remove(member)
 
             await session.check_listeners()
 
@@ -428,7 +426,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
 
         await self.bot.wait_until_ready()
 
-        node = await self.bot._wavelink.initiate_node(
+        await self.bot._wavelink.initiate_node(
             host=COG_CONFIG.LAVALINK_ADDRESS,
             port=2333,
             rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
@@ -450,7 +448,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
     async def _restart(self):
         if self._restart.current_loop != 0:
             await self._alone.wait()
-            self.bot.log.info(f'Automatically Restarting')
+            self.bot.log.info('Automatically Restarting')
             await self.bot.logout()
 
 

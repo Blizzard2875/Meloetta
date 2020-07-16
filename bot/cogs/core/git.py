@@ -112,7 +112,7 @@ class Git(commands.Cog):
             colour=discord.Colour.red()
         ))
 
-        self.bot.log.info(f'Restarting')
+        self.bot.log.info('Restarting')
         await self.bot.logout()
 
 

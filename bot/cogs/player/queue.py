@@ -1,6 +1,8 @@
 from pathlib import Path
 from random import choice
 
+from typing import Optional
+
 from .track import Track, MP3Track
 
 from bot.config import config as BOT_CONFIG
@@ -13,9 +15,10 @@ class Queue:
         self.config = config or dict()
         self.requests = list()
 
-    def next_track(self) -> Track:
+    def next_track(self) -> Optional[Track]:
         if self.requests:
             return self.requests.pop(0)
+        return None
 
     def add_request(self, track: Track, *, at_start: bool = False):
         """Adds a track to the list of requests.
