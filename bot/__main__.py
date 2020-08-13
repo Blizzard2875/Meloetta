@@ -5,7 +5,7 @@ import logging
 import discord
 from discord.ext import commands
 
-from bot.help import EmbedMenuHelpCommand
+from bot.help import EmbedHelpCommand
 
 import bot.config as config
 from bot.config import config as BOT_CONFIG
@@ -25,7 +25,7 @@ config._bot = bot = commands.Bot(
     activity=discord.Activity(
         name=f'for Commands: {BOT_CONFIG.PREFIXES[0]}help', type=discord.ActivityType.watching),
     case_insensitive=True,
-    help_command=EmbedMenuHelpCommand(),
+    help_command=EmbedHelpCommand(),
     fetch_offline_members=False,
     guild_subscriptions=False,
 )
