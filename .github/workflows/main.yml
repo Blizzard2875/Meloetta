@@ -18,4 +18,4 @@ jobs:
         poetry install
     - name: Lint with flake8
       run: |
-        pipenv run flake8 . --count --statistics
+        poetry run flake8 . --count --statistics
