@@ -89,10 +89,9 @@ docs = ["sphinx (1.8.5)", "sphinxcontrib_trio (1.1.1)", "sphinxcontrib-websuppor
 voice = ["PyNaCl (1.3.0)"]
 
 [package.source]
-reference = "b7f18278e11bc1912b14a16faf20ff3cf82392ae"
+reference = "00d39704da538969fc07fa4db71c18b2c62141b3"
 type = "git"
 url = "https://github.com/Rapptz/discord.py"
-
 [[package]]
 category = "dev"
 description = "the modular source code checker: pep8 pyflakes and co"
@@ -251,12 +250,8 @@ version = "0.9.4"
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<3.7.0"
-"discord.py" = "rev voice-protocol"
+"discord.py" = ">=1.2.5"
 
-[package.source]
-reference = "39fa0efe6dbd12e97a9f78d5371e5add9d84341f"
-type = "git"
-url = "https://github.com/bijij/wavelink"
 [[package]]
 category = "main"
 description = "Yet another URL library"
@@ -287,7 +282,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "ad5f217b5f14c10490af08f0b9a84080c8b9959b0c9171d6fc38ca6cc08b28e9"
+content-hash = "33d2d5d24bcbb87bd029e1ae16945674f51e250a82aef5194bdd3c25c36bdcb0"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -424,7 +419,10 @@ uvloop = [
     {file = "uvloop-0.14.0-cp38-cp38-manylinux2010_x86_64.whl", hash = "sha256:4315d2ec3ca393dd5bc0b0089d23101276778c304d42faff5dc4579cb6caef09"},
     {file = "uvloop-0.14.0.tar.gz", hash = "sha256:123ac9c0c7dd71464f58f1b4ee0bbd81285d96cdda8bc3519281b8973e3a461e"},
 ]
-wavelink = []
+wavelink = [
+    {file = "wavelink-0.9.4-py3-none-any.whl", hash = "sha256:cf85eb82a0802c2d4e2074f90bf92905c9df25b38e582e52ce3c62422c69825c"},
+    {file = "wavelink-0.9.4.tar.gz", hash = "sha256:4eefbdaa49a0587f4ae2f23aa606006851c642d20f5214989bd569eb12aedd48"},
+]
 yarl = [
     {file = "yarl-1.5.1-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:db6db0f45d2c63ddb1a9d18d1b9b22f308e52c83638c26b422d520a815c4b3fb"},
     {file = "yarl-1.5.1-cp35-cp35m-manylinux1_x86_64.whl", hash = "sha256:17668ec6722b1b7a3a05cc0167659f6c95b436d25a36c2d52db0eca7d3f72593"},
