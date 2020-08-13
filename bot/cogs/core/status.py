@@ -6,6 +6,7 @@ import discord
 from discord.ext import commands
 
 from bot.utils import checks, tools
+from bot.cogs.player.session import Session
 
 from bot.config import config as BOT_CONFIG
 
@@ -32,12 +33,14 @@ class Status(commands.Cog):
         prefix = BOT_CONFIG.PREFIXES[0]
         zwsp = '\N{ZERO WIDTH SPACE}'
 
-        if hasattr(self.bot, '_player_sessions'):
-            idle = sum(not session.not_alone.is_set() for session in self.bot._player_sessions.values())
-            playing = sum(session.not_alone.is_set() for session in self.bot._player_sessions.values())
-        else:
-            idle = 0
-            playing = 0
+        idle = 0
+        playing = 0
+        for voice_client in self.bot.voice_clients:
+            if isinstance(voice_client, Session):
+                if voice_client.not_alone.is_set():
+                    playing += 1
+                else:
+                    idle += 1
 
         await ctx.send(
             embed=discord.Embed(
@@ -100,6 +103,4 @@ class Status(commands.Cog):
 
 
 def setup(bot: commands.Bot):
-    if not hasattr(bot, '_player_sessions'):
-        bot._player_sessions = dict()
     bot.add_cog(Status(bot))

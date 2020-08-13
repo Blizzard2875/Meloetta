@@ -98,7 +98,6 @@ class Session(wavelink.Player):
 
         # if no more tracks in queue exit
         if self.current_track is None:
-            del self.bot._player_sessions[self.guild]
             await self.disconnect(force=False)
             await self.destroy()
             return
@@ -134,10 +133,6 @@ class Session(wavelink.Player):
         """Skips the currently playing track"""
         await self.stop()
 
-    async def stop(self):
-        """Stops this session."""
-        await self.stop()
-
     async def check_listeners(self):
         """Checks if there is anyone listening and pauses / resumes accordingly."""
         if len(list(self.listeners)) > 0:
@@ -153,7 +148,7 @@ class Session(wavelink.Player):
                 try:
                     await asyncio.wait_for(self.not_alone.wait(), self.timeout)
                 except asyncio.TimeoutError:
-                    self.stop()
+                    self.disconnect()
 
     async def session_task(self):
         try:

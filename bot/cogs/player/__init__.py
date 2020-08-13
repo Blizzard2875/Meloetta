@@ -87,14 +87,16 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
         self._restart.cancel()
 
     def _get_session(self, guild: discord.Guild) -> Session:
-        return self.bot._player_sessions.get(guild)
+        if isinstance(guild.voice_client, Session):
+            return guild.voice_client
+        return None
 
     @commands.command(name='start', aliases=['join'])
     @commands.check(user_is_in_voice_channel)
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
-        self.bot._player_sessions[ctx.guild] = session = await ctx.authour.voice_channel.connect(cls=Session)
+        session = await ctx.authour.voice_channel.connect(cls=Session)
         session.setup(run_forever=True)
 
     @commands.command(name='stop', aliases=['leave', 'quit'])
@@ -106,7 +108,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
         listeners = list(session.listeners)
 
         if len(listeners) == 0:
-            await session.stop()
+            await session.disconnect()
 
         if ctx.author in session.stop_requests:
             raise commands.BadArgument('You have already requested to stop the player.')
@@ -116,7 +118,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
 
         stops_needed = len(listeners)
         if len(session.stop_requests) >= stops_needed:
-            await session.stop()
+            await session.disconnect()
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
@@ -144,7 +146,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
 
         # If there is no player session start one
         if session is None:
-            session = self.bot._player_sessions[ctx.guild] = session = await ctx.author.voice.channel.connect(cls=Session)
+            session = await ctx.author.voice.channel.connect(cls=Session)
             session.setup(request=request)
         else:
             await user_is_listening(ctx)
@@ -368,7 +370,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
     async def force_stop(self, ctx):
         """Force the session to stop."""
         session = self._get_session(ctx.guild)
-        await session.stop()
+        await session.disconnect()
 
     @force.command(name='repeat', aliases=['encore', 'again'])
     @commands.check(session_is_running)
@@ -398,10 +400,12 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
             await session.check_listeners()
 
             # Set alone flag for auto restart
-            if not any(session.not_alone.is_set() for session in self.bot._player_sessions.values()):
-                self._alone.set()
-            else:
-                self._alone.clear()
+            for voice_client in self.bot.voice_clients:
+                if isinstance(voice_client, Session):
+                    if session.not_alone.is_set():
+                        return self._alone.clear()
+
+            self._alone.set()
 
     @wavelink.WavelinkCogMixin.listener('on_track_stuck')
     @wavelink.WavelinkCogMixin.listener('on_track_end')
@@ -431,7 +435,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
             if self.bot.get_channel(instance.voice_channel.id) is None:
                 continue
 
-            self.bot._player_sessions[instance.voice_channel.guild] = session = await instance.voice_channel.connect(cls=Session)
+            session = await instance.voice_channel.connect(cls=Session)
             session.setup(run_forever=True, stoppable=False, **instance.__dict__)
 
         if not MP3Track._search_ready.is_set():
@@ -446,7 +450,4 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
 
 
 def setup(bot: commands.Bot):
-    if not hasattr(bot, '_player_sessions'):
-        bot._player_sessions = dict()
-
     bot.add_cog(Player(bot))

@@ -254,7 +254,7 @@ aiohttp = ">=3.6.0,<3.7.0"
 "discord.py" = "rev voice-protocol"
 
 [package.source]
-reference = "39fa0efe6dbd12e97a9f78d5371e5add9d84341f"
+reference = "6a6e54d4e22b57c4f79822cd8a7980e3fab37f8b"
 type = "git"
 url = "https://github.com/bijij/wavelink"
 [[package]]
