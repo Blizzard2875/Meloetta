@@ -3,7 +3,11 @@ import os
 import discord
 import yaml
 
+from dotenv import load_dotenv
+
 from bot.utils.tools import RawMessage
+
+load_dotenv()
 
 _bot: discord.Client = None
 
