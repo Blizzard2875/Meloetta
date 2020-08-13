@@ -73,7 +73,6 @@ version = "1.0.0a26+g84caae8"
 reference = "84caae8038d0d3adc860957ccef05baeec2e2dd8"
 type = "git"
 url = "https://github.com/Rapptz/discord-ext-menus.git"
-
 [[package]]
 category = "main"
 description = "A Python wrapper for the Discord API"
@@ -245,7 +244,6 @@ version = "0.14.0"
 [[package]]
 category = "main"
 description = "A versatile LavaLink wrapper for Discord.py"
-develop = true
 name = "wavelink"
 optional = false
 python-versions = ">=3.7"
@@ -256,10 +254,9 @@ aiohttp = ">=3.6.0,<3.7.0"
 "discord.py" = "rev voice-protocol"
 
 [package.source]
-reference = ""
-type = "directory"
-url = "../../Personal/Wavelink"
-
+reference = "39fa0efe6dbd12e97a9f78d5371e5add9d84341f"
+type = "git"
+url = "https://github.com/bijij/wavelink"
 [[package]]
 category = "main"
 description = "Yet another URL library"
@@ -290,7 +287,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "c0e9226f287b45ab001dd6339a0259c66d1121e8cfe0134777c14834577e9055"
+content-hash = "ad5f217b5f14c10490af08f0b9a84080c8b9959b0c9171d6fc38ca6cc08b28e9"
 lock-version = "1.0"
 python-versions = "^3.7"
 

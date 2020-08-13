@@ -16,7 +16,7 @@ python-dotenv = "^0.14.0"
 discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus.git"}
 mutagen = "^1.45.1"
 fuzzywuzzy = {extras = ["speedy"], version = "^0.18.0"}
-wavelink = {path = "../../Personal/Wavelink"}
+wavelink = {git = "https://github.com/bijij/wavelink", rev = "voice_protocol_rewrite"}
 
 
 [tool.poetry.dev-dependencies]
