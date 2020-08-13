@@ -34,7 +34,7 @@ class Track:
     async def setup(self, bot) -> wavelink.Track:
         """Prepares a wavelink track object for playing."""
         if self.track is None:
-            data = await bot._wavelink.get_tracks(self.url)
+            data = await bot.wavelink.get_tracks(self.url)
 
             if not data:
                 raise commands.BadArgument('Error loading track.')
@@ -264,7 +264,7 @@ class StreamableTrack(Track):
     async def convert(cls, ctx: commands.Converter, argument: str):
         async with ctx.typing():
 
-            tracks = await ctx.bot._wavelink.get_tracks(cls._search_type + argument)
+            tracks = await ctx.bot.wavelink.get_tracks(cls._search_type + argument)
             if not isinstance(tracks, list):
                 raise commands.BadArgument('No search results were found.')
 

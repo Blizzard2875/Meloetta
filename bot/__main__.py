@@ -1,11 +1,13 @@
 import asyncio
 import datetime
 import logging
+import traceback
 
 import discord
 from discord.ext import commands
+import wavelink
 
-from bot.help import EmbedMenuHelpCommand
+from bot.help import EmbedHelpCommand
 
 import bot.config as config
 from bot.config import config as BOT_CONFIG
@@ -19,13 +21,18 @@ else:
 
 _start_time = datetime.datetime.utcnow()
 
+
+class MyBot(commands.Bot, wavelink.WavelinkBotMixin):
+    ...
+
+
 # Create bot instance
-config._bot = bot = commands.Bot(
+config._bot = bot = MyBot(
     command_prefix=commands.when_mentioned_or(*BOT_CONFIG.PREFIXES),
     activity=discord.Activity(
         name=f'for Commands: {BOT_CONFIG.PREFIXES[0]}help', type=discord.ActivityType.watching),
     case_insensitive=True,
-    help_command=EmbedMenuHelpCommand(),
+    help_command=EmbedHelpCommand(),
     fetch_offline_members=False,
     guild_subscriptions=False,
 )
@@ -34,16 +41,47 @@ bot.__version__ = BOT_CONFIG.VERSION
 bot._start_time = _start_time
 bot.dm_help = False
 
+
+class DivertMemberReferences(logging.Filter):
+    def __init__(self, returning):
+        self.returning = returning
+        super().__init__(name='discord.state')
+
+    def filter(self, record: logging.LogRecord):
+        if record.levelno == logging.WARNING and 'referencing an unknown' in record.msg:
+            return self.returning
+        return not self.returning
+
+
 # Setup logging
 bot.log = logging.getLogger(__name__)
 bot.log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL))
 
+discord_log = logging.getLogger(discord.__name__)
+discord_log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL_EXT))
+
+wavelink_log = logging.getLogger(wavelink.__name__)
+wavelink_log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL_EXT))
+
 handler = logging.FileHandler(filename=f'{BOT_CONFIG.APP_NAME}.log')
+handler.addFilter(DivertMemberReferences(False))
 handler.setFormatter(logging.Formatter(
-    '{asctime} - {levelname} - {message}', style='{'))
+    '{asctime} - {module}:{levelname} - {message}', style='{'))
+
+state_handler = logging.FileHandler(filename=f'{BOT_CONFIG.APP_NAME}.state.log')
+state_handler.addFilter(DivertMemberReferences(True))
+state_handler .setFormatter(logging.Formatter(
+    '{asctime} - {module}:{levelname} - {message}', style='{'))
 
 bot.log.addHandler(handler)
 bot.log.addHandler(logging.StreamHandler())
+
+discord_log.addHandler(handler)
+discord_log.addHandler(state_handler)
+discord_log.addHandler(logging.StreamHandler())
+
+wavelink_log.addHandler(handler)
+wavelink_log.addHandler(logging.StreamHandler())
 
 bot.log.info('Instance starting...')
 
@@ -84,24 +122,40 @@ async def on_command_error(ctx: commands.Context, e: Exception):
     # Respond with error message if CheckFailure, CommandDisabled, CommandOnCooldown or UserInputError
     if isinstance(e, (commands.CheckFailure, commands.CommandOnCooldown, commands.UserInputError)):
         return await ctx.send(embed=discord.Embed(
-            title=f'Error with command: {ctx.command.name}',
+            title=f'Error with command: {ctx.command.qualified_name}',
             description=str(e)
         ))
 
+    # Ignore http 403 / 500 related errors
+    if isinstance(e, commands.CommandInvokeError):
+
+        if isinstance(e.original, discord.Forbidden):
+            return await ctx.send(embed=discord.Embed(
+                title=F'Error with command: {ctx.command.qualified_name}',
+                description="The bot does not have the permissions required..."
+            ))
+
+        if isinstance(e.original, discord.HTTPException):
+            if e.original.status >= 500:
+                return await ctx.send(embed=discord.Embed(
+                    title=F'Error with command: {ctx.command.qualified_name}',
+                    description="Discord had an error, plese try again later..."
+                ))
+
     # Otherwise log error
-    bot.log.error(f'Error with command: {ctx.command.name}')
-    bot.log.error(f'{type(e).__name__}: {e}', exc_info=True, stack_info=True)
+    tb = ''.join(traceback.format_exception(type(e), e, e.__traceback__))
+    bot.log.error(f'Ignoring exception in command: {ctx.command.qualified_name}\n\n{type(e).__name__}: {e}\n\n{tb}')
 
     # Send to user
     embed = discord.Embed(
-        title=f'Error with command: {ctx.command.name}',
+        title=f'Error with command: {ctx.command.qualified_name}',
         description=f'```py\n{type(e).__name__}: {e}\n```'
     )
     await ctx.send(embed=embed)
 
     # Send to error log channel
     embed.add_field(
-        name='Channel', value=f'<#{ctx.channel.id}> (#{ctx.channel.name})')
+        name='Channel', value=f'<#{ctx.channel.id}> (#{ctx.channel})')
     embed.add_field(name='User', value=f'<@{ctx.author.id}> ({ctx.author})')
     await BOT_CONFIG.ERROR_LOG_CHANNEL.send(embed=embed)
 

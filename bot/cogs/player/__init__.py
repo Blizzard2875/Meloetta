@@ -75,7 +75,7 @@ async def user_has_requests_remaining(ctx: commands.Context) -> bool:
     return True
 
 
-class Player(commands.Cog, wavelink.WavelinkMixin):
+class Player(commands.Cog, wavelink.WavelinkCogMixin):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._alone = asyncio.Event()
@@ -94,7 +94,8 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
-        self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, run_forever=True)
+        self.bot._player_sessions[ctx.guild] = session = await ctx.authour.voice_channel.connect(cls=Session)
+        session.setup(run_forever=True)
 
     @commands.command(name='stop', aliases=['leave', 'quit'])
     @commands.check(session_is_running)
@@ -143,7 +144,8 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
 
         # If there is no player session start one
         if session is None:
-            session = self.bot._player_sessions[ctx.guild] = Session(self.bot, ctx.author.voice.channel, request=request)
+            session = self.bot._player_sessions[ctx.guild] = session = await ctx.author.voice.channel.connect(cls=Session)
+            session.setup(request=request)
         else:
             await user_is_listening(ctx)
             session.queue.add_request(request)
@@ -267,7 +269,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
             return await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
                 title='Volume change',
-                description=f'Currently the player volume is set to {session.player.volume:.2f}%...'
+                description=f'Currently the player volume is set to {session.volume:.2f}%...'
             ))
 
         if volume < 0:
@@ -401,32 +403,32 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
             else:
                 self._alone.clear()
 
-    @wavelink.WavelinkMixin.listener()
+    @wavelink.WavelinkCogMixin.listener()
     async def on_track_end(self, node, payload):
-        session = self._get_session(self.bot.get_guild(int(payload.player.guild_id)))
+        session = self._get_session(payload.player.guild)
         if session is not None:
             await session.toggle_next()
 
-    @wavelink.WavelinkMixin.listener()
+    @wavelink.WavelinkCogMixin.listener()
     async def on_track_stuck(self, node, payload):
-        session = self._get_session(self.bot.get_guild(int(payload.player.guild_id)))
+        session = self._get_session(payload.player.guild)
         if session is not None:
             await session.toggle_next()
 
-    @wavelink.WavelinkMixin.listener()
+    @wavelink.WavelinkCogMixin.listener()
     async def on_track_exception(self, node, payload):
-        session = self._get_session(self.bot.get_guild(int(payload.player.guild_id)))
+        session = self._get_session(payload.player.guild)
         if session is not None:
             await session.toggle_next()
 
     async def start_nodes(self):
         # If nodes already setup return
-        if self.bot._wavelink.nodes:
+        if self.bot.wavelink.nodes:
             return
 
         await self.bot.wait_until_ready()
 
-        await self.bot._wavelink.initiate_node(
+        await self.bot.wavelink.initiate_node(
             host=COG_CONFIG.LAVALINK_ADDRESS,
             port=2333,
             rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
@@ -439,7 +441,8 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
             if self.bot.get_channel(instance.voice_channel.id) is None:
                 continue
 
-            self.bot._player_sessions[instance.voice_channel.guild] = Session(self.bot, run_forever=True, stoppable=False, **instance.__dict__)
+            self.bot._player_sessions[instance.voice_channel.guild] = session = await instance.voice_channel.connect(cls=Session)
+            session.setup(run_forever=True, stoppable=False, **instance.__dict__)
 
         if not MP3Track._search_ready.is_set():
             self.bot.loop.run_in_executor(None, MP3Track.setup_search)
@@ -453,9 +456,6 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
 
 
 def setup(bot: commands.Bot):
-    if not hasattr(bot, '_wavelink'):
-        bot._wavelink = wavelink.Client(bot=bot)
-
     if not hasattr(bot, '_player_sessions'):
         bot._player_sessions = dict()
 
