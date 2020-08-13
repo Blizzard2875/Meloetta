@@ -403,20 +403,10 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
             else:
                 self._alone.clear()
 
-    @wavelink.WavelinkCogMixin.listener()
-    async def on_track_end(self, node, payload):
-        session = self._get_session(payload.player.guild)
-        if session is not None:
-            await session.toggle_next()
-
-    @wavelink.WavelinkCogMixin.listener()
-    async def on_track_stuck(self, node, payload):
-        session = self._get_session(payload.player.guild)
-        if session is not None:
-            await session.toggle_next()
-
-    @wavelink.WavelinkCogMixin.listener()
-    async def on_track_exception(self, node, payload):
+    @wavelink.WavelinkCogMixin.listener('on_track_stuck')
+    @wavelink.WavelinkCogMixin.listener('on_track_end')
+    @wavelink.WavelinkCogMixin.listener('on_track_exception')
+    async def on_player_stop(self, node, payload):
         session = self._get_session(payload.player.guild)
         if session is not None:
             await session.toggle_next()
