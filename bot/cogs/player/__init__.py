@@ -98,7 +98,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
     @commands.check(session_is_not_running)
     async def start(self, ctx):
         """Starts a new player session."""
-        session = await ctx.authour.voice_channel.connect(cls=Session)
+        session = await ctx.author.voice_channel.connect(cls=Session)
         session.setup(run_forever=True)
 
     @commands.command(name='stop', aliases=['leave', 'quit'])
