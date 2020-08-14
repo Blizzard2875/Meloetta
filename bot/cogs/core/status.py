@@ -74,7 +74,7 @@ class Status(commands.Cog):
 
         # Get lines of code
         lines_of_code = os.popen(
-            r'find . -name "*.py" -exec cat {} \; | wc -l').read()
+            r'find . -not -path "*/\.*" -name "*.py" -exec cat {} \; | wc -l').read()
 
         # Get memory usage
         process = psutil.Process(os.getpid())
