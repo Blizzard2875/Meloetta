@@ -79,7 +79,7 @@ class Session(wavelink.Player):
             return
 
         for user_id, state in self.channel.voice_states.items():
-            if user_id != self.bot.user.id and not (state.deaf or state.self_deaf):
+            if user_id != self.client.user.id and not (state.deaf or state.self_deaf):
                 yield user_id
 
     def user_has_permission(self, user: discord.Member) -> bool:
@@ -88,10 +88,6 @@ class Session(wavelink.Player):
             return self.config.get('requires_role') in user.roles
         return True
 
-    async def change_volume(self, volume: float):
-        """Changes this session's volume"""
-        await self.set_volume(volume)
-
     async def toggle_next(self):
         """Sets the next track to start playing"""
         self.current_track = self.queue.next_track()
@@ -99,7 +95,6 @@ class Session(wavelink.Player):
         # if no more tracks in queue exit
         if self.current_track is None:
             await self.disconnect(force=False)
-            await self.destroy()
             return
 
         # Clear the queues
@@ -110,15 +105,15 @@ class Session(wavelink.Player):
         if COG_CONFIG.PLAYING_STATUS_GUILD is not None:
             if self.guild.id == COG_CONFIG.PLAYING_STATUS_GUILD.id:
                 with suppress(discord.HTTPException):
-                    await self.bot.change_presence(activity=discord.Activity(
+                    await self.client.change_presence(activity=discord.Activity(
                         name=self.current_track.status_information, type=discord.ActivityType.playing
                     ))
 
         # Create wavelink object for track
         try:
-            track = await self.current_track.setup(self.bot)
+            track = await self.current_track.setup(self.client)
         except commands.BadArgument:
-            self.bot.log.error(f'Failed to play track {self.current_track._title!r}.')
+            self.client.log.error(f'Failed to play track {self.current_track._title!r}.')
             await asyncio.sleep(1)
 
         # If server has log channel log new track
@@ -136,10 +131,10 @@ class Session(wavelink.Player):
     async def check_listeners(self):
         """Checks if there is anyone listening and pauses / resumes accordingly."""
         if len(list(self.listeners)) > 0:
-            if self.is_paused:
-                await self.set_pause(False)
+            if self.is_paused():
+                await self.resume()
                 self.not_alone.set()
-        elif not self.is_paused:
+        elif not self.is_paused():
             await self.set_pause(True)
             self.not_alone.clear()
 
@@ -156,4 +151,4 @@ class Session(wavelink.Player):
             await self.toggle_next()
             await self.check_listeners()
         except Exception:
-            self.bot.log.error('Exception in session', exc_info=True, stack_info=True)
+            self.client.log.error('Exception in session', exc_info=True, stack_info=True)

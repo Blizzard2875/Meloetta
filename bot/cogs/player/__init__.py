@@ -17,6 +17,8 @@ from .track import MP3Track, YouTubeTrack, SoundCloudTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
+ZWSP = "​"
+
 
 async def session_is_not_running(ctx: commands.Context) -> bool:
     if ctx.cog._get_session(ctx.guild) is not None:
@@ -279,7 +281,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
         elif volume > 100:
             raise commands.BadArgument('You can\'t set the volume to above 100%.')
 
-        await session.change_volume(volume)
+        await session.set_volume(volume)
 
         await ctx.send(embed=discord.Embed(
             colour=discord.Colour.dark_green(),
@@ -310,8 +312,8 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
 
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
-                message['embed'].set_footer(
-                    name='Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)'
+                message['embed'].add_field(
+                    name=ZWSP, value='Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)', inline=False
                 )
 
         await ctx.send(**message)

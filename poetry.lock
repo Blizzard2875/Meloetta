@@ -73,6 +73,7 @@ version = "1.0.0a26+g84caae8"
 reference = "84caae8038d0d3adc860957ccef05baeec2e2dd8"
 type = "git"
 url = "https://github.com/Rapptz/discord-ext-menus.git"
+
 [[package]]
 category = "main"
 description = "A Python wrapper for the Discord API"
@@ -117,6 +118,11 @@ name = "fuzzywuzzy"
 optional = false
 python-versions = "*"
 version = "0.18.0"
+
+[package.dependencies]
+[package.dependencies.python-levenshtein]
+optional = true
+version = ">=0.12"
 
 [package.extras]
 speedup = ["python-levenshtein (>=0.12)"]
@@ -209,6 +215,17 @@ cli = ["click (>=5.0)"]
 
 [[package]]
 category = "main"
+description = "Python extension for computing string edit distances and similarities."
+name = "python-levenshtein"
+optional = false
+python-versions = "*"
+version = "0.12.0"
+
+[package.dependencies]
+setuptools = "*"
+
+[[package]]
+category = "main"
 description = "YAML parser and emitter for Python"
 name = "pyyaml"
 optional = false
@@ -251,10 +268,10 @@ version = "0.9.4"
 
 [package.dependencies]
 aiohttp = ">=3.6.0,<3.7.0"
-"discord.py" = "rev voice-protocol"
+"discord.py" = ">=1.2.5"
 
 [package.source]
-reference = "6a6e54d4e22b57c4f79822cd8a7980e3fab37f8b"
+reference = "a02572991e508409e8cb2ab448115e8558f4d44c"
 type = "git"
 url = "https://github.com/bijij/wavelink"
 [[package]]
@@ -287,7 +304,7 @@ docs = ["sphinx", "jaraco.packaging (>=3.2)", "rst.linker (>=1.9)"]
 testing = ["jaraco.itertools", "func-timeout"]
 
 [metadata]
-content-hash = "ad5f217b5f14c10490af08f0b9a84080c8b9959b0c9171d6fc38ca6cc08b28e9"
+content-hash = "0e07da9d010bb348092e2b5db54538c5db679fd697298ed03ba94a174e16f5e7"
 lock-version = "1.0"
 python-versions = "^3.7"
 
@@ -390,6 +407,9 @@ pyflakes = [
 python-dotenv = [
     {file = "python-dotenv-0.14.0.tar.gz", hash = "sha256:8c10c99a1b25d9a68058a1ad6f90381a62ba68230ca93966882a4dbc3bc9c33d"},
     {file = "python_dotenv-0.14.0-py2.py3-none-any.whl", hash = "sha256:c10863aee750ad720f4f43436565e4c1698798d763b63234fb5021b6c616e423"},
+]
+python-levenshtein = [
+    {file = "python-Levenshtein-0.12.0.tar.gz", hash = "sha256:033a11de5e3d19ea25c9302d11224e1a1898fe5abd23c61c7c360c25195e3eb1"},
 ]
 pyyaml = [
     {file = "PyYAML-5.3.1-cp27-cp27m-win32.whl", hash = "sha256:74809a57b329d6cc0fdccee6318f44b9b8649961fa73144a98735b0aaf029f1f"},
