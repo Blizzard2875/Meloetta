@@ -110,7 +110,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
         listeners = list(session.listeners)
 
         if len(listeners) == 0:
-            await session.disconnect()
+            await session.disconnect(force=False)
 
         if ctx.author in session.stop_requests:
             raise commands.BadArgument('You have already requested to stop the player.')
@@ -120,7 +120,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
 
         stops_needed = len(listeners)
         if len(session.stop_requests) >= stops_needed:
-            await session.disconnect()
+            await session.disconnect(force=False)
         else:
             await ctx.send(embed=discord.Embed(
                 colour=discord.Colour.dark_green(),
@@ -372,7 +372,7 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
     async def force_stop(self, ctx):
         """Force the session to stop."""
         session = self._get_session(ctx.guild)
-        await session.disconnect()
+        await session.disconnect(force=False)
 
     @force.command(name='repeat', aliases=['encore', 'again'])
     @commands.check(session_is_running)

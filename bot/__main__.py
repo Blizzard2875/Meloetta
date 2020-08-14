@@ -61,7 +61,7 @@ discord_log = logging.getLogger(discord.__name__)
 discord_log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL_EXT))
 
 wavelink_log = logging.getLogger(wavelink.__name__)
-wavelink_log.setLevel(logging.DEBUG)
+wavelink_log.setLevel(logging.getLevelName(BOT_CONFIG.LOGGING_LEVEL_EXT))
 
 handler = logging.FileHandler(filename=f'{BOT_CONFIG.APP_NAME}.log')
 handler.addFilter(DivertMemberReferences(False))

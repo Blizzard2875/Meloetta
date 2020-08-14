@@ -143,7 +143,7 @@ class Session(wavelink.Player):
                 try:
                     await asyncio.wait_for(self.not_alone.wait(), self.timeout)
                 except asyncio.TimeoutError:
-                    self.disconnect()
+                    self.disconnect(force=False)
 
     async def session_task(self):
         try:
