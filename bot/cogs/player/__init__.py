@@ -77,7 +77,7 @@ async def user_has_requests_remaining(ctx: commands.Context) -> bool:
     return True
 
 
-class Player(commands.Cog, wavelink.WavelinkCogMixin):
+class Player(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self._alone = asyncio.Event()
@@ -409,28 +409,21 @@ class Player(commands.Cog, wavelink.WavelinkCogMixin):
 
             self._alone.set()
 
-    @wavelink.WavelinkCogMixin.listener('on_track_stuck')
-    @wavelink.WavelinkCogMixin.listener('on_track_end')
-    @wavelink.WavelinkCogMixin.listener('on_track_exception')
-    async def on_player_stop(self, node, payload):
-        session = self._get_session(payload.player.guild)
-        if session is not None:
-            await session.toggle_next()
+    @commands.Cog.listener('on_wavelink_track_stuck')
+    @commands.Cog.listener('on_wavelink_track_end')
+    @commands.Cog.listener('on_wavelink_track_exception')
+    async def on_player_stop(self, session, **kwargs):
+        await session.toggle_next()
 
     async def start_nodes(self):
-        # If nodes already setup return
-        if self.bot.wavelink.nodes:
-            return
-
-        await self.bot.wait_until_ready()
-
-        await self.bot.wavelink.initiate_node(
+        await wavelink.Node.create(
+            self.bot,
             host=COG_CONFIG.LAVALINK_ADDRESS,
             port=2333,
             rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
             password=COG_CONFIG.LAVALINK_PASSWORD,
             identifier=BOT_CONFIG.APP_NAME,
-            region='us_east'
+            region=discord.VoiceRegion.us_east
         )
 
         for instance in COG_CONFIG.INSTANCES:

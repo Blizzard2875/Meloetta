@@ -2,6 +2,7 @@ import asyncio
 import re
 
 # from functools import partial
+from difflib import SequenceMatcher
 from pathlib import Path
 from io import BytesIO
 from typing import Dict, List, Tuple
@@ -12,7 +13,6 @@ import wavelink
 import discord
 from discord.ext import commands
 
-from fuzzywuzzy import fuzz
 from mutagen.mp3 import MP3
 
 from bot.utils import tools
@@ -34,7 +34,7 @@ class Track:
     async def setup(self, bot) -> wavelink.Track:
         """Prepares a wavelink track object for playing."""
         if self.track is None:
-            data = await bot.wavelink.get_tracks(self.url)
+            data = await wavelink.Node.get_best_node(bot).get_tracks(self.url)
 
             if not data:
                 raise commands.BadArgument('Error loading track.')
@@ -209,7 +209,7 @@ class MP3Track(Track):
         for word in re.sub(r'[^\w\s]', '', argument).split():
             for track in cls._tracks:
                 for _word in cls._tracks[track]:
-                    scores[track] += fuzz.ratio(word.lower(), _word.lower())
+                    scores[track] += SequenceMatcher(None, word.lower(), _word.lower()).ratio()
 
         for track in cls._tracks:
             scores[track] /= len(cls._tracks[track])
@@ -264,7 +264,7 @@ class StreamableTrack(Track):
     async def convert(cls, ctx: commands.Converter, argument: str):
         async with ctx.typing():
 
-            tracks = await ctx.bot.wavelink.get_tracks(cls._search_type + argument)
+            tracks = await ctx.guild.voice_client.node.get_tracks(cls._search_type + argument)
             if not isinstance(tracks, list):
                 raise commands.BadArgument('No search results were found.')
 
@@ -288,7 +288,7 @@ class YouTubeTrack(StreamableTrack):
 
     @property
     def _url(self):
-        return f'https://youtu.be/{self.track.ytid}'
+        return f'https://youtu.be/{self.track.identifier}'
 
     # endregion
 

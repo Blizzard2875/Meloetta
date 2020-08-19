@@ -22,7 +22,7 @@ else:
 _start_time = datetime.datetime.utcnow()
 
 
-class MyBot(commands.Bot, wavelink.WavelinkClientMixin):
+class MyBot(commands.Bot):
     ...
 
 
