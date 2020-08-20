@@ -35,7 +35,7 @@ class Track:
     async def setup(self, bot) -> wavelink.Track:
         """Prepares a wavelink track object for playing."""
         if self.track is None:
-            self.track = await wavelink.Node.get_best_node(bot).get_track(self.url, cls=self._track_class)
+            self.track = await wavelink.Node.get_best_node(bot).get_track(self._track_class, self.url)
 
             if self.track is None:
                 raise commands.BadArgument('Error loading track.')
