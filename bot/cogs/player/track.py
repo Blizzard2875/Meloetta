@@ -288,13 +288,13 @@ class YouTubeTrack(StreamableTrack):
 
     @property
     def playing_message(self) -> Dict:
-        data = super().playing_message()
+        data = super().playing_message
         data['embed'].set_thumbnail(url=self._thumbnail)
         return data
 
     @property
     def request_message(self) -> Dict:
-        data = super().request_message()
+        data = super().request_message
         data['embed'].set_thumbnail(url=self._thumbnail)
         return data
 
