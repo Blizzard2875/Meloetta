@@ -25,8 +25,9 @@ class Track:
     requester = None
     _embed_colour = discord.Colour.blurple()
     _track_type = 'Track'
+    _track_class = wavelink.Track
 
-    def __init__(self, url: str, requester: discord.User = None, track: wavelink.Track = None):
+    def __init__(self, url: str, requester: discord.User = None, track: wavelink.Playable = None):
         self.url = url
         self.requester = requester
         self.track = track
@@ -34,12 +35,10 @@ class Track:
     async def setup(self, bot) -> wavelink.Track:
         """Prepares a wavelink track object for playing."""
         if self.track is None:
-            data = await wavelink.Node.get_best_node(bot).get_tracks(self.url)
+            self.track = await wavelink.Node.get_best_node(bot).get_track(self.url, cls=self._track_class)
 
-            if not data:
+            if self.track is None:
                 raise commands.BadArgument('Error loading track.')
-
-            self.track = data.pop(0)
 
         return self.track
 
@@ -232,7 +231,6 @@ class MP3Track(Track):
 
 class StreamableTrack(Track):
     _track_type = 'Unknown Stream'
-    _search_type = ''
 
     @property
     def _url(self):
@@ -253,8 +251,7 @@ class StreamableTrack(Track):
             description=f'[{self._title}]({self._url})'
         ).set_author(name=f'{self._author} - Requested By: {self.requester}')
 
-        if self._thumbnail:
-            embed.set_thumbnail(url=self._thumbnail)
+        embed.set_thumbnail(url=self._thumbnail)
 
         return {
             'embed': embed
@@ -264,8 +261,9 @@ class StreamableTrack(Track):
     async def convert(cls, ctx: commands.Converter, argument: str):
         async with ctx.typing():
 
-            tracks = await ctx.guild.voice_client.node.get_tracks(cls._search_type + argument)
-            if not isinstance(tracks, list):
+            node = wavelink.Node.get_best_node(ctx.bot)
+            tracks = await cls._track_class.search(node, argument)
+            if not tracks:
                 raise commands.BadArgument('No search results were found.')
 
             tracks = [cls(argument, ctx.author, track) for track in tracks[:COG_CONFIG.MAX_SEARCH_RESULTS]]
@@ -279,7 +277,7 @@ class StreamableTrack(Track):
 class YouTubeTrack(StreamableTrack):
     _embed_colour = discord.Colour.red()
     _track_type = 'YouTube video'
-    _search_type = 'ytsearch:'
+    _track_class = wavelink.YouTubeVideo
 
     video_url_check = re.compile(
         r'(?:youtube(?:-nocookie)?\.com\/(?:[^\/\n\s]+\/\S+\/|(?:v|e(?:mbed)?)\/|\S*?[?&]v=)|youtu\.be\/)([a-zA-Z0-9_-]{11})')
@@ -307,11 +305,11 @@ class YouTubeTrack(StreamableTrack):
 class SoundCloudTrack(StreamableTrack):
     _embed_colour = discord.Colour.orange()
     _track_type = 'SoundCloud track'
-    _search_type = 'scsearch:'
+    _track_class = wavelink.SoundCloudTrack
 
     @property
     def _url(self):
-        return self.track.info['uri']
+        return self.track.uri
 
 
 class AttachmentTrack(StreamableTrack):

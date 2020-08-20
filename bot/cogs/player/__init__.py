@@ -89,7 +89,7 @@ class Player(commands.Cog):
         self._restart.cancel()
 
     def _get_session(self, guild: discord.Guild) -> Session:
-        if isinstance(guild.voice_client, Session):
+        if guild.voice_client is not None:
             return guild.voice_client
         return None
 

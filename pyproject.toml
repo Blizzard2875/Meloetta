@@ -9,14 +9,14 @@ license = "MIT"
 python = "^3.7"
 psutil = "^5.7.2"
 pyyaml = "^5.3.1"
-# wavelink = "^0.9.4"
+# wavelink = "^1.0.0"
 uvloop = {version = "^0.14.0", platform = "linux"}
 python-dotenv = "^0.14.0"
 "discord.py" = {git = "https://github.com/Rapptz/discord.py", rev = "voice-protocol"}
 discord-ext-menus = {git = "https://github.com/Rapptz/discord-ext-menus.git"}
 mutagen = "^1.45.1"
 wavelink = {git = "https://github.com/bijij/wavelink", rev = "rewrite-Node-only"}
-# wavelink = {path = "../../Personal/Wavelink"}
+# wavelink = {path = "../../Wavelink"}
 
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.4"

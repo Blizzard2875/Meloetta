@@ -242,7 +242,7 @@ aiohttp = ">=3.6.0,<3.7.0"
 "discord.py" = ">=1.4.0"
 
 [package.source]
-reference = "fa880abf3307ff3e6a8a3b6830e06574757d0409"
+reference = "3921f1bd41f4ed4ba80fb6a14c040ae7e1c9e977"
 type = "git"
 url = "https://github.com/bijij/wavelink"
 [[package]]
