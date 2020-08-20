@@ -246,15 +246,11 @@ class StreamableTrack(Track):
 
     @property
     def playing_message(self) -> Dict:
-        embed = discord.Embed(
-            colour=self._embed_colour,
-            description=f'[{self._title}]({self._url})'
-        ).set_author(name=f'{self._author} - Requested By: {self.requester}')
-
-        embed.set_thumbnail(url=self._thumbnail)
-
         return {
-            'embed': embed
+            'embed': discord.Embed(
+                colour=self._embed_colour,
+                description=f'[{self._title}]({self._url})'
+            ).set_author(name=f'{self._author} - Requested By: {self.requester}')
         }
 
     @classmethod
@@ -289,6 +285,18 @@ class YouTubeTrack(StreamableTrack):
         return f'https://youtu.be/{self.track.identifier}'
 
     # endregion
+
+    @property
+    def playing_message(self) -> Dict:
+        data = super().playing_message()
+        data['embed'].set_thumbnail(url=self._thumbnail)
+        return data
+
+    @property
+    def request_message(self) -> Dict:
+        data = super().request_message()
+        data['embed'].set_thumbnail(url=self._thumbnail)
+        return data
 
     @classmethod
     async def convert(cls, ctx: commands.Converter, argument: str):
