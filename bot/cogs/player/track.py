@@ -27,7 +27,7 @@ class Track:
     _track_type = 'Track'
     _track_class = wavelink.Track
 
-    def __init__(self, url: str, requester: discord.User = None, track: wavelink.Playable = None):
+    def __init__(self, url: str, requester: discord.User = None, track: wavelink.abc.Playable = None):
         self.url = url
         self.requester = requester
         self.track = track
