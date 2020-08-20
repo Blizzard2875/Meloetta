@@ -42,9 +42,15 @@ class Status(commands.Cog):
                 else:
                     idle += 1
 
+        app_info = await self.bot.application_info()
+        if app_info.team is not None:
+            owner = f'the {app_info.team.name}'
+        else:
+            owner = app_info.user
+
         await ctx.send(
             embed=discord.Embed(
-                title=f'I am {self.bot.user}, a bot made by {self.bot.owner}.',
+                title=f'I am {self.bot.user}, a bot made by {owner}.',
                 description=f'I am a music bot, I play Pokémon music at random on loop, my prefix is `{prefix}`, you can request me with `{prefix}start`.',
                 colour=self.bot.user.colour
             ).add_field(
