@@ -410,10 +410,13 @@ class Player(commands.Cog):
         if (await tools.confirm(ctx, message)):
             await Instances.insert(
                 guild_id=ctx.guild.id,
-                voice_channel_id=ctx.author.voice_channel.id,
+                voice_channel_id=ctx.author.voice.channel.id,
                 configuration=configuration
             )
             return await ctx.send('Successfully setup permanent player instance on this server.')
+
+            session = await ctx.author.voice.channel.connect(cls=Session)
+            session.setup(run_forever=True, stoppable=False, **configuration)
 
         await ctx.send('Permanent player setup cancelled.')
 
