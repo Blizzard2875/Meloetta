@@ -16,20 +16,6 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 class Session(wavelink.Player):
 
-    def __init__(self, bot: discord.Client, voice_channel: discord.VoiceChannel):
-        """
-
-        Args:
-            voice_channel (discord.VoiceChannel): The voice channel the session should start playing in.
-
-        Kwargs:
-            log_channel (discord.TextChannel): Specifies a channel to log playback history.
-            run_forever (bool): Determines wether the session should run forever.
-            stoppable (bool): Determines wether the session should be able to be stopped by a user.
-
-        """
-        super().__init__(bot, voice_channel)
-
     def setup(self, *, log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True, request: Track = None, **kwargs):
         self.log_channel = log_channel
         self.stoppable = stoppable
@@ -58,10 +44,6 @@ class Session(wavelink.Player):
         self.play_next_song = asyncio.Event()
 
         asyncio.create_task(self.session_task())
-
-    @property
-    def current_track_play_time(self) -> int:
-        return self.position // 1000
 
     @property
     def listeners(self) -> Generator[int, None, None]:

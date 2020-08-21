@@ -295,8 +295,8 @@ class Player(commands.Cog):
         """Retrieves information on the currently playing track."""
         session = self._get_session(ctx.guild)
 
-        play_time = session.current_track_play_time
-        track_length = session.current_track.length
+        play_time = int(session.position)
+        track_length = int(session.source.length)
 
         message = session.current_track.playing_message
 
@@ -325,7 +325,7 @@ class Player(commands.Cog):
 
         session = self._get_session(ctx.guild)
 
-        total_length = session.current_track.length - session.current_track_play_time
+        total_length = session.current_track.length - session.position
         total_length += sum(track.length for track in session.queue.requests)
         length_str = str(datetime.timedelta(seconds=total_length))
 
