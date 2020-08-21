@@ -111,6 +111,7 @@ class Session(wavelink.Player):
 
         # Play the new track
         await self.play(track)
+        await asyncio.sleep(10)
 
     async def skip(self):
         """Skips the currently playing track"""

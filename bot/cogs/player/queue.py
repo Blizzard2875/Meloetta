@@ -52,18 +52,18 @@ class Radio(Queue):
             tracks = list(directory.glob('**/*.mp3'))
             track = MP3Track(str(choice(tracks)))
             await track.setup(client)
-        except wavelink.LavaLinkException:
+        except wavelink.LavalinkException:
             return await self.setup_next_radio_track(client)
         return track
 
     async def setup_next_radio_track(self, client):
-        self.setup_next_radio_track = await self.get_radio_track(client)
+        self.next_radio_track = await self.get_radio_track(client)
 
     async def next_track(self, client) -> Track:
         next_track = await super().next_track(client)
         if next_track is None:
             if self.next_radio_track is None:
                 await self.setup_next_radio_track(client)
-            next_track = self.setup_next_radio_track
-            client.loop.create_task(self.setup_next_radio_track())
+            next_track = self.next_radio_track
+            client.loop.create_task(self.setup_next_radio_track(client))
         return next_track
