@@ -36,8 +36,8 @@ class Track:
         """Prepares a wavelink track object for playing."""
         if self.track is None:
             if node is None:
-                node = await wavelink.Node.get_best_node(bot)
-            self.track = node.get_track(self._track_class, self.url)
+                node = wavelink.Node.get_best_node(bot)
+            self.track = await node.get_track(self._track_class, self.url)
 
             if self.track is None:
                 raise wavelink.LavaLinkException('Error loading track.')
