@@ -259,8 +259,7 @@ class StreamableTrack(Track):
     async def convert(cls, ctx: commands.Converter, argument: str):
         async with ctx.typing():
 
-            node = wavelink.Node.get_best_node(ctx.bot)
-            tracks = await cls._track_class.search(node, argument)
+            tracks = await cls._track_class.search(Track.global_node, argument)
             if not tracks:
                 raise commands.BadArgument('No search results were found.')
 

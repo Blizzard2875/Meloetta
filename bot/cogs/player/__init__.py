@@ -447,7 +447,7 @@ class Player(commands.Cog):
         await session.toggle_next()
 
     async def start_nodes(self):
-        Session.local_node = Session.global_node = await wavelink.Node.create(
+        Track.local_node = await wavelink.Node.create(
             self.bot,
             host='localhost',
             port=2333,
@@ -468,7 +468,7 @@ class Player(commands.Cog):
             except Exception:
                 self.bot.log.error(f'Failed to start instance in channel {voice_channel}.')
 
-        Session.global_node = await wavelink.Node.create(
+        Track.global_node = await wavelink.Node.create(
             self.bot,
             host=COG_CONFIG.LAVALINK_ADDRESS,
             port=2333,
