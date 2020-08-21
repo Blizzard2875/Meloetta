@@ -75,6 +75,9 @@ class Session(wavelink.Player):
         """Sets the next track to start playing"""
         self.current_track = self.queue.next_track()
 
+        if not self.is_playing():
+            return
+
         # if no more tracks in queue exit
         if self.current_track is None:
             await self.disconnect(force=False)
@@ -154,5 +157,6 @@ class Session(wavelink.Player):
         voice_channel = self.channel
         log_channel = self.log_channel
         await self.disconnect(force=True)
+        await asyncio.sleep(15)
         new_session = await voice_channel.connect(cls=Session)
         new_session.setup(log_channel_id=log_channel.id, run_forever=True, stoppable=False, **config)
