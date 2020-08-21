@@ -2,6 +2,9 @@ import asyncio
 import datetime
 import random
 
+from collections import defaultdict
+from contextlib import suppress
+
 import discord
 from discord.ext import commands, menus, tasks
 
@@ -83,6 +86,7 @@ class Player(commands.Cog):
         self.bot = bot
         self._alone = asyncio.Event()
         self._restart.start()
+        self.track_ends = defaultdict(list)
 
         self.bot.loop.create_task(self.start_nodes())
 
@@ -444,6 +448,29 @@ class Player(commands.Cog):
     @commands.Cog.listener('on_wavelink_track_end')
     @commands.Cog.listener('on_wavelink_track_exception')
     async def on_player_stop(self, session, **kwargs):
+        # Hacky fix for the running forever issue
+        if session.run_forever:
+            if len(self.track_ends[session]) > 2:
+                if session.log_channel is not None:
+                    with suppress(discord.HTTPException):
+                        await self.log_channel.send(
+                            embed=discord.Embed(colour=discord.Colour.red(), title='Something went terribly wrong. restarting the player.')
+                        )
+
+                config = session.config
+                voice_channel = session.voice_channel
+                log_channel = session.log_channel
+                await session.disconnect(force=True)
+                new_session = await voice_channel.connect(cls=Session)
+                new_session.setup(log_channel_id=log_channel.id, run_forever=True, stoppable=False, **config)
+                return
+
+            now = datetime.datetime.utcnow()
+            for time in self.track_ends[session]:
+                if (now - time).total_seconds() > 30:
+                    self.track_ends[session].remove(time)
+            self.track_ends[session].append(now)
+
         await session.toggle_next()
 
     async def start_nodes(self):
