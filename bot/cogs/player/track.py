@@ -222,7 +222,7 @@ class MP3Track(Track):
 
     @classmethod
     def setup_search(cls):
-        for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).absolute().glob('**/*.mp3'):
+        for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob('**/*.mp3'):
             tags = MP3(str(track))
             cls._tracks[track] = re.sub(r'[^\w\s]', '', tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
 

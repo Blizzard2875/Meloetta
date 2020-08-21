@@ -97,6 +97,7 @@ class Session(wavelink.Player):
         except commands.BadArgument:
             self.client.log.error(f'Failed to play track {self.current_track._title!r}.')
             await asyncio.sleep(1)
+            return await self.toggle_next()
 
         # If server has log channel log new track
         if self.log_channel is not None:
