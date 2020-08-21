@@ -7,6 +7,13 @@
 
   TOKEN: !ENV "TOKEN"
 
+  # donphan Configuration
+  DONPHAN: !Config
+      DSN: !ENV 'POSTGRECONNSTR'
+      DELETE_TABLES_ON_STARTUP: no
+      DELETE_VIEWS_ON_STARTUP: yes
+      APPLICATION_NAME: 'Meloetta: Discord Bot'
+
   COGS:
     "bot.cogs.core.admin": ~
     "bot.cogs.core.git": ~

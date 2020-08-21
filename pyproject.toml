@@ -18,6 +18,7 @@ mutagen = "^1.45.1"
 wavelink = {git = "https://github.com/bijij/wavelink", rev = "rewrite-Node-only"}
 # wavelink = {path = "../../Wavelink"}
 
+donphan = "^2.3.1"
 [tool.poetry.dev-dependencies]
 autopep8 = "^1.5.4"
 flake8 = "^3.8.3"
