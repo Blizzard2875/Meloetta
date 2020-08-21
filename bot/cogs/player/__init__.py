@@ -450,7 +450,7 @@ class Player(commands.Cog):
     async def on_player_stop(self, session, **kwargs):
         # Hacky fix for the running forever issue
         if session.run_forever:
-            if len(self.track_ends[session]) > 2:
+            if len(self.track_ends[session]) > 5:
                 if session.log_channel is not None:
                     with suppress(discord.HTTPException):
                         await session.log_channel.send(
@@ -458,7 +458,7 @@ class Player(commands.Cog):
                         )
 
                 config = session.config
-                voice_channel = session.voice_channel
+                voice_channel = session.channel
                 log_channel = session.log_channel
                 await session.disconnect(force=True)
                 new_session = await voice_channel.connect(cls=Session)
@@ -467,7 +467,7 @@ class Player(commands.Cog):
 
             now = datetime.datetime.utcnow()
             for time in self.track_ends[session]:
-                if (now - time).total_seconds() > 30:
+                if (now - time).total_seconds() > 15:
                     self.track_ends[session].remove(time)
             self.track_ends[session].append(now)
 
