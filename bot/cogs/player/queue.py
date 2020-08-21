@@ -57,7 +57,7 @@ class Radio(Queue):
         return track
 
     async def setup_next_radio_track(self, client):
-        self.setup_next_radio_track = self.get_radio_track(client)
+        self.setup_next_radio_track = await self.get_radio_track(client)
 
     async def next_track(self, client) -> Track:
         next_track = await super().next_track(client)
