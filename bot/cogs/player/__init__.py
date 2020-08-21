@@ -456,7 +456,7 @@ class Player(commands.Cog):
             region=discord.VoiceRegion.us_east
         )
 
-        for guild_id, voice_channel_id, log_channel_id, configuration in await Instances.fetchall():
+        for guild_id, voice_channel_id, configuration in await Instances.fetchall():
             voice_channel = self.bot.get_channel(voice_channel_id)
             if voice_channel is None:
                 continue
