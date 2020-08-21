@@ -101,7 +101,7 @@ class Session(wavelink.Player):
                 with suppress(discord.HTTPException):
                     await self.log_channel.send(embed=discord.Embed(colour=discord.Colour.red(), title='Error playing track, skipping.'))   
 
-            await asyncio.sleep(1)
+            await asyncio.sleep(3)
             return await self.toggle_next()
 
         # If server has log channel log new track
@@ -111,7 +111,6 @@ class Session(wavelink.Player):
 
         # Play the new track
         await self.play(track)
-        await asyncio.sleep(10)
 
     async def skip(self):
         """Skips the currently playing track"""
