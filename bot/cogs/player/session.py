@@ -22,6 +22,7 @@ class Session(wavelink.Player):
         self.stoppable = stoppable
         self.config = kwargs
         self.queue_config = self.config.get('queue')
+        self.dead = False
 
         self.not_alone = asyncio.Event()
         self.timeout = self.config.get('timeout') or COG_CONFIG.DEFAULT_TIMEOUT
@@ -73,10 +74,10 @@ class Session(wavelink.Player):
 
     async def toggle_next(self):
         """Sets the next track to start playing"""
-        self.current_track = self.queue.next_track()
-
-        if not self.is_playing():
+        if self.dead:
             return
+
+        self.current_track = self.queue.next_track()
 
         # if no more tracks in queue exit
         if self.current_track is None:
@@ -157,6 +158,7 @@ class Session(wavelink.Player):
         voice_channel = self.channel
         log_channel = self.log_channel
         await self.disconnect(force=True)
+        self.dead = True
         await asyncio.sleep(15)
         new_session = await voice_channel.connect(cls=Session)
         new_session.setup(log_channel_id=log_channel.id, run_forever=True, stoppable=False, **config)
