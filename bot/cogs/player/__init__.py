@@ -406,7 +406,7 @@ class Player(commands.Cog):
             log_channel = await tools.prompt(ctx, message, discord.TextChannel)
             configuration['log_channel_id'] = log_channel.id
 
-        message = await(f'Just to confirm: you want a permanent player in {ctx.author.voice.channel.name}?')
+        message = await ctx.send(f'Just to confirm: you want a permanent player in {ctx.author.voice.channel.name}?')
         if (await tools.confirm(ctx, message)):
             await Instances.insert(
                 guild_id=ctx.guild.id,
