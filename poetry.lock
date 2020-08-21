@@ -85,7 +85,6 @@ version = "1.0.0a26+g84caae8"
 reference = "84caae8038d0d3adc860957ccef05baeec2e2dd8"
 type = "git"
 url = "https://github.com/Rapptz/discord-ext-menus.git"
-
 [[package]]
 category = "main"
 description = "A Python wrapper for the Discord API"
@@ -105,7 +104,6 @@ voice = ["PyNaCl (1.3.0)"]
 reference = "b7f18278e11bc1912b14a16faf20ff3cf82392ae"
 type = "git"
 url = "https://github.com/Rapptz/discord.py"
-
 [[package]]
 category = "main"
 description = "Asyncronous Database ORM for Postgres"
@@ -270,10 +268,9 @@ aiohttp = ">=3.6.0,<3.7.0"
 docs = ["sphinx (3.2.1)", "sphinxcontrib_trio (1.1.2)", "sphinxcontrib-websupport"]
 
 [package.source]
-reference = "4eb10904aca2eba47fbcf7ef02384aff06875700"
+reference = "3a2927e841eae44b1acd9622108f7330c8038d6d"
 type = "git"
 url = "https://github.com/bijij/wavelink"
-
 [[package]]
 category = "main"
 description = "Yet another URL library"
