@@ -14,7 +14,7 @@ from bot.utils.paginator import EmbedPaginator
 
 from .db import Instances
 from .session import Session
-from .track import MP3Track, YouTubeTrack, SoundCloudTrack, AttachmentTrack
+from .track import Track, MP3Track, YouTubeTrack, SoundCloudTrack, AttachmentTrack
 
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 
