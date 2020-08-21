@@ -444,9 +444,6 @@ class Player(commands.Cog):
     @commands.Cog.listener('on_wavelink_track_end')
     @commands.Cog.listener('on_wavelink_track_exception')
     async def on_player_stop(self, session, **kwargs):
-        if 'reason' in kwargs:
-            if kwargs['reason'] == 'REPLACED':
-                return
         await session.toggle_next()
 
     async def start_nodes(self):
