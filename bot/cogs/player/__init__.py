@@ -453,7 +453,7 @@ class Player(commands.Cog):
             if len(self.track_ends[session]) > 2:
                 if session.log_channel is not None:
                     with suppress(discord.HTTPException):
-                        await self.log_channel.send(
+                        await session.log_channel.send(
                             embed=discord.Embed(colour=discord.Colour.red(), title='Something went terribly wrong. restarting the player.')
                         )
 
