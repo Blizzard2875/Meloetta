@@ -314,7 +314,7 @@ class Player(commands.Cog):
         if ctx.guild not in COG_CONFIG.PREMIUM_GUILDS:
             if random.random() > 0.95:
                 message['embed'].add_field(
-                    name=ZWSP, value='Enjoying Meloetta? [conscider donating to help it\'s development](https://www.paypal.me/bijij/5)', inline=False
+                    name=ZWSP, value='Enjoying Meloetta? [consider donating to help it\'s development](https://www.paypal.me/bijij/5)', inline=False
                 )
 
         await ctx.send(**message)

@@ -94,8 +94,13 @@ class Session(wavelink.Player):
         # Create wavelink object for track
         try:
             track = await self.current_track.setup(self.client)
-        except commands.BadArgument:
+        except (commands.BadArgument, wavelink.LavalinkException):
             self.client.log.error(f'Failed to play track {self.current_track._title!r}.')
+
+            if self.log_channel is not None:
+                with suppress(discord.HTTPException):
+                    await self.log_channel.send(embed=discord.Embed(colour=discord.Colour.red(), title='Error playing track, skipping.'))   
+
             await asyncio.sleep(1)
             return await self.toggle_next()
 
