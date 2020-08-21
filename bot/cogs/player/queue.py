@@ -3,8 +3,6 @@ from random import choice
 
 from typing import Optional
 
-import wavelink
-
 from .track import Track, MP3Track
 
 from bot.config import config as BOT_CONFIG
@@ -17,7 +15,7 @@ class Queue:
         self.config = config or dict()
         self.requests = list()
 
-    async def next_track(self, client) -> Optional[Track]:
+    def next_track(self) -> Optional[Track]:
         if self.requests:
             return self.requests.pop(0)
         return None
@@ -39,31 +37,17 @@ class Queue:
 
 
 class Radio(Queue):
+
     def __init__(self, config=None):
         super().__init__(config)
 
         self.playlist_directory = self.config.get(
             'playlist_directory') or COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY
-        self.next_radio_track = None
 
-    async def get_radio_track(self, client):
-        try:
-            directory = Path(self.playlist_directory)
-            tracks = list(directory.glob('**/*.mp3'))
-            track = MP3Track(str(choice(tracks)))
-            await track.setup(client)
-        except wavelink.LavalinkException:
-            return await self.setup_next_radio_track(client)
-        return track
-
-    async def setup_next_radio_track(self, client):
-        self.next_radio_track = await self.get_radio_track(client)
-
-    async def next_track(self, client) -> Track:
-        next_track = await super().next_track(client)
+    def next_track(self) -> Track:
+        next_track = super().next_track()
         if next_track is None:
-            if self.next_radio_track is None:
-                await self.setup_next_radio_track(client)
-            next_track = self.next_radio_track
-            client.loop.create_task(self.setup_next_radio_track(client))
+            directory = Path(self.playlist_directory).absolute()
+            tracks = list(directory.glob('**/*.mp3'))
+            return MP3Track(str(choice(tracks)))
         return next_track

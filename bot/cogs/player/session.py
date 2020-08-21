@@ -8,7 +8,7 @@ from discord.ext import commands
 import wavelink
 
 from .queue import Queue, Radio
-from .track import Track
+from .track import Track, MP3Track
 
 from bot.config import config as BOT_CONFIG
 COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
@@ -82,6 +82,26 @@ class Session(wavelink.Player):
         # Clear the queues
         self.skip_requests.clear()
         self.repeat_requests.clear()
+
+        # Create wavelink object for track
+        try:
+            if isinstance(self.current_track, MP3Track):
+                if self.node != Session.local_node:
+                    await self.change_node(Session.local_node)
+            else:
+                if self.node != Session.global_node:
+                    await self.change_node(Session.global_node)
+
+            await self.current_track.setup(self.client, self.node)
+        except (commands.BadArgument, wavelink.LavalinkException):
+            self.client.log.error(f'Failed to play track {self.current_track._title!r}.')
+
+            if self.log_channel is not None:
+                with suppress(discord.HTTPException):
+                    await self.log_channel.send(embed=discord.Embed(colour=discord.Colour.red(), title='Error playing track, skipping.'))   
+
+            await asyncio.sleep(3)
+            return await self.toggle_next()
 
         # If on r/Pokemon update presence
         if COG_CONFIG.PLAYING_STATUS_GUILD is not None:

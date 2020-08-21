@@ -447,13 +447,13 @@ class Player(commands.Cog):
         await session.toggle_next()
 
     async def start_nodes(self):
-        await wavelink.Node.create(
+        Session.local_node = Session.global_node = await wavelink.Node.create(
             self.bot,
-            host=COG_CONFIG.LAVALINK_ADDRESS,
+            host='localhost',
             port=2333,
-            rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
+            rest_uri='http://localhost:2333',
             password=COG_CONFIG.LAVALINK_PASSWORD,
-            identifier=BOT_CONFIG.APP_NAME,
+            identifier=BOT_CONFIG.APP_NAME + 'local',
             region=discord.VoiceRegion.us_east
         )
 
@@ -467,6 +467,16 @@ class Player(commands.Cog):
                 session.setup(run_forever=True, stoppable=False, **configuration)
             except Exception:
                 self.bot.log.error(f'Failed to start instance in channel {voice_channel}.')
+
+        Session.global_node = await wavelink.Node.create(
+            self.bot,
+            host=COG_CONFIG.LAVALINK_ADDRESS,
+            port=2333,
+            rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
+            password=COG_CONFIG.LAVALINK_PASSWORD,
+            identifier=BOT_CONFIG.APP_NAME + 'global',
+            region=discord.VoiceRegion.us_east
+        )
 
         if not MP3Track._search_ready.is_set():
             self.bot.loop.run_in_executor(None, MP3Track.setup_search)

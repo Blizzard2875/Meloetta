@@ -32,10 +32,12 @@ class Track:
         self.requester = requester
         self.track = track
 
-    async def setup(self, bot) -> wavelink.Track:
+    async def setup(self, bot, node=None) -> wavelink.Track:
         """Prepares a wavelink track object for playing."""
         if self.track is None:
-            self.track = await wavelink.Node.get_best_node(bot).get_track(self._track_class, self.url)
+            if node is None:
+                node = await wavelink.Node.get_best_node(bot)
+            self.track = node.get_track(self._track_class, self.url)
 
             if self.track is None:
                 raise wavelink.LavaLinkException('Error loading track.')
@@ -140,7 +142,7 @@ class MP3Track(Track):
     _tracks: Dict[Path, str] = dict()
 
     def __init__(self, filename: str, requester: discord.User = None, track: wavelink.Track = None, **kwargs):
-        super().__init__(COG_CONFIG.MP3_BASE_URL + filename, requester, track)
+        super().__init__(filename, requester, track)
         self.metadata = dict()
 
         # Populate metadata
@@ -222,7 +224,7 @@ class MP3Track(Track):
 
     @classmethod
     def setup_search(cls):
-        for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob('**/*.mp3'):
+        for track in Path(COG_CONFIG.DEFAULT_PLAYLIST_DIRECTORY).glob('**/*.mp3').absolute():
             tags = MP3(str(track))
             cls._tracks[track] = re.sub(r'[^\w\s]', '', tags.get('TIT2')[0] + ' ' + tags.get('TALB')[0]).split(' ')
 
