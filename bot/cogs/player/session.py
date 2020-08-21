@@ -72,7 +72,7 @@ class Session(wavelink.Player):
 
     async def toggle_next(self):
         """Sets the next track to start playing"""
-        self.current_track = self.queue.next_track()
+        self.current_track = await self.queue.next_track(self.client)
 
         # if no more tracks in queue exit
         if self.current_track is None:

@@ -38,7 +38,7 @@ class Track:
             self.track = await wavelink.Node.get_best_node(bot).get_track(self._track_class, self.url)
 
             if self.track is None:
-                raise commands.BadArgument('Error loading track.')
+                raise wavelink.LavaLinkException('Error loading track.')
 
         return self.track
 
