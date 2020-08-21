@@ -18,6 +18,7 @@ class Session(wavelink.Player):
 
     def setup(self, *, log_channel_id: int = None, run_forever: bool = False, stoppable: bool = True, request: Track = None, **kwargs):
         self.log_channel = self.client.get_channel(log_channel_id)
+        self.run_forever = run_forever
         self.stoppable = stoppable
         self.config = kwargs
         self.queue_config = self.config.get('queue')
