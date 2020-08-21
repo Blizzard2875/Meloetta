@@ -90,12 +90,17 @@ class Session(wavelink.Player):
 
         # Create wavelink object for track
         try:
+            track = self.current_track
+            self.current_track = None
+
             if isinstance(self.current_track, MP3Track):
                 if self.node != Track.local_node:
                     await self.change_node(Track.local_node)
             else:
                 if self.node != Track.global_node:
                     await self.change_node(Track.global_node)
+
+            self.current_track = track
 
             await self.current_track.setup(self.client, self.node)
         except (commands.BadArgument, wavelink.LavalinkException):
