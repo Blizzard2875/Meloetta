@@ -148,3 +148,11 @@ class Session(wavelink.Player):
             await self.check_listeners()
         except Exception:
             self.client.log.error('Exception in session', exc_info=True, stack_info=True)
+
+    async def restart(self, force: bool = False):
+        config = self.config
+        voice_channel = self.channel
+        log_channel = self.log_channel
+        await self.disconnect(force=True)
+        new_session = await voice_channel.connect(cls=Session)
+        new_session.setup(log_channel_id=log_channel.id, run_forever=True, stoppable=False, **config)

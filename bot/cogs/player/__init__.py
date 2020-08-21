@@ -377,7 +377,14 @@ class Player(commands.Cog):
     async def force_stop(self, ctx):
         """Force the session to stop."""
         session = self._get_session(ctx.guild)
-        await session.disconnect(force=False)
+        await session.disconnect(force=True)
+
+    @force.command(name='restart')
+    @commands.check(session_is_running)
+    async def force_restart(self, ctx):
+        """Force the session to restart."""
+        session = self._get_session(ctx.guild)
+        await session.restart(force=True)
 
     @force.command(name='repeat', aliases=['encore', 'again'])
     @commands.check(session_is_running)
@@ -457,13 +464,7 @@ class Player(commands.Cog):
                             embed=discord.Embed(colour=discord.Colour.red(), title='Something went terribly wrong. restarting the player.')
                         )
 
-                config = session.config
-                voice_channel = session.channel
-                log_channel = session.log_channel
-                await session.disconnect(force=True)
-                new_session = await voice_channel.connect(cls=Session)
-                new_session.setup(log_channel_id=log_channel.id, run_forever=True, stoppable=False, **config)
-                return
+                return await session.restart(force=True)
 
             now = datetime.datetime.utcnow()
             for time in self.track_ends[session]:
