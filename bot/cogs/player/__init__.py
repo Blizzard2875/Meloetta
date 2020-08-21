@@ -464,6 +464,7 @@ class Player(commands.Cog):
                             embed=discord.Embed(colour=discord.Colour.red(), title='Something went terribly wrong. restarting the player.')
                         )
 
+                self.track_ends[session] = []
                 return await session.restart(force=True)
 
             now = datetime.datetime.utcnow()
