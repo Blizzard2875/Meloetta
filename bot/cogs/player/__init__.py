@@ -104,7 +104,7 @@ class Player(commands.Cog):
     async def start(self, ctx, *, channel: discord.TextChannel = None):
         """Starts a new player session."""
         session = await ctx.author.voice.channel.connect(cls=Session)
-        session.setup(log_channel_id = channel.id if channel is not None else None, run_forever=True)
+        session.setup(log_channel_id=channel.id if channel is not None else None, run_forever=True)
 
     @commands.command(name='stop', aliases=['leave', 'quit'])
     @commands.check(session_is_running)

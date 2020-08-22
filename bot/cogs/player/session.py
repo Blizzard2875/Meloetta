@@ -162,4 +162,4 @@ class Session(wavelink.Player):
         self.dead = True
         await asyncio.sleep(15)
         new_session = await voice_channel.connect(cls=Session)
-        new_session.setup(log_channel_id=log_channel.id, run_forever=True, stoppable=False, **config)
+        new_session.setup(log_channel_id=log_channel.id if log_channel else None, run_forever=True, stoppable=False, **config)
