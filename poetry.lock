@@ -268,7 +268,7 @@ aiohttp = ">=3.6.0,<3.7.0"
 docs = ["sphinx (3.2.1)", "sphinxcontrib_trio (1.1.2)", "sphinxcontrib-websupport"]
 
 [package.source]
-reference = "6d581b308b837e00d4da37c519d8e6125f3e5ada"
+reference = "5b93f8023e5579c7a4b6fd03e45dfe1b1301c34b"
 type = "git"
 url = "https://github.com/bijij/wavelink"
 [[package]]
