@@ -200,7 +200,7 @@ class Player(commands.Cog):
     @request.command(name='file')
     @commands.check(user_is_in_voice_channel)
     @commands.check(user_has_required_permissions)
-    @commands.check(checks.is_administrator)
+    @commands.check_any(checks.is_administrator, checks.is_owner)
     @commands.check(user_has_requests_remaining)
     async def request_file(self, ctx):
         """Adds a local file to the requests queue.
