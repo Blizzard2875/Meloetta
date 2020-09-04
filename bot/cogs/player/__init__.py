@@ -460,8 +460,12 @@ class Player(commands.Cog):
             if self.bot._recover_player is None:
                 return
             channel, queue = self.bot._recover_player
+            track = queue.next_track()
+            if track is None:
+                return
+
             session = await channel.connect(cls=Session)
-            session.setup()
+            session.setup(track=track)
             session.queue = queue
             self.bot._recover_player = None
             return
