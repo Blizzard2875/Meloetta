@@ -455,6 +455,17 @@ class Player(commands.Cog):
     @commands.Cog.listener('on_wavelink_track_end')
     @commands.Cog.listener('on_wavelink_track_exception')
     async def on_player_stop(self, session, **kwargs):
+
+        if session is None:
+            if self.bot._recover_player is None:
+                return
+            channel, queue = self.bot._recover_player
+            session = await channel.connect(cls=Session)
+            session.setup()
+            session.queue = queue
+            self.bot._recover_player = None
+            return
+
         # Hacky fix for the running forever issue
         if session.run_forever:
             if len(self.track_ends[session]) > 5:
@@ -527,3 +538,6 @@ class Player(commands.Cog):
 
 def setup(bot: commands.Bot):
     bot.add_cog(Player(bot))
+
+    if hasattr(bot, '_recover_player'):
+        bot._recover_player = None

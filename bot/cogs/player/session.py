@@ -154,6 +154,10 @@ class Session(wavelink.Player):
         except Exception:
             self.client.log.error('Exception in session', exc_info=True, stack_info=True)
 
+    def cleanup(self):
+        self.client._recover_player = self.channel, self.queue
+        super().cleanup()
+
     async def restart(self, force: bool = False):
         config = self.config
         voice_channel = self.channel
