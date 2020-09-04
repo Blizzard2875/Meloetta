@@ -360,7 +360,7 @@ class Player(commands.Cog):
 
     @tools.auto_help
     @commands.group(name='force')
-    @commands.check_any(commands.check(checks.is_administrator), commands.check(checks.is_owner))
+    @commands.check_any(commands.has_permissions(manage_roles=True), commands.check(checks.is_owner))
     async def force(self, ctx):
         """Admin commands."""
         pass
