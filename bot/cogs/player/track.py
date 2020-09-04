@@ -47,7 +47,7 @@ class Track:
     @property
     def length(self) -> int:
         if self.track is not None:
-            self.track.length
+            return self.track.length
         return 0
 
     @property
