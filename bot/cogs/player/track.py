@@ -40,7 +40,7 @@ class Track:
             self.track = await node.get_track(self._track_class, self.url)
 
             if self.track is None:
-                raise wavelink.LavaLinkException('Error loading track.')
+                raise wavelink.LavalinkException('Error loading track.')
 
         return self.track
 
