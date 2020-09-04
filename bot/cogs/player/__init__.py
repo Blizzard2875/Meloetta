@@ -476,31 +476,32 @@ class Player(commands.Cog):
         await session.toggle_next()
 
     async def start_nodes(self):
-        if not self.bot.hasattr("_nodes"):
-            Track.local_node = local_node = await wavelink.Node.create(
-                self.bot,
-                host='localhost',
-                port=2333,
-                rest_uri='http://localhost:2333',
-                password=COG_CONFIG.LAVALINK_PASSWORD,
-                identifier=BOT_CONFIG.APP_NAME + 'local',
-                region=discord.VoiceRegion.us_east
-            )
 
-            Track.global_node = global_node = await wavelink.Node.create(
-                self.bot,
-                host=COG_CONFIG.LAVALINK_ADDRESS,
-                port=2333,
-                rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
-                password=COG_CONFIG.LAVALINK_PASSWORD,
-                identifier=BOT_CONFIG.APP_NAME + 'global',
-                region=discord.VoiceRegion.us_east
-            )
-
-            self.bot._nodes = (local_node, global_node)
-
-        else:
+        if hasattr(self.bot, "_nodes"):
             Track.local_node, Track.global_node = self.bot._nodes
+            return
+
+        Track.local_node = local_node = await wavelink.Node.create(
+            self.bot,
+            host='localhost',
+            port=2333,
+            rest_uri='http://localhost:2333',
+            password=COG_CONFIG.LAVALINK_PASSWORD,
+            identifier=BOT_CONFIG.APP_NAME + 'local',
+            region=discord.VoiceRegion.us_east
+        )
+
+        Track.global_node = global_node = await wavelink.Node.create(
+            self.bot,
+            host=COG_CONFIG.LAVALINK_ADDRESS,
+            port=2333,
+            rest_uri=f'http://{COG_CONFIG.LAVALINK_ADDRESS}:2333',
+            password=COG_CONFIG.LAVALINK_PASSWORD,
+            identifier=BOT_CONFIG.APP_NAME + 'global',
+            region=discord.VoiceRegion.us_east
+        )
+
+        self.bot._nodes = (local_node, global_node)
 
         for guild_id, voice_channel_id, configuration in await Instances.fetchall():
             voice_channel = self.bot.get_channel(voice_channel_id)
