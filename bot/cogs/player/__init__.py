@@ -463,6 +463,8 @@ class Player(commands.Cog):
             track = queue.next_track()
             if track is None:
                 return
+            if isinstance(track, MP3Track):
+                return
 
             session = await channel.connect(cls=Session)
             session.setup(track=track)
