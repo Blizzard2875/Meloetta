@@ -11,10 +11,6 @@ from bot.cogs.player.session import Session
 from bot.config import config as BOT_CONFIG
 
 
-INVITE_URL = 'https://discordapp.com/oauth2/authorize?client_id=288670665731735553&permissions=3459136&scope=bot'
-SUPPORT_INVITE_URL = 'http://discord.gg/pokemon'
-
-
 class Status(commands.Cog):
     """Bot status information."""
 
@@ -55,22 +51,9 @@ class Status(commands.Cog):
                 colour=self.bot.user.colour
             ).add_field(
                 name=zwsp, value=f'Right now, I\'m idle in **{tools.plural(idle):server}**.\nAnd playing in **{playing}**.'
-            ).add_field(
-                name=zwsp * 2, value=f'You can add me to your server [here]({INVITE_URL}).\nAdditionally you can get support [here]({SUPPORT_INVITE_URL}).'
             ).set_thumbnail(
                 url=self.bot.user.avatar_url
             )
-        )
-
-    @commands.command(name='invite', aliases=['invite_link'])
-    async def invite(self, ctx):
-        """Provides an invite link."""
-        await ctx.send(
-            embed=discord.Embed(
-                title=self.bot.user.name,
-                colour=self.bot.user.colour,
-                description=f'You can invite me to your server using [this link]({INVITE_URL}).'
-            ).set_thumbnail(url=self.bot.user.avatar_url)
         )
 
     @commands.command(name='status')
