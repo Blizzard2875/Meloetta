@@ -498,9 +498,9 @@ class Player(commands.Cog):
 
             try:
                 session = await instance.voice_channel.connect(cls=Session)
-                session.setup(run_forever=True, stoppable=False, **instance)
+                session.setup(run_forever=True, stoppable=False, **instance.__dict__)
             except Exception:
-                self.bot.log.error(f'Failed to start instance in channel {instance.voice_channel}.')
+                self.bot.log.exception(f'Failed to start instance in channel {instance.voice_channel}.')
 
         if not MP3Track._search_ready.is_set():
             self.bot.loop.run_in_executor(None, MP3Track.setup_search)
