@@ -7,7 +7,6 @@ import discord
 import wavelink
 
 from discord.ext import commands
-from donphan import create_pool, create_tables, create_views
 
 from bot.help import EmbedHelpCommand
 
@@ -28,11 +27,18 @@ class MyBot(commands.Bot):
     ...
 
 
+intents = discord.Intents()
+intents.guilds = True
+intents.voice_states = True
+intents.messages = True
+intents.reactions = True
+
 # Create bot instance
 config._bot = bot = MyBot(
     command_prefix=commands.when_mentioned_or(*BOT_CONFIG.PREFIXES),
     activity=discord.Activity(
         name=f'for Commands: {BOT_CONFIG.PREFIXES[0]}help', type=discord.ActivityType.watching),
+    intents=intents,
     case_insensitive=True,
     help_command=EmbedHelpCommand(),
     fetch_offline_members=False,
@@ -170,14 +176,5 @@ if __name__ == '__main__':
         except Exception as e:
             bot.log.error(f'Failed to load extension: {extension}')
             bot.log.error(f'\t{type(e).__name__}: {e}', exc_info=True, stack_info=True)
-
-    # setup database
-    bot.log.info('Setting up Database...')
-    run = asyncio.get_event_loop().run_until_complete
-    run(create_pool(BOT_CONFIG.DONPHAN.DSN, server_settings={
-        'application_name': BOT_CONFIG.DONPHAN.APPLICATION_NAME}
-    ))
-    run(create_tables(drop_if_exists=BOT_CONFIG.DONPHAN.DELETE_TABLES_ON_STARTUP))
-    run(create_views(drop_if_exists=BOT_CONFIG.DONPHAN.DELETE_VIEWS_ON_STARTUP))
 
     bot.run(BOT_CONFIG.TOKEN)

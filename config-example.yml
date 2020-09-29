@@ -2,19 +2,17 @@
   APP_NAME: "meloetta"
   DESCRIPTION: "Music bot for the r/Pokemon Discord server."
 
+  VERSION: "1.0.0a"
+
+  LOG_LEVEL: "INFO"
+  LOG_LEVEL_EXT: "WARNING"
+
   PREFIXES: 
     - !ENV "PREFIX"
 
   TOKEN: !ENV "TOKEN"
 
-  # donphan Configuration
-  DONPHAN: !Config
-      DSN: !ENV 'POSTGRECONNSTR'
-      DELETE_TABLES_ON_STARTUP: no
-      DELETE_VIEWS_ON_STARTUP: yes
-      APPLICATION_NAME: 'Meloetta: Discord Bot'
-
-  COGS:
+  EXTENSIONS:
     "bot.cogs.core.admin": ~
     "bot.cogs.core.git": ~
 

@@ -1,4 +1,0 @@
-apps:
-  script: '/bin/bash'
-  name: 'Meloetta'
-  args: ['-c', 'poetry run python -m bot']

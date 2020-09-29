@@ -15,7 +15,6 @@ from bot.config import config as BOT_CONFIG
 from bot.utils import checks, tools
 from bot.utils.paginator import EmbedPaginator
 
-from .db import Instances
 from .session import Session
 from .track import Track, MP3Track, YouTubeTrack, SoundCloudTrack, AttachmentTrack
 
@@ -402,36 +401,6 @@ class Player(commands.Cog):
             raise commands.BadArgument('Track not in queue.')
         session.queue.requests.pop(track_number - 1)
 
-    @commands.command()
-    @commands.check_any(commands.check(checks.is_administrator), commands.check(checks.is_owner))
-    @commands.check(user_is_in_voice_channel)
-    @commands.check(session_is_not_running)
-    async def setup(self, ctx):
-        """Set the bot to permanently run in a channel."""
-        configuration = {}
-
-        message = await ctx.send(f'Would you like {self.bot.user} to log which songs are playing in a channel?')
-        if (await tools.confirm(ctx, message)):
-
-            message = await ctx.send('Which channel would you like to log songs in? (reply with the channel name or mention)')
-            log_channel = await tools.prompt(ctx, message, discord.TextChannel)
-            configuration['log_channel_id'] = log_channel.id
-
-        message = await ctx.send(f'Just to confirm: you want a permanent player in {ctx.author.voice.channel.name}?')
-        if (await tools.confirm(ctx, message)):
-            await Instances.insert(
-                guild_id=ctx.guild.id,
-                voice_channel_id=ctx.author.voice.channel.id,
-                configuration=configuration
-            )
-            await ctx.send('Successfully setup permanent player instance on this server.')
-
-            session = await ctx.author.voice.channel.connect(cls=Session)
-            session.setup(run_forever=True, stoppable=False, **configuration)
-            return
-
-        await ctx.send('Permanent player setup cancelled.')
-
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
@@ -520,14 +489,14 @@ class Player(commands.Cog):
 
         self.bot._nodes = (local_node, global_node)
 
-        for guild_id, voice_channel_id, configuration in await Instances.fetchall():
-            voice_channel = self.bot.get_channel(voice_channel_id)
+        for guild_id, instance in COG_CONFIG.INSTANCES.items():
+            voice_channel = self.bot.get_channel(instance.voice_channel_id)
             if voice_channel is None:
                 continue
 
             try:
                 session = await voice_channel.connect(cls=Session)
-                session.setup(run_forever=True, stoppable=False, **configuration)
+                session.setup(run_forever=True, stoppable=False, **instance)
             except Exception:
                 self.bot.log.error(f'Failed to start instance in channel {voice_channel}.')
 
