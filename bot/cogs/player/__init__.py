@@ -489,16 +489,15 @@ class Player(commands.Cog):
 
         self.bot._nodes = (local_node, global_node)
 
-        for guild_id, instance in COG_CONFIG.INSTANCES.items():
-            voice_channel = self.bot.get_channel(instance.voice_channel_id)
-            if voice_channel is None:
+        for instance in COG_CONFIG.INSTANCES:
+            if instance.voice_channel is None:
                 continue
 
             try:
-                session = await voice_channel.connect(cls=Session)
+                session = await instance.voice_channel.connect(cls=Session)
                 session.setup(run_forever=True, stoppable=False, **instance)
             except Exception:
-                self.bot.log.error(f'Failed to start instance in channel {voice_channel}.')
+                self.bot.log.error(f'Failed to start instance in channel {instance.voice_channel}.')
 
         if not MP3Track._search_ready.is_set():
             self.bot.loop.run_in_executor(None, MP3Track.setup_search)

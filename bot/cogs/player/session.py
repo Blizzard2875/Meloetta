@@ -16,8 +16,8 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__[:__name__.rindex('.')]]
 
 class Session(wavelink.Player):
 
-    def setup(self, *, log_channel_id: int = None, run_forever: bool = False, stoppable: bool = True, request: Track = None, **kwargs):
-        self.log_channel = self.client.get_channel(log_channel_id)
+    def setup(self, *, log_channel: discord.TextChannel = None, run_forever: bool = False, stoppable: bool = True, request: Track = None, **kwargs):
+        self.log_channel = log_channel
         self.run_forever = run_forever
         self.stoppable = stoppable
         self.config = kwargs
