@@ -104,7 +104,7 @@ class Session(wavelink.Player):
 
             if self.log_channel is not None:
                 with suppress(discord.HTTPException):
-                    await self.log_channel.send(embed=discord.Embed(colour=discord.Colour.red(), title='Error playing track, skipping.'))   
+                    await self.log_channel.send(embed=discord.Embed(colour=discord.Colour.red(), title='Error playing track, skipping.'))
 
             await asyncio.sleep(3)
             return await self.toggle_next()
