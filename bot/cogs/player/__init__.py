@@ -405,6 +405,9 @@ class Player(commands.Cog):
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
         session = self._get_session(member.guild)
         if session is not None:
+            if not hasattr(session, 'not_alone'):
+                return
+
             if member.id not in session.listeners:
                 for request_list in [session.skip_requests, session.repeat_requests, session.stop_requests]:
                     if member in request_list:
