@@ -23,6 +23,11 @@ COG_CONFIG = BOT_CONFIG.EXTENSIONS[__name__]
 ZWSP = "​"
 
 
+POSTWICK = 675846901102411776
+GALACTIC_URL = "https://cdn.discordapp.com/attachments/768441496873074698/768448901715066880/GruntsofGalacticVictory.mp3"
+TWINLEAF_URL = "https://cdn.discordapp.com/attachments/768441496873074698/768448910897184798/TwinleafTrio_Tour1.mp3"
+
+
 async def session_is_not_running(ctx: commands.Context) -> bool:
     if ctx.cog._get_session(ctx.guild) is not None:
         raise commands.CheckFailure('A player is already running on this server.')
@@ -213,6 +218,25 @@ class Player(commands.Cog):
             track = AttachmentTrack(ctx.message.attachments[0].url, ctx.author)
             await track.setup(self.bot)
             await ctx.invoke(self.request, request=track)
+
+    @request.command(name='GALACTIC', aliases=['GRUNTS', 'GOG', 'CC2'], hidden=True)
+    async def request_cc4_grunts(self, ctx):
+        if ctx.guild.id != POSTWICK:
+            return
+
+        track = AttachmentTrack(GALACTIC_URL, ctx.author)
+        await track.setup(self.bot)
+        await ctx.invoke(self.request, request=track)
+
+
+    @request.command(name='TWINLEAF', aliases=['PARFUM', 'KALOS'], hidden=True)
+    async def request_cc4_twinleaf(self, ctx):
+        if ctx.guild.id != POSTWICK:
+            return
+
+        track = AttachmentTrack(TWINLEAF_URL, ctx.author)
+        await track.setup(self.bot)
+        await ctx.invoke(self.request, request=track)
 
     @commands.command(name='skip')
     @commands.check(session_is_running)
