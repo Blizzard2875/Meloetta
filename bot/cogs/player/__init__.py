@@ -242,8 +242,11 @@ class Player(commands.Cog):
         roles = ctx.author.roles
         roles.append(record_2)
         roles.append(record_3)
-        roles.remove(record_1)
-        await ctx.author.edit(roles=roles)
+        try:
+            roles.remove(record_1)
+        except Exception:
+            pass
+        await ctx.author.edit(roles=list(set(roles)))
 
         track = AttachmentTrack(TWINLEAF_URL, ctx.author)
         await track.setup(self.bot)
