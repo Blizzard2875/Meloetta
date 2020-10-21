@@ -234,6 +234,17 @@ class Player(commands.Cog):
         if ctx.guild.id != POSTWICK:
             return
 
+        # Update user roles
+        record_1 = ctx.guild.get_role(749757414496010282)
+        record_2 = ctx.guild.get_role(749757453994033172)
+        record_3 = ctx.guild.get_role(749757523699171408)
+
+        roles = ctx.author.roles
+        roles.append(record_2)
+        roles.append(record_3)
+        roles.remove(record_1)
+        await ctx.author.edit(roles=roles)
+
         track = AttachmentTrack(TWINLEAF_URL, ctx.author)
         await track.setup(self.bot)
         await ctx.invoke(self.request, request=track)
