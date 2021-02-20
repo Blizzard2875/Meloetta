@@ -1,0 +1,44 @@
+import abc
+
+from typing import List, Optional, TypeVar
+
+import discord
+from discord.ext import menus
+
+
+from bot import Context
+
+
+T = TypeVar('T')
+
+
+class BaseChoiceMenu(menus.Menu, metaclass=abc.ABCMeta):
+
+    def __init__(self, options: List[T]) -> None:
+        super().__init__(delete_message_after=True)
+        
+        if len(options) > 9:
+            raise RuntimeError('Too many options for choice menu.')
+
+        self.options = options
+        self.selection = None
+
+        for i, _ in enumerate(self.options, 1):
+            emoji = f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP}"
+            self.add_button(menus.Button(emoji, self.choose))
+
+    @abc.abstractmethod
+    async def send_initial_message(self, ctx: Context, channel: discord.TextChannel):
+        raise NotImplementedError
+
+    async def choose(self, payload: discord.RawReactionActionEvent):
+        self.selection = self.options[int(payload.emoji[0]) - 1]
+        self.stop()
+
+    async def start(self, ctx, *, channel=None) -> Optional[T]:
+        await super().start(ctx, channel=channel, wait=True)
+        return self.selection
+
+    @menus.button('\N{BLACK SQUARE FOR STOP}\ufe0f', position=menus.Last(0))
+    async def cancel(self, payload):
+        self.stop()

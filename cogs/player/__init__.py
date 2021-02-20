@@ -1,6 +1,6 @@
+from .utils import YoutubeSearchResultsMenu
 import discord
 from discord.ext import commands
-from discord.ext.commands.core import command
 
 import wavelink
 
@@ -8,9 +8,6 @@ from bot import Bot, Context
 
 from bot.config import CONFIG
 COG_CONFIG = CONFIG.EXTENSIONS[__name__]
-
-
-DEFAULT_VOLUME = 10
 
 
 def is_not_connected(ctx: Context):
@@ -54,21 +51,31 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
             raise commands.BadArgument('No channel to join.')
 
         player = self.bot.wavelink.get_player(
-            ctx.guild.id, volume=DEFAULT_VOLUME)
+            ctx.guild.id, volume=COG_CONFIG.DEFAULT_VOLUME)
         await player.connect(channel.id)
 
     @commands.command(name='play')
     async def play(self, ctx: Context, *, query: str):
         tracks = await self.bot.wavelink.get_tracks(f'ytsearch:{query}')
 
-        if len(tracks) == 0:
+        if not tracks:
             raise commands.BadArgument('Could not find any search results.')
+
+        if len(tracks) == 1:
+            track = tracks[0]
+        else:
+            menu = YoutubeSearchResultsMenu(
+                query, tracks[:COG_CONFIG.MAX_SEARCH_RESULTS])
+            track = await menu.start(ctx)
+            if track is None:
+                # TODO: Not this error type
+                raise commands.BadArgument('Selection cancelled.')
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
         if not player.is_connected:
             await ctx.invoke(self.join)
 
-        await player.play(tracks[0])
+        await player.play(track)
 
     @commands.command(name='volume')
     @commands.check(is_connected)
