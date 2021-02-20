@@ -68,6 +68,6 @@ def setup(bot: Bot):
 
     # Check for player botvars
     if not hasattr(bot, 'wavelink'):
-        bot.wavelink = wavelink.Client(bot)
+        bot.wavelink = wavelink.Client(bot=bot)
 
     bot.add_cog(Player(bot))
