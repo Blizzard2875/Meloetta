@@ -3,7 +3,6 @@ from typing import List, Optional, TypeVar
 import discord
 from discord.ext import menus
 
-
 from bot import Context
 
 
@@ -14,7 +13,7 @@ class BaseChoiceMenu(menus.Menu):
 
     def __init__(self, options: List[T]) -> None:
         super().__init__(delete_message_after=True)
-        
+
         if len(options) > 9:
             raise RuntimeError('Too many options for choice menu.')
 
@@ -25,7 +24,7 @@ class BaseChoiceMenu(menus.Menu):
             emoji = f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP}"
             self.add_button(menus.Button(emoji, self.choose))
 
-    async def send_initial_message(self, ctx: Context, channel: discord.TextChannel):
+    async def send_initial_message(self, ctx: Context, channel: discord.TextChannel) -> discord.Message:
         raise NotImplementedError
 
     async def choose(self, payload: discord.RawReactionActionEvent):

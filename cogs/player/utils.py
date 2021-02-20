@@ -15,7 +15,7 @@ class YoutubeSearchResultsMenu(BaseChoiceMenu):
         self.query = query
         super().__init__(options)
 
-    async def send_initial_message(self, ctx: Context, channel: discord.TextChannel):
+    async def send_initial_message(self, ctx: Context, channel: discord.TextChannel) -> discord.Message:
 
         embed = discord.Embed(
             color=discord.Colour.red(),
@@ -26,8 +26,8 @@ class YoutubeSearchResultsMenu(BaseChoiceMenu):
             length = track.length // 1000
             embed.add_field(
                 name=f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP} {track.title}",
-                value=f"[link]({track.uri}) ({length//60*1000:02d}:{length//1000%60}) - {track.author}",
+                value=f"[link]({track.uri}) ({length//60:02d}:{length%60:02d}) - {track.author}",
                 inline=False
             )
 
-        await channel.send(embed=embed)
+        return await channel.send(embed=embed)
