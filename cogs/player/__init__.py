@@ -34,6 +34,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
 
         await self.bot.wavelink.initiate_node(
             host=COG_CONFIG.LAVALINK.HOSTNAME,
+            port=2333,
             rest_uri=f"http://{COG_CONFIG.LAVALINK.HOSTNAME}:2333",
             password=COG_CONFIG.LAVALINK.PASSWORD,
             identifier='meloetta',
