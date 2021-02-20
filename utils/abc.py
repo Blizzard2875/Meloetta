@@ -1,5 +1,3 @@
-import abc
-
 from typing import List, Optional, TypeVar
 
 import discord
@@ -12,7 +10,7 @@ from bot import Context
 T = TypeVar('T')
 
 
-class BaseChoiceMenu(menus.Menu, metaclass=abc.ABCMeta):
+class BaseChoiceMenu(menus.Menu):
 
     def __init__(self, options: List[T]) -> None:
         super().__init__(delete_message_after=True)
@@ -27,7 +25,6 @@ class BaseChoiceMenu(menus.Menu, metaclass=abc.ABCMeta):
             emoji = f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP}"
             self.add_button(menus.Button(emoji, self.choose))
 
-    @abc.abstractmethod
     async def send_initial_message(self, ctx: Context, channel: discord.TextChannel):
         raise NotImplementedError
 
