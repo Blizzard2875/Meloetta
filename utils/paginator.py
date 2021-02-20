@@ -31,8 +31,8 @@ class EmbedPaginator(discord.Embed, PaginatorSource):
     def __init__(self, max_size: int = MAX_EMBED_SIZE, max_description: int = MAX_DESCRIPTION_LENGTH, max_fields: int = MAX_NUM_FIELDS, **kwargs):
 
         description = kwargs.pop('description', '')
-        super().__init__(self, **kwargs)
-        super(PaginatorSource).__init__(None, None, max_size)
+        super().__init__(**kwargs)
+        commands.Paginator.__init__(self, None, None, max_size)
 
         self.max_description = max_description
         self.max_fields = max_fields
@@ -88,8 +88,8 @@ class EmbedPaginator(discord.Embed, PaginatorSource):
         self._count = 0
         self._description_count = 0
     
-    def _format_page(self, page: EmbedPage):
-        embed = super().from_dict(self.to_dict())
+    def _format_page(self, page: EmbedPage) -> discord.Embed:
+        embed = discord.Embed.from_dict(self.to_dict())
         embed.description = '\n'.join(page.description)
 
         if self._pages.index(page) >= 1:
