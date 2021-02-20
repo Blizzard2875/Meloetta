@@ -28,7 +28,7 @@ class BaseChoiceMenu(menus.Menu):
         raise NotImplementedError
 
     async def choose(self, payload: discord.RawReactionActionEvent):
-        self.selection = self.options[int(payload.emoji[0]) - 1]
+        self.selection = self.options[int(str(payload.emoji)[0]) - 1]
         self.stop()
 
     async def start(self, ctx, *, channel=None) -> Optional[T]:
