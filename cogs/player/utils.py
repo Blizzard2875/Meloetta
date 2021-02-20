@@ -18,7 +18,7 @@ class YoutubeSearchResultsMenu(BaseChoiceMenu):
     async def send_initial_message(self, ctx: Context, channel: discord.TextChannel) -> discord.Message:
 
         embed = discord.Embed(
-            color=discord.Colour.red(),
+            colour=discord.Colour.red(),
             title=f'Results for search: {self.query}'
         )
 

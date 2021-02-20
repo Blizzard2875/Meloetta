@@ -10,6 +10,8 @@
   EXTENSIONS:
     jishaku: ~
 
+    cogs.core.about: ~
+
     cogs.player: !Config
       LAVALINK: !Config
         HOSTNAME: !ENV LAVALINK_HOSTNAME
