@@ -52,6 +52,10 @@ class Bot(commands.Bot):
         await self.is_owner(self.user) 
         if self.owner_id:
             self.owner = self.get_user(self.owner_id)
+            self.owners = [self.owner]
+        if self.owner_ids:
+            self.owner = None
+            self.owners = [self.get_user(owner_id) for owner_id in self.owner_ids]
 
     async def on_error(self, event_method: str, *args, **kwargs):
         self.log.exception(f'Ignoring exception in {event_method}\n')

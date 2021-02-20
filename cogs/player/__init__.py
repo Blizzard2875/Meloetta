@@ -25,7 +25,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
 
     # TODO: Remove this.
     async def cog_check(self, ctx):
-        if ctx.author != self.bot.owner:
+        if ctx.author not in self.bot.owners:
             raise commands.CheckFailure('Nah')
         return True
 
