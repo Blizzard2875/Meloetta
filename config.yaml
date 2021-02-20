@@ -1,0 +1,17 @@
+# Meloetta Configuration File
+!Config
+  BOT: !Config
+    PREFIX: '!;'
+    TOKEN: !ENV BOT_TOKEN
+
+  LOGGING: !Config
+    LOG_LEVEL: "INFO"
+
+  EXTENSIONS:
+    jishaku: ~
+
+    cogs.player: !Config
+      # TODO: Player config
+      LAVALINK: !Config
+        HOSTNAME: !ENV LAVALINK_HOSTNAME
+        PASSWORD: !ENV LAVALINK_PASSWORD
