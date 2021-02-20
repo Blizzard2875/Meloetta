@@ -64,7 +64,7 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
         await player.play(tracks[0])
 
 
-def setup(self, bot: Bot):
+def setup(bot: Bot):
 
     # Check for player botvars
     if not hasattr(bot, 'wavelink'):
