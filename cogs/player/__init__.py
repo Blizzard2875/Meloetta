@@ -10,10 +10,21 @@ from bot.config import CONFIG
 COG_CONFIG = CONFIG.EXTENSIONS[__name__]
 
 
-def is_not_playing(ctx: Context):
+DEFAULT_VOLUME = 10
+
+
+def is_not_connected(ctx: Context):
     guild_id = getattr(ctx.guild, 'id', -1)
     if ctx.guild.voice_client is not None or ctx.bot.wavelink.get_player(guild_id).is_connected:
-        raise commands.CheckFailure('A player is already running in this guild.')
+        raise commands.CheckFailure(
+            'A player is already connected in this guild.')
+    return True
+
+
+def is_connected(ctx: Context):
+    guild_id = getattr(ctx.guild, 'id', -1)
+    if not ctx.bot.wavelink.get_player(guild_id).is_connected:
+        raise commands.CheckFailure('A player is not connected in this guild.')
     return True
 
 
@@ -22,12 +33,6 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
         self.bot = bot
 
         self.bot.loop.create_task(self.start_wavelink())
-
-    # TODO: Remove this.
-    async def cog_check(self, ctx):
-        if ctx.author.id not in self.bot.owner_ids:
-            raise commands.CheckFailure('Nah')
-        return True
 
     async def start_wavelink(self):
         await self.bot.wait_until_ready()
@@ -41,14 +46,15 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
             region='us_east'
         )
 
-    @commands.command(name='start', aliases=['connect'])
-    @commands.check(is_not_playing)
-    async def start(self, ctx: Context, *, channel: discord.VoiceChannel = None):
+    @commands.command(name='join', aliases=['start', 'connect'])
+    @commands.check(is_not_connected)
+    async def join(self, ctx: Context, *, channel: discord.VoiceChannel = None):
         channel = channel or getattr(ctx.author.voice, 'channel', None)
         if channel is None:
             raise commands.BadArgument('No channel to join.')
 
-        player = self.bot.wavelink.get_player(ctx.guild.id)
+        player = self.bot.wavelink.get_player(
+            ctx.guild.id, volume=DEFAULT_VOLUME)
         await player.connect(channel.id)
 
     @commands.command(name='play')
@@ -60,9 +66,15 @@ class Player(commands.Cog, wavelink.WavelinkMixin):
 
         player = self.bot.wavelink.get_player(ctx.guild.id)
         if not player.is_connected:
-            await ctx.invoke(self.start)
+            await ctx.invoke(self.join)
 
         await player.play(tracks[0])
+
+    @commands.command(name='volume')
+    @commands.check(is_connected)
+    async def volume(self, ctx: Context, volume: int):
+        player = self.bot.wavelink.get_player(ctx.guild.id)
+        await player.set_volume(volume)
 
 
 def setup(bot: Bot):

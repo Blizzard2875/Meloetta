@@ -13,7 +13,7 @@ from .help import EmbedMenuHelpCommand
 
 
 class Bot(commands.Bot):
-    
+
     def __init__(self, **options):
         self.start_time = datetime.datetime.min  # TODO: None?
 
@@ -34,9 +34,9 @@ class Bot(commands.Bot):
             reactions=True
         )
 
-        super().__init__(commands.when_mentioned_or(self.prefix), help_command=EmbedMenuHelpCommand(), 
+        super().__init__(commands.when_mentioned_or(self.prefix), help_command=EmbedMenuHelpCommand(),
                          allowed_mentions=allowed_mentions, intents=intents, **options)
-        
+
         for extension in CONFIG.EXTENSIONS:
             with suppress(commands.ExtensionFailed):
                 self.load_extension(extension)
@@ -49,13 +49,14 @@ class Bot(commands.Bot):
         self.log.info(f'Logged in as {self.user} ({self.user.id})')
 
         # hacky way to fetch owner information
-        await self.is_owner(self.user) 
+        await self.is_owner(self.user)
         if self.owner_id:
             self.owner = self.get_user(self.owner_id)
             self.owners = [self.owner]
         if self.owner_ids:
             self.owner = None
-            self.owners = [self.get_user(owner_id) for owner_id in self.owner_ids]
+            self.owners = [self.get_user(owner_id)
+                           for owner_id in self.owner_ids]
 
     async def on_error(self, event_method: str, *args, **kwargs):
         self.log.exception(f'Ignoring exception in {event_method}\n')
@@ -63,7 +64,7 @@ class Bot(commands.Bot):
     async def on_command_error(self, context: Context, exception: Exception):
         # TODO: This
         ...
-    
+
     async def process_commands(self, message: discord.Message):
         ctx = await self.get_context(message, cls=Context)
         await self.invoke(ctx)
