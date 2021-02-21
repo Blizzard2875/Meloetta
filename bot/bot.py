@@ -22,9 +22,12 @@ class Bot(commands.Bot):
         # TODO: ext-converters?
 
         self.log = logging.getLogger(__name__)
-        self.log.setLevel(CONFIG.LOGGING.LOG_LEVEL)
 
-        # TODO: Webhook Logging Handler?
+        log = logging.getLogger()
+        log.setLevel(CONFIG.LOGGING.LOG_LEVEL)
+
+        log.addHandler(WebhookHandler(CONFIG.LOGGING.WEBHOOK))
+        log.addHandler(logging.StreamHandler())
 
         self.prefix = str(CONFIG.BOT.PREFIX)
 
