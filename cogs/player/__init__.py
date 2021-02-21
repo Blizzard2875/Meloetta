@@ -5,11 +5,12 @@ from functools import wraps
 from typing import Optional
 
 import discord
-from discord.ext import commands
+from discord.ext import commands, menus
 
 import wavelink
 
 from bot import Bot, Context
+from utils.paginator import EmbedPaginator
 
 from bot.config import CONFIG
 COG_CONFIG = CONFIG.EXTENSIONS[__name__]
@@ -185,6 +186,27 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
         )
 
         await ctx.send(embed=embed)
+
+    @commands.command(name='queue')
+    @commands.check(is_connected)
+    async def queue(self, ctx: Context):
+        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
+
+        embed = EmbedPaginator(
+            colour=discord.Colour.blue(),
+            title='Current request queue:',
+            max_fields=10
+        )
+
+        for i, request in enumerate(player._queue._queue, 1):
+            embed.add_field(
+                name=f"{i} {request.title} - Requested by: {request.requester}",
+                value=f"[link]({request.uri}) - {request.author}",
+                inline=False
+            )
+
+        menu = menus.MenuPages(embed)
+        await menu.start(ctx)
 
     @commands.command(name='volume')
     @commands.check(is_connected)
