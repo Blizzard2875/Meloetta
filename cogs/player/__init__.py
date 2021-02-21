@@ -108,9 +108,9 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
         if channel is None:
             raise commands.BadArgument('No channel to join.')
 
-        player: Player = self.bot.wavelink.get_player(
-            ctx.guild.id, volume=COG_CONFIG.DEFAULT_VOLUME, cls=Player)
+        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
         await player.connect(channel.id)
+        await player.set_volume(COG_CONFIG.DEFAULT_VOLUME)
         await player.next()
 
     @commands.command(name='pause')
@@ -168,7 +168,7 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
         await player.request(track, ctx.author)
 
         if not player.is_connected:
-            await ctx.invoke(self.join)
+            await self.join(ctx)
 
     @commands.command(name='now_playing', aliases=['playing', 'np'])
     @commands.check(is_connected)
