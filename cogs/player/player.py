@@ -48,12 +48,12 @@ class Player(wavelink.Player):
         self._listeners = []
 
         self.controls = {
-            VoteType.PAUSE: self.pause,
-            VoteType.RESUME: self.resume,
-            VoteType.SKIP: self.skip,
-            VoteType.REPEAT: self.repeat,
-            VoteType.SHUFFLE: self.shuffle,
-            VoteType.STOP: self.stop,
+            VoteType.PAUSE: self._pause,
+            VoteType.RESUME: self._resume,
+            VoteType.SKIP: self._skip,
+            VoteType.REPEAT: self._repeat,
+            VoteType.SHUFFLE: self._shuffle,
+            VoteType.STOP: self._stop,
         }
 
     @property
@@ -94,27 +94,27 @@ class Player(wavelink.Player):
 
         await super().play(track)
 
-    async def pause(self):
+    async def _pause(self):
         self._votes[VoteType.PAUSE].clear()
         await self.set_pause(True)
 
-    async def resume(self):
+    async def _resume(self):
         self._votes[VoteType.RESUME].clear()
         await self.set_pause(False)
 
-    async def skip(self):
+    async def _skip(self):
         self._votes[VoteType.SKIP].clear()
-        await super().stop()
+        await self.stop()
 
-    async def repeat(self):
+    async def _repeat(self):
         self._votes[VoteType.REPEAT].clear()
         self._repeat = True
 
-    async def shuffle(self):
+    async def _shuffle(self):
         self._votes[VoteType.SHUFFLE].clear()
         random.shuffle(self._queue._queue)
 
-    async def stop(self):
+    async def _stop(self):
         self._votes[VoteType.STOP].clear()
         await self.destroy()
 
