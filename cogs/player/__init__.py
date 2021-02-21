@@ -58,7 +58,7 @@ def vote(vote_type: VoteType, permission: Optional[str] = None):
     return wrapper
 
 
-class Player(commands.Cog, wavelink.WavelinkMixin):
+class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
     def __init__(self, bot: Bot):
         self.bot = bot
 
@@ -201,4 +201,4 @@ def setup(bot: Bot):
     if not hasattr(bot, 'wavelink'):
         bot.wavelink = wavelink.Client(bot=bot)
 
-    bot.add_cog(Player(bot))
+    bot.add_cog(MusicPlayer(bot))

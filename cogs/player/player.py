@@ -36,7 +36,7 @@ class Request(wavelink.Track):
 class Player(wavelink.Player):
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args ** kwargs)
+        super().__init__(*args, **kwargs)
 
         self._queue = asyncio.Queue()
         self._repeat = False
