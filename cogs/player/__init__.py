@@ -125,7 +125,7 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.command(name='skip')
     @vote(VoteType.SKIP, 'manage_messages')
-    async def resume(self, ctx: Context):
+    async def skip(self, ctx: Context):
         """TODO: """
 
     @commands.command(name='repeat')
