@@ -38,7 +38,7 @@ def is_listening(ctx: Context):
     return True
 
 
-async def vote(vote_type: VoteType, permission: Optional[str] = None):
+def vote(vote_type: VoteType, permission: Optional[str] = None):
 
     def wrapper(func):
         
