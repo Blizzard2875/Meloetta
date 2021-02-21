@@ -51,7 +51,10 @@ def vote(vote_type: VoteType, permission: Optional[str] = None):
             if getattr(ctx.channel.permissions_for(ctx.author), permission, False):
                 await player.controls[vote_type]()
 
-            await player.vote(vote_type, ctx.author)
+            if not await player.vote(vote_type, ctx.author):
+                return await ctx.send(embed=discord.Embed(
+                    description='Vote recorded...'
+                ))
 
         return command
 

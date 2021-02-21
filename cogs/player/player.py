@@ -1,4 +1,5 @@
 import asyncio
+from cogs.player import vote
 import random
 
 from typing import Dict, List, Set, Type, TypeVar
@@ -118,9 +119,10 @@ class Player(wavelink.Player):
         self._votes[VoteType.STOP].clear()
         await self.destroy()
 
-    async def vote(self, vote_type: VoteType, member: discord.Member):
+    async def vote(self, vote_type: VoteType, member: discord.Member) -> bool:
         self._votes[VoteType.STOP].add(member)
         if not self.vote_has_passed(vote_type):
-            return
+            return False
 
         await self.controls[vote_type]()
+        return True
