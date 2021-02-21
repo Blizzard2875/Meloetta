@@ -40,7 +40,7 @@ def is_listening(ctx: Context):
 
 async def vote(vote_type: VoteType, permission: Optional[str] = None):
 
-    async def wrapper(func):
+    def wrapper(func):
         
         @commands.check(is_connected)
         @commands.check(is_listening)
