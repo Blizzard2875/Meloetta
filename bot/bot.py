@@ -1,14 +1,16 @@
 import datetime
 import logging
+import traceback
 
 from contextlib import suppress
 
 import discord
+from discord import member
 from discord.ext import commands
 
 from .config import CONFIG
 from .context import Context
-# from .logging import WebhookHandler
+from .logging import WebhookHandler
 from .help import EmbedMenuHelpCommand
 
 
@@ -38,8 +40,10 @@ class Bot(commands.Bot):
                          allowed_mentions=allowed_mentions, intents=intents, **options)
 
         for extension in CONFIG.EXTENSIONS:
-            with suppress(commands.ExtensionFailed):
+            try:
                 self.load_extension(extension)
+            except commands.ExtensionFailed:
+                self.log.exception(f'Failed to load extension: {extension}')
 
     @property
     def uptime(self) -> datetime.timedelta:
@@ -62,9 +66,32 @@ class Bot(commands.Bot):
     async def on_error(self, event_method: str, *args, **kwargs):
         self.log.exception(f'Ignoring exception in {event_method}\n')
 
-    async def on_command_error(self, context: Context, exception: Exception):
-        # TODO: This
-        ...
+    async def on_command_error(self, context: Context, error: commands.CommandError):
+        if isinstance(error, commands.CommandNotFound):
+            return
+
+        if isinstance(error, (commands.CheckFailure, commands.UserInputError, 
+                              commands.CommandOnCooldown, commands.MaxConcurrencyReached, commands.DisabledCommand)):
+            return await context.send(
+                embed=discord.Embed(
+                    colour=discord.Colour.red(),
+                    title=f'Error with command: {context.command.qualified_name}',
+                    description=str(error)
+                )
+            )
+
+        error: Exception = error.__cause__
+
+        await context.send(
+            embed=discord.Embed(
+                colour=discord.Colour.dark_red(),
+                title=f'Unexpected error with command: {context.command.qualified_name}',
+                description=f'```py\n{type(error).__name__}: {error}\n```'
+            )
+        )
+
+        tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
+        self.log.error(f'Ignoring exception in command: {context.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}')
 
     async def process_commands(self, message: discord.Message):
         ctx = await self.get_context(message, cls=Context)
