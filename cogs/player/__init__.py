@@ -1,6 +1,7 @@
 from .player import Player, Request, VoteType
 from .utils import YoutubeSearchResultsMenu
 
+from contextlib import suppress
 from functools import wraps
 from typing import Optional
 
@@ -71,14 +72,15 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
     async def start_wavelink(self):
         await self.bot.wait_until_ready()
 
-        await self.bot.wavelink.initiate_node(
-            host=COG_CONFIG.LAVALINK.HOSTNAME,
-            port=2333,
-            rest_uri=f"http://{COG_CONFIG.LAVALINK.HOSTNAME}:2333",
-            password=COG_CONFIG.LAVALINK.PASSWORD,
-            identifier='meloetta',
-            region='us_east'
-        )
+        with suppress(wavelink.NodeOccupied):
+            await self.bot.wavelink.initiate_node(
+                host=COG_CONFIG.LAVALINK.HOSTNAME,
+                port=2333,
+                rest_uri=f"http://{COG_CONFIG.LAVALINK.HOSTNAME}:2333",
+                password=COG_CONFIG.LAVALINK.PASSWORD,
+                identifier='meloetta',
+                region='us_east'
+            )
 
     # region: event listeners
 
@@ -200,7 +202,7 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
 
         for i, request in enumerate(player._queue._queue, 1):
             embed.add_field(
-                name=f"{i} {request.title} - Requested by: {request.requester}",
+                name=f"{i}: {request.title} - Requested by: {request.requester}",
                 value=f"[link]({request.uri}) - {request.author}",
                 inline=False
             )
