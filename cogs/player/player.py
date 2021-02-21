@@ -11,12 +11,12 @@ from wavelink.player import Track
 
 
 class VoteType(Enum):
-    PAUSE: 0
-    RESUME: 1
-    SKIP: 2
-    REPEAT: 3
-    SHUFFLE: 4
-    STOP: 5
+    PAUSE = 0
+    RESUME = 1
+    SKIP = 2
+    REPEAT = 3
+    SHUFFLE = 4
+    STOP = 5
 
 
 T = TypeVar('T', bound='Request')
