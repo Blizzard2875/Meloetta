@@ -75,7 +75,7 @@ class Player(wavelink.Player):
         return len(self._votes[vote_type]) > len(self.listeners) // 2 + 1
 
     async def request(self, track: Track, requester: discord.Member):
-        await self._queue.put(Request(track, requester))
+        await self._queue.put(Request.from_track(track, requester))
 
     async def next(self):
         if self.is_playing:
