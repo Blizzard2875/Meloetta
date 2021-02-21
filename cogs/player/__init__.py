@@ -48,7 +48,7 @@ def vote(vote_type: VoteType, permission: Optional[str] = None):
         async def command(self, ctx: Context):
             player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
 
-            if ctx.channel.permissions_for(ctx.author).getattr(permission, False):
+            if getattr(ctx.channel.permissions_for(ctx.author), permission, False):
                 await player.controls[vote_type]()
 
             await player.vote(vote_type, ctx.author)
@@ -94,7 +94,7 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
     @wavelink.WavelinkMixin.listener('on_track_exception')
     @wavelink.WavelinkMixin.listener('on_track_end')
     async def on_player_stop(self, node: wavelink.Node, payload):
-        await payload.player.foo  # TODO: What?
+        await payload.player.next()
 
     # endregion
 
