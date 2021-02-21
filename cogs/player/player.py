@@ -1,5 +1,4 @@
 import asyncio
-from cogs.player import vote
 import random
 
 from typing import Dict, List, Set, Type, TypeVar
