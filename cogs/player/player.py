@@ -119,7 +119,7 @@ class Player(wavelink.Player):
         await self.destroy()
 
     async def vote(self, vote_type: VoteType, member: discord.Member) -> bool:
-        self._votes[VoteType.STOP].add(member)
+        self._votes[vote_type].add(member)
         if not self.vote_has_passed(vote_type):
             return False
 

@@ -6,6 +6,7 @@ import yaml
 
 DEFAULT_CONFIG_FILE = 'config.yaml'
 
+
 def load(config_file: str = DEFAULT_CONFIG_FILE):
     with open(config_file, encoding='UTF-8') as f:
         return yaml.load(f, Loader=yaml.FullLoader)
@@ -32,13 +33,13 @@ class Object(discord.Object):
 
 
 def _env_var_constructor(loader: yaml.Loader, node: yaml.Node):
-    '''Implements a custom YAML tag for loading optional environment variables.
+    """Implements a custom YAML tag for loading optional environment variables.
     If the environment variable is set it returns its value.
     Otherwise returns `None`.
 
     Example usage:
         key: !ENV 'KEY'
-    '''
+    """
     if node.id == 'scalar':  # type: ignore
         value = loader.construct_scalar(node)
         key = str(value)
@@ -85,7 +86,8 @@ DISCORD_CONSTRUCTORS = [
     ('Channel', lambda g, c: Config._bot.get_guild(g).get_channel(c)),
     ('Member', lambda g, m: Config._bot.get_guild(g).get_member(m)),
     ('Role', lambda g, r: Config._bot.get_guild(g).get_role(r)),
-    ('Message', lambda g, c, m: discord.PartialMessage(channel=Config._bot.get_guild(g).get_channel(c), id=m))
+    ('Message', lambda g, c, m: discord.PartialMessage(
+        channel=Config._bot.get_guild(g).get_channel(c), id=m))
 ]
 
 

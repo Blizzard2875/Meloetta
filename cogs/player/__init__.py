@@ -1,9 +1,9 @@
-from .player import Player, Request, VoteType
+from .player import Player, VoteType
 from .utils import YoutubeSearchResultsMenu
 
 from contextlib import suppress
 from functools import wraps
-from typing import Optional
+from typing import Optional, Union
 
 import discord
 from discord.ext import commands, menus
@@ -43,20 +43,22 @@ def is_listening(ctx: Context):
 def vote(vote_type: VoteType, permission: Optional[str] = None):
 
     def wrapper(func):
-        
+
         @commands.check(is_connected)
         @commands.check(is_listening)
         @wraps(func)
         async def command(self, ctx: Context):
-            player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
+            player: Player = self.client.get_player(ctx.guild.id, cls=Player)
 
             if getattr(ctx.channel.permissions_for(ctx.author), permission, False):
                 await player.controls[vote_type]()
 
-            if not await player.vote(vote_type, ctx.author):
+            elif not await player.vote(vote_type, ctx.author):
                 return await ctx.send(embed=discord.Embed(
                     description='Vote recorded...'
                 ))
+
+            await ctx.check()
 
         return command
 
@@ -64,8 +66,11 @@ def vote(vote_type: VoteType, permission: Optional[str] = None):
 
 
 class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
+    client: wavelink.Client
+
     def __init__(self, bot: Bot):
         self.bot = bot
+        self.client = bot.wavelink
 
         self.bot.loop.create_task(self.start_wavelink())
 
@@ -73,10 +78,10 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
         await self.bot.wait_until_ready()
 
         with suppress(wavelink.NodeOccupied):
-            await self.bot.wavelink.initiate_node(
+            await self.client.initiate_node(
                 host=COG_CONFIG.LAVALINK.HOSTNAME,
                 port=2333,
-                rest_uri=f"http://{COG_CONFIG.LAVALINK.HOSTNAME}:2333",
+                rest_uri=f'http://{COG_CONFIG.LAVALINK.HOSTNAME}:2333',
                 password=COG_CONFIG.LAVALINK.PASSWORD,
                 identifier='meloetta',
                 region='us_east'
@@ -86,7 +91,7 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
 
     @commands.Cog.listener()
     async def on_voice_state_update(self, member: discord.Member, before: discord.VoiceState, after: discord.VoiceState):
-        player: Player = self.bot.wavelink.get_player(member.guild.id, cls=Player)
+        player = self.client.get_player(member.guild.id, cls=Player)
         if not player.is_connected:
             return
         if before.channel == after.channel:
@@ -109,12 +114,12 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
     @commands.command(name='join', aliases=['start', 'connect'])
     @commands.check(is_not_connected)
     async def join(self, ctx: Context, *, channel: discord.VoiceChannel = None):
-        """TODO: """
+        """Start the player in a channel."""
         channel = channel or getattr(ctx.author.voice, 'channel', None)
         if channel is None:
             raise commands.BadArgument('No channel to join.')
 
-        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
+        player = self.client.get_player(ctx.guild.id, cls=Player)
         await player.connect(channel.id)
         await player.set_volume(COG_CONFIG.DEFAULT_VOLUME)
         await player.next()
@@ -122,36 +127,37 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
     @commands.command(name='pause')
     @vote(VoteType.PAUSE, 'mute_members')
     async def pause(self, ctx: Context):
-        """TODO: """
+        """Pause the player."""
 
     @commands.command(name='resume')
     @vote(VoteType.RESUME, 'mute_members')
     async def resume(self, ctx: Context):
-        """TODO: """
+        """Resume the player."""
 
     @commands.command(name='skip')
     @vote(VoteType.SKIP, 'manage_messages')
     async def skip(self, ctx: Context):
-        """TODO: """
+        """Skip the currently playing track."""
 
     @commands.command(name='repeat')
     @vote(VoteType.REPEAT)
     async def repeat(self, ctx: Context):
-        """TODO: """
+        """Repeat the currently playing track."""
 
     @commands.command(name='shuffle')
     @vote(VoteType.SHUFFLE)
     async def shuffle(self, ctx: Context):
-        """TODO: """
+        """Shuffle the request queue."""
 
     @commands.command(name='leave', aliases=['stop', 'disconnect'])
     @vote(VoteType.STOP, 'move_members')
     async def leave(self, ctx: Context):
-        """TODO: """
+        """Stop the player and leave the voice channel."""
 
-    @commands.command(name='play')
+    @commands.group(name='play', aliases=['request'], invoke_without_command=True)
     async def play(self, ctx: Context, *, query: str):
-        tracks = await self.bot.wavelink.get_tracks(f'ytsearch:{query}')
+        """Play a requested track from YouTube."""
+        tracks = await self.client.get_tracks(f'ytsearch:{query}')
 
         if not tracks:
             raise commands.BadArgument('Could not find any search results.')
@@ -166,8 +172,8 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
                 # TODO: Not this error type
                 raise commands.BadArgument('Selection cancelled.')
 
-        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
-        
+        player = self.client.get_player(ctx.guild.id, cls=Player)
+
         if player.is_connected:
             is_listening(ctx)
 
@@ -176,23 +182,54 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
         if not player.is_connected:
             await self.join(ctx)
 
+    @play.command(name='url', aliases=['file'])
+    @commands.has_guild_permissions(manage_server=True)
+    async def play_url(self, ctx: Context, *, url: Union[discord.Attachment, str]):
+        """Play a requested track from a URL."""
+        if isinstance(url, discord.Attachment):
+            url = url.proxy_url
+
+        tracks = await self.client.get_tracks(url)
+        if tracks is None:
+            raise commands.BadArgument('Invalid URL has been passed.')
+
+        player = self.client.get_player(ctx.guild.id, cls=Player)
+
+        if player.is_connected:
+            is_listening(ctx)
+
+        await player.request(tracks[0], ctx.author)
+
+        if not player.is_connected:
+            await self.join(ctx)
+
     @commands.command(name='now_playing', aliases=['playing', 'np'])
     @commands.check(is_connected)
     async def now_playing(self, ctx: Context):
-        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
-        track: Request = player.current
+        """Displays the currently playing track."""
+        player = self.client.get_player(ctx.guild.id, cls=Player)
+        request = player.current
 
         embed = discord.Embed(
             title='Now Playing',
-            description=f'{track.title} - Requested by: {track.requester}'
         )
+
+        if request is not None:
+            embed.add_field(
+                name=f'{request.title} - Requested by: {request.requester}',
+                value=f'[link]({request.uri}) - {request.author}',
+                inline=False
+            )
+        else:
+            embed.description = f'There is currently no track playing, use `{ctx.prefix}play` to request tracks.'
 
         await ctx.send(embed=embed)
 
     @commands.command(name='queue')
     @commands.check(is_connected)
     async def queue(self, ctx: Context):
-        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
+        """Displays the current queue."""
+        player = self.client.get_player(ctx.guild.id, cls=Player)
 
         embed = EmbedPaginator(
             colour=discord.Colour.blue(),
@@ -202,10 +239,13 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
 
         for i, request in enumerate(player._queue._queue, 1):
             embed.add_field(
-                name=f"{i}: {request.title} - Requested by: {request.requester}",
-                value=f"[link]({request.uri}) - {request.author}",
+                name=f'{i}: {request.title} - Requested by: {request.requester}',
+                value=f'[link]({request.uri}) - {request.author}',
                 inline=False
             )
+
+        if not embed.fields:
+            embed.description = f'There are currently no requests in the queue, use `{ctx.prefix}play` to request tracks.'
 
         menu = menus.MenuPages(embed)
         await menu.start(ctx)
@@ -213,11 +253,13 @@ class MusicPlayer(commands.Cog, wavelink.WavelinkMixin):
     @commands.command(name='volume')
     @commands.check(is_connected)
     async def volume(self, ctx: Context, volume: int):
+        """Sets the player volume."""
         if not 0 <= volume <= 100:
             raise commands.BadArgument('Volume must be between 0 and 100.')
 
-        player: Player = self.bot.wavelink.get_player(ctx.guild.id, cls=Player)
+        player = self.client.get_player(ctx.guild.id, cls=Player)
         await player.set_volume(volume)
+        await ctx.check()
 
     # endregion
 

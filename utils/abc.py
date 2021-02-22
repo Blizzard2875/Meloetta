@@ -21,7 +21,7 @@ class BaseChoiceMenu(menus.Menu):
         self.selection = None
 
         for i, _ in enumerate(self.options, 1):
-            emoji = f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP}"
+            emoji = f'{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP}'
             self.add_button(menus.Button(emoji, self.choose))
 
     async def send_initial_message(self, ctx: Context, channel: discord.TextChannel) -> discord.Message:

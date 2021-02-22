@@ -3,7 +3,6 @@ from typing import List
 import discord
 
 import wavelink
-from wavelink.player import Track
 
 from bot import Context
 from utils.abc import BaseChoiceMenu
@@ -25,8 +24,8 @@ class YoutubeSearchResultsMenu(BaseChoiceMenu):
         for i, track in enumerate(self.options, 1):
             length = track.length // 1000
             embed.add_field(
-                name=f"{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP} {track.title}",
-                value=f"[link]({track.uri}) ({length//60:02d}:{length%60:02d}) - {track.author}",
+                name=f'{i}\ufe0f\N{COMBINING ENCLOSING KEYCAP} {track.title}',
+                value=f'[link]({track.uri}) ({length//60:02d}:{length%60:02d}) - {track.author}',
                 inline=False
             )
 

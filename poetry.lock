@@ -91,7 +91,7 @@ develop = false
 
 [package.source]
 type = "git"
-url = "https://github.com/rapptz/discord-ext-menus.git"
+url = 'https://github.com/rapptz/discord-ext-menus.git'
 reference = "master"
 resolved_reference = "6f2b873bf0d28903eb752aa1166b3aac26dc9007"
 
@@ -279,6 +279,19 @@ aiohttp = ">=3.6.0,<3.7.0"
 "discord.py" = ">=1.2.5"
 
 [[package]]
+name = "wavelink-stubs"
+version = "0.9.6.3"
+description = "wavelink stubs"
+category = "dev"
+optional = false
+python-versions = ">=3.7,<4.0"
+
+[package.dependencies]
+"discord.py" = ">=1.2.5"
+mypy = ">=0.800"
+typing-extensions = ">=3.7.4,<4.0.0"
+
+[[package]]
 name = "yarl"
 version = "1.5.1"
 description = "Yet another URL library"
@@ -292,8 +305,8 @@ multidict = ">=4.0"
 
 [metadata]
 lock-version = "1.1"
-python-versions = "^3.8.0"
-content-hash = "a48af47c073aef7bb7e5a7d93fe7c370a03ccb10238c8d1d5bb3af7b7e66b24f"
+python-versions = '^3.8.0'
+content-hash = "8f02ebd703f3eb6cc02812b07fdcfefc6acc3af095f2627a2293b161133f6d3f"
 
 [metadata.files]
 aiohttp = [
@@ -516,6 +529,10 @@ typing-extensions = [
 wavelink = [
     {file = "wavelink-0.9.6-py3-none-any.whl", hash = "sha256:31e01e5e85683c29b79cf0093fda1bcd31d845077c9db1e05bd657e82af5ced6"},
     {file = "wavelink-0.9.6.tar.gz", hash = "sha256:88ff1cd1e454fe353dca1b42b1b17e27822d9010673107ac9e00e3ec6480e833"},
+]
+wavelink-stubs = [
+    {file = "wavelink-stubs-0.9.6.3.tar.gz", hash = "sha256:f1365c2fe427f2606ae800b87814306c751f6ea15a2c702232b44fea765be1d0"},
+    {file = "wavelink_stubs-0.9.6.3-py3-none-any.whl", hash = "sha256:eaa8469d790258935927c677a384ca25f1c4a742ede55f25ed73b40fcd6dc8da"},
 ]
 yarl = [
     {file = "yarl-1.5.1-cp35-cp35m-macosx_10_14_x86_64.whl", hash = "sha256:db6db0f45d2c63ddb1a9d18d1b9b22f308e52c83638c26b422d520a815c4b3fb"},

@@ -2,10 +2,7 @@ import datetime
 import logging
 import traceback
 
-from contextlib import suppress
-
 import discord
-from discord import member
 from discord.ext import commands
 
 from .config import CONFIG
@@ -64,7 +61,7 @@ class Bot(commands.Bot):
             self.owner = None
 
         self.owners = [await self.fetch_user(owner_id)
-                        for owner_id in self.owner_ids]
+                       for owner_id in self.owner_ids]
 
     async def on_error(self, event_method: str, *args, **kwargs):
         self.log.exception(f'Ignoring exception in {event_method}\n')
@@ -73,7 +70,7 @@ class Bot(commands.Bot):
         if isinstance(error, commands.CommandNotFound):
             return
 
-        if isinstance(error, (commands.CheckFailure, commands.UserInputError, 
+        if isinstance(error, (commands.CheckFailure, commands.UserInputError,
                               commands.CommandOnCooldown, commands.MaxConcurrencyReached, commands.DisabledCommand)):
             return await context.send(
                 embed=discord.Embed(
@@ -93,8 +90,10 @@ class Bot(commands.Bot):
             )
         )
 
-        tb = ''.join(traceback.format_exception(type(error), error, error.__traceback__))
-        self.log.error(f'Ignoring exception in command: {context.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}')
+        tb = ''.join(traceback.format_exception(
+            type(error), error, error.__traceback__))
+        self.log.error(
+            f'Ignoring exception in command: {context.command.qualified_name}\n\n{type(error).__name__}: {error}\n\n{tb}')
 
     async def process_commands(self, message: discord.Message):
         ctx = await self.get_context(message, cls=Context)
