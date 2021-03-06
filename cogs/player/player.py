@@ -69,7 +69,11 @@ class Player(wavelink.Player):
         return self.bot.get_channel(self.channel_id)
 
     async def update_listeners(self):
-        self._listeners = await self.guild.query_members(user_ids=[user_id for user_id in self.channel.voice_states])
+        user_ids = [user_id for user_id in self.channel.voice_states]
+        if len(user_ids):
+            self._listeners = await self.guild.query_members(user_ids=user_ids, limit=len(user_ids))
+        else:
+            self._listeners = []
 
     def vote_has_passed(self, vote_type: VoteType) -> bool:
         return len(self._votes[vote_type]) > len(self.listeners) // 2 + 1
